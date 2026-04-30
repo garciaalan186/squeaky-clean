@@ -1,0 +1,22 @@
+{
+  "name": "BetterprotoPaymentClient",
+  "pattern": "Adapter",
+  "implements": "PaymentClient",
+  "fields": [],
+  "methods": [
+    "call(method: str, request: bytes) -> bytes",
+    "close() -> None"
+  ],
+  "depends": ["PaymentClient"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "PaymentClient (Gateway, file=src.domain.rpc.payment_client): fields=[], methods=[\"call(method: str, request: bytes) -> bytes\", \"close() -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.rpc.betterproto_payment_client",
+  "tech_spec_path": "grpc_client/betterproto/betterproto==2.0.json",
+  "expected_imports": [
+    "from grpclib.client import Channel",
+    "from grpclib.exceptions import GRPCError",
+    "from src.domain.rpc.payment_client import PaymentClient"
+  ],
+  "expected_error_types": ["GRPCError"]
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "mongodb_ts",
+  "version_pin": "mongodb==6.3.0",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "mongodb@^6.3.0"
+  },
+  "imports": {
+    "primary": "import { MongoClient, Collection } from 'mongodb';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = new MongoClient(uri); this._collection = this._client.db(dbName).collection('records');",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "uri",
+      "dbName"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(doc: Record<string, unknown>): Promise<void>",
+      "sdk_call": "await this._collection.updateOne({ _id: doc.id as string }, { $set: doc }, { upsert: true });",
+      "error_types": [
+        "MongoServerError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "findById",
+      "signature": "(id: string): Promise<Record<string, unknown> | null>",
+      "sdk_call": "return (await this._collection.findOne({ _id: id })) as Record<string, unknown> | null;",
+      "error_types": [
+        "MongoServerError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "MONGODB_URI"
+    ]
+  },
+  "code_style_notes": [
+    "mongodb npm ships first-class TS types"
+  ],
+  "allowed_doc_origins": [
+    "https://www.mongodb.com/docs/drivers/node/current/"
+  ]
+}

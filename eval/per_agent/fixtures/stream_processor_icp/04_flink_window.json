@@ -1,0 +1,22 @@
+{
+  "name": "FlinkOrderStreamWindow",
+  "pattern": "Gateway",
+  "implements": "OrderStreamWindow",
+  "fields": [],
+  "methods": [
+    "window(window_seconds: int) -> bytes"
+  ],
+  "depends": ["OrderStreamWindow"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderStreamWindow (Gateway, file=src.domain.streams.order_stream_window): fields=[], methods=[\"window(window_seconds: int) -> bytes\"], invariants=[]",
+  "target_file": "src.infrastructure.streams.flink_order_stream_window",
+  "tech_spec_path": "stream_processor/flink/apache-flink==1.18.json",
+  "expected_imports": [
+    "from pyflink.datastream import StreamExecutionEnvironment",
+    "from pyflink.common import Types",
+    "from pyflink.datastream.functions import MapFunction",
+    "from src.domain.streams.order_stream_window import OrderStreamWindow"
+  ],
+  "expected_error_types": ["RuntimeError"]
+}

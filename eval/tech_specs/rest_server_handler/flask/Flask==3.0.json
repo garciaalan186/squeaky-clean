@@ -1,0 +1,41 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "flask",
+  "version_pin": "Flask==3.0",
+  "language": "python",
+  "install": {"manager": "pip", "package": "Flask>=3.0"},
+  "imports": {
+    "primary": "from flask import request, jsonify",
+    "types":   ["from werkzeug.exceptions import HTTPException", "from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._use_case = use_case",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(payload: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = self._use_case.execute(payload); return {'status': 'ok', 'data': result}",
+      "error_types": ["HTTPException", "ValueError"],
+      "idempotency": "conditional",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["flask_request_logger"],
+  "rate_limit_defaults": {"rps": 1000, "burst": 2000},
+  "code_style_notes": [
+    "The handler class is framework-agnostic; user wires Flask via @app.route('/path')(handler.handle).",
+    "Read request body via flask.request.get_json() in the wrapping route, then pass payload dict to handle().",
+    "Always return a serialisable dict; let Flask's jsonify wrap the response."
+  ],
+  "allowed_doc_origins": [
+    "https://flask.palletsprojects.com/"
+  ]
+}

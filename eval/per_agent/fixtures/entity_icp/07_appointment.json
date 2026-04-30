@@ -1,0 +1,11 @@
+{
+  "name": "Appointment",
+  "pattern": "Entity",
+  "fields": ["id: str", "time: str", "attendee: str"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.scheduling.appointment"
+}

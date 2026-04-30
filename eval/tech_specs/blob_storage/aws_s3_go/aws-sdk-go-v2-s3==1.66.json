@@ -1,0 +1,53 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "aws_s3_go",
+  "version_pin": "aws-sdk-go-v2-s3==1.66.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/aws/aws-sdk-go-v2/service/s3@v1.66.0"},
+  "imports": {
+    "primary": "\"github.com/aws/aws-sdk-go-v2/service/s3\"",
+    "types": ["\"context\"", "\"github.com/aws/aws-sdk-go-v2/config\"", "\"github.com/aws/aws-sdk-go-v2/aws\"", "\"bytes\"", "\"io\""]
+  },
+  "client_construction": {
+    "code": "cfg, _ := config.LoadDefaultConfig(context.Background()); client := s3.NewFromConfig(cfg)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["bucket"]
+  },
+  "primary_operations": [
+    {
+      "name": "PutBlob",
+      "signature": "(key string, body []byte) error",
+      "sdk_call": "_, err := s.client.PutObject(context.Background(), &s3.PutObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(key), Body: bytes.NewReader(body)}); return err",
+      "error_types": ["*aws.RequestError", "*types.NoSuchBucket"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "GetBlob",
+      "signature": "(key string) ([]byte, error)",
+      "sdk_call": "out, err := s.client.GetObject(context.Background(), &s3.GetObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(key)}); if err != nil { return nil, err }; defer out.Body.Close(); return io.ReadAll(out.Body)",
+      "error_types": ["*aws.RequestError", "*types.NoSuchKey"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "DeleteBlob",
+      "signature": "(key string) error",
+      "sdk_call": "_, err := s.client.DeleteObject(context.Background(), &s3.DeleteObjectInput{Bucket: aws.String(s.bucket), Key: aws.String(key)}); return err",
+      "error_types": ["*aws.RequestError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"]
+  },
+  "code_style_notes": [
+    "config.LoadDefaultConfig walks env vars + ~/.aws automatically",
+    "always close GetObject response Body via defer"
+  ],
+  "allowed_doc_origins": ["https://aws.github.io/aws-sdk-go-v2/"]
+}

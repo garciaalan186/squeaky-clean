@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "kafka_streams",
+  "version_pin": "confluent-kafka==2.5",
+  "language": "python",
+  "install": {"manager": "pip", "package": "confluent-kafka>=2.5"},
+  "imports": {
+    "primary": "from confluent_kafka import Consumer",
+    "types":   ["from confluent_kafka.error import KafkaException, KafkaError"]
+  },
+  "client_construction": {
+    "code": "self._stream = Consumer({'bootstrap.servers': bootstrap_servers, 'group.id': job_name, 'auto.offset.reset': 'earliest'})",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["bootstrap_servers", "job_name"]
+  },
+  "primary_operations": [
+    {
+      "name": "process",
+      "signature": "(record: bytes) -> bytes",
+      "sdk_call": "return record",
+      "error_types": ["KafkaException", "KafkaError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "aggregate",
+      "signature": "(window_seconds: int) -> bytes",
+      "sdk_call": "msg = self._stream.poll(window_seconds); return msg.value() if msg is not None and msg.error() is None else b''",
+      "error_types": ["KafkaException", "KafkaError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "window",
+      "signature": "(window_seconds: int) -> bytes",
+      "sdk_call": "msg = self._stream.poll(window_seconds); return msg.value() if msg is not None and msg.error() is None else b''",
+      "error_types": ["KafkaException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_SASL_USERNAME", "KAFKA_SASL_PASSWORD"]
+  },
+  "observability_hooks": ["opentelemetry_kafka_instrumentation"],
+  "rate_limit_defaults": {"rps": 100000, "burst": 200000},
+  "code_style_notes": [
+    "Confluent's Kafka Streams Python binding is consumer-based; aggregation is application-side",
+    "Use one Consumer per stream-processor instance (not thread-safe)",
+    "For true exactly-once, set transactional.id and processing.guarantee in producer config"
+  ],
+  "allowed_doc_origins": [
+    "https://docs.confluent.io/platform/current/clients/confluent-kafka-python/",
+    "https://kafka.apache.org/documentation/streams/"
+  ]
+}

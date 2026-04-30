@@ -1,0 +1,22 @@
+{
+  "name": "RabbitMqOrderEventConsumerClose",
+  "pattern": "Gateway",
+  "implements": "OrderEventConsumerClose",
+  "fields": [],
+  "methods": [
+    "consume(queue_name: str) -> bytes | None",
+    "close() -> None"
+  ],
+  "depends": ["OrderEventConsumerClose"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderEventConsumerClose (Gateway, file=src.domain.events.order_event_consumer_close): fields=[], methods=[\"consume(queue_name: str) -> bytes | None\", \"close() -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.rabbitmq_order_event_consumer_close",
+  "tech_spec_path": "message_queue_consumer/rabbitmq/pika==1.3.json",
+  "expected_imports": [
+    "import pika",
+    "from pika.exceptions import AMQPError, AMQPConnectionError, ChannelClosed",
+    "from src.domain.events.order_event_consumer_close import OrderEventConsumerClose"
+  ],
+  "expected_error_types": ["AMQPError", "AMQPConnectionError"]
+}

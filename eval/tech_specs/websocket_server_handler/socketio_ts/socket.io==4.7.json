@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "socketio_ts",
+  "version_pin": "socket.io==4.7.4",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "socket.io@^4.7.0"
+  },
+  "imports": {
+    "primary": "import type { Socket } from 'socket.io';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "useCase"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "onMessage",
+      "signature": "(socket: Socket, message: unknown): Promise<void>",
+      "sdk_call": "const reply = await this._useCase.execute(message); socket.emit('reply', reply);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "socket.io ships its own types"
+  ],
+  "allowed_doc_origins": [
+    "https://socket.io/"
+  ]
+}

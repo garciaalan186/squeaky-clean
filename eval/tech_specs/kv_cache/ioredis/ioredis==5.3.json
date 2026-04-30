@@ -1,0 +1,67 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "ioredis",
+  "version_pin": "ioredis==5.3.2",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "ioredis@^5.3.0"
+  },
+  "imports": {
+    "primary": "import Redis from 'ioredis';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = new Redis(url);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "url"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "set",
+      "signature": "(key: string, value: string): Promise<void>",
+      "sdk_call": "await this._client.set(key, value);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "get",
+      "signature": "(key: string): Promise<string | null>",
+      "sdk_call": "return await this._client.get(key);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "expire",
+      "signature": "(key: string, ttl: number): Promise<void>",
+      "sdk_call": "await this._client.expire(key, ttl);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "REDIS_URL"
+    ]
+  },
+  "code_style_notes": [
+    "ioredis returns null for missing keys"
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/redis/ioredis"
+  ]
+}

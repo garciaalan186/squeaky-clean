@@ -1,0 +1,33 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "kafka_rs",
+  "version_pin": "kafka==0.10.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "kafka==0.10"},
+  "imports": {
+    "primary": "use kafka::consumer::{Consumer, FetchOffset, GroupOffsetStorage};",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let consumer = Consumer::from_hosts(vec![brokers.to_string()]).with_topic(topic.to_string()).with_group(group.to_string()).with_fallback_offset(FetchOffset::Earliest).with_offset_storage(Some(GroupOffsetStorage::Kafka)).create()?;",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["brokers", "group", "topic"]
+  },
+  "primary_operations": [
+    {
+      "name": "process",
+      "signature": "() -> Result<Vec<u8>, kafka::Error>",
+      "sdk_call": "let mss = self.consumer.poll()?; for ms in mss.iter() { for m in ms.messages() { let v = m.value.to_vec(); self.consumer.consume_message(ms.topic(), ms.partition(), m.offset)?; return Ok(v); } } Ok(Vec::new())",
+      "error_types": ["kafka::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_GROUP_ID", "KAFKA_TOPIC"]},
+  "code_style_notes": [
+    "consume_message marks offset as consumed in the local tracker; commit_consumed flushes to Kafka"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/kafka/"]
+}

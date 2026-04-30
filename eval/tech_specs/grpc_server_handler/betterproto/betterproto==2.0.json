@@ -1,0 +1,42 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "betterproto",
+  "version_pin": "betterproto==2.0",
+  "language": "python",
+  "install": {"manager": "pip", "package": "betterproto[grpclib]>=2.0.0b6"},
+  "imports": {
+    "primary": "from grpclib.server import Stream",
+    "types":   ["from grpclib.exceptions import GRPCError", "from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._use_case = use_case",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "serve",
+      "signature": "(request: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = await self._use_case.execute(request); return {'status': 'ok', 'data': result}",
+      "error_types": ["GRPCError"],
+      "idempotency": "conditional",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "iam_role"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 4000, "burst": 8000},
+  "code_style_notes": [
+    "betterproto servicers are async; the wrapping Service subclass awaits handler.serve().",
+    "Map protobuf messages to dicts at the boundary; keep handler protobuf-free.",
+    "Use Stream.send_trailing_metadata for error reporting in the wrapping servicer, not in handle()."
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/danielgtaylor/python-betterproto",
+    "https://grpclib.readthedocs.io/"
+  ]
+}

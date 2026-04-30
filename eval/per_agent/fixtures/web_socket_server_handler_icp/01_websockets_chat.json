@@ -1,0 +1,21 @@
+{
+  "name": "WebsocketsChatHandler",
+  "pattern": "Adapter",
+  "implements": "ChatHandler",
+  "fields": [],
+  "methods": [
+    "on_message(message: dict[str, Any]) -> dict[str, Any]",
+    "accept_connection(client_id: str) -> dict[str, Any]"
+  ],
+  "depends": ["ChatHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "ChatHandler (UseCase, file=src.application.use_cases.handle_chat): fields=[], methods=[\"execute(message: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.ws.websockets_chat_handler",
+  "tech_spec_path": "websocket_server_handler/websockets/websockets==12.0.json",
+  "expected_imports": [
+    "from websockets.exceptions import ConnectionClosed",
+    "from src.application.use_cases.handle_chat import ChatHandler"
+  ],
+  "expected_error_types": ["ConnectionClosed", "ValueError"]
+}

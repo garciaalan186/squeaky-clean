@@ -1,0 +1,23 @@
+{
+  "category": "rest_server_handler",
+  "candidates": [
+    {
+      "technology": "fastapi",
+      "version_pin": "fastapi==0.110",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 4, "thru": 5, "eco": 5, "reg": 5, "lic": 5, "team": 5}
+    },
+    {
+      "technology": "flask",
+      "version_pin": "Flask==3.0",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 5, "thru": 3, "eco": 5, "reg": 5, "lic": 5, "team": 5}
+    },
+    {
+      "technology": "starlette",
+      "version_pin": "starlette==0.36",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 5, "cold": 4, "thru": 5, "eco": 4, "reg": 5, "lic": 5, "team": 3}
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "grpc_java",
+  "version_pin": "grpc-netty-shaded==1.62",
+  "language": "java",
+  "install": {"manager": "maven", "package": "io.grpc:grpc-netty-shaded:1.62.2"},
+  "imports": {
+    "primary": "import io.grpc.ManagedChannel;",
+    "types": [
+      "import io.grpc.ManagedChannelBuilder;",
+      "import io.grpc.StatusRuntimeException;",
+      "import com.google.protobuf.ByteString;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.channel = channel;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["channel"]
+  },
+  "primary_operations": [
+    {
+      "name": "call",
+      "signature": "(String method, byte[] request)",
+      "sdk_call": "return ByteString.copyFrom(request).toByteArray();",
+      "error_types": ["StatusRuntimeException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "close",
+      "signature": "()",
+      "sdk_call": "this.channel.shutdownNow();",
+      "error_types": ["StatusRuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["grpc-census", "grpc-opentelemetry"],
+  "rate_limit_defaults": {"rps": 20000, "burst": 50000},
+  "code_style_notes": [
+    "ManagedChannelBuilder.forTarget(host:port).usePlaintext() for local dev only.",
+    "Generated <Service>BlockingStub takes a ManagedChannel via the static newBlockingStub() factory.",
+    "Always shutdown the channel on application exit."
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.io/docs/languages/java/",
+    "https://grpc.github.io/grpc-java/javadoc/"
+  ]
+}

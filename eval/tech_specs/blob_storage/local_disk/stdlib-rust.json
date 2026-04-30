@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "local_disk",
+  "version_pin": "stdlib-rust-1.75",
+  "language": "rust",
+  "install": {"manager": "stdlib", "package": "stdlib"},
+  "imports": {
+    "primary": "use std::fs;",
+    "types": ["use std::path::PathBuf;"]
+  },
+  "client_construction": {
+    "code": "let root = PathBuf::from(root_dir); fs::create_dir_all(&root)?;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["root_dir"]
+  },
+  "primary_operations": [
+    {
+      "name": "put_blob",
+      "signature": "(key: &str, body: &[u8]) -> Result<(), std::io::Error>",
+      "sdk_call": "fs::write(self.root.join(key), body)",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "get_blob",
+      "signature": "(key: &str) -> Result<Vec<u8>, std::io::Error>",
+      "sdk_call": "fs::read(self.root.join(key))",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete_blob",
+      "signature": "(key: &str) -> Result<(), std::io::Error>",
+      "sdk_call": "fs::remove_file(self.root.join(key))",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "fs::remove_file of a missing file returns ErrorKind::NotFound; wrap if idempotency required"
+  ],
+  "allowed_doc_origins": ["https://doc.rust-lang.org/std/fs/"]
+}

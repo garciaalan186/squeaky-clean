@@ -1,0 +1,21 @@
+{
+  "name": "FlaskOrderHandler",
+  "pattern": "Adapter",
+  "implements": "OrderHandler",
+  "fields": [],
+  "methods": [
+    "handle(payload: dict[str, Any]) -> dict[str, Any]"
+  ],
+  "depends": ["OrderHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderHandler (UseCase, file=src.application.use_cases.place_order): fields=[], methods=[\"execute(payload: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.http.flask_order_handler",
+  "tech_spec_path": "rest_server_handler/flask/Flask==3.0.json",
+  "expected_imports": [
+    "from flask import request, jsonify",
+    "from werkzeug.exceptions import HTTPException",
+    "from src.application.use_cases.place_order import OrderHandler"
+  ],
+  "expected_error_types": ["HTTPException", "ValueError"]
+}

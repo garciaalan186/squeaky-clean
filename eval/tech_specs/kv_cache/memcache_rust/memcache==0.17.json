@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "memcache_rust",
+  "version_pin": "memcache==0.17.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "memcache==0.17"},
+  "imports": {
+    "primary": "use memcache::Client;",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let client = Client::connect(url)?;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["url"]
+  },
+  "primary_operations": [
+    {
+      "name": "set",
+      "signature": "(key: &str, value: &str) -> Result<(), memcache::MemcacheError>",
+      "sdk_call": "self.client.set(key, value, 0)",
+      "error_types": ["memcache::MemcacheError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "get",
+      "signature": "(key: &str) -> Result<Option<String>, memcache::MemcacheError>",
+      "sdk_call": "self.client.get(key)",
+      "error_types": ["memcache::MemcacheError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete",
+      "signature": "(key: &str) -> Result<bool, memcache::MemcacheError>",
+      "sdk_call": "self.client.delete(key)",
+      "error_types": ["memcache::MemcacheError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "memcache crate is sync; wrap in tokio::task::spawn_blocking if running inside async runtime"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/memcache/"]
+}

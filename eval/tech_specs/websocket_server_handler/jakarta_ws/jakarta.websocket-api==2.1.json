@@ -1,0 +1,63 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "jakarta_ws",
+  "version_pin": "jakarta.websocket-api==2.1",
+  "language": "java",
+  "install": {"manager": "maven", "package": "jakarta.websocket:jakarta.websocket-api:2.1.1"},
+  "imports": {
+    "primary": "import jakarta.websocket.Endpoint;",
+    "types": [
+      "import jakarta.websocket.Session;",
+      "import jakarta.websocket.MessageHandler;",
+      "import jakarta.websocket.EndpointConfig;",
+      "import jakarta.websocket.CloseReason;",
+      "import java.io.IOException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "onOpen",
+      "signature": "(Session session, EndpointConfig config)",
+      "sdk_call": "this.useCase.execute(\"open:\" + session.getId());",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "onMessage",
+      "signature": "(Session session, String message)",
+      "sdk_call": "this.useCase.execute(message);",
+      "error_types": ["IOException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "onClose",
+      "signature": "(Session session, CloseReason reason)",
+      "sdk_call": "this.useCase.execute(\"close:\" + reason.getReasonPhrase());",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "Subclass jakarta.websocket.Endpoint and register via ServerEndpointConfig.",
+    "Add MessageHandler.Whole<String> in onOpen to receive text frames.",
+    "CloseReason carries the wire-level close code; surface it to the use case."
+  ],
+  "allowed_doc_origins": [
+    "https://jakarta.ee/specifications/websocket/2.1/"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "dynamodb_ts",
+  "version_pin": "@aws-sdk/client-dynamodb==3.600.0",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@aws-sdk/client-dynamodb@^3.600.0"
+  },
+  "imports": {
+    "primary": "import { DynamoDBClient, PutItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = new DynamoDBClient({}); this._table = tableName;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "tableName"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(item: Record<string, unknown>): Promise<void>",
+      "sdk_call": "await this._client.send(new PutItemCommand({ TableName: this._table, Item: item as never }));",
+      "error_types": [
+        "DynamoDBServiceException"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "findById",
+      "signature": "(id: string): Promise<Record<string, unknown> | null>",
+      "sdk_call": "const r = await this._client.send(new GetItemCommand({ TableName: this._table, Key: { id: { S: id } } })); return (r.Item as Record<string, unknown>) ?? null;",
+      "error_types": [
+        "DynamoDBServiceException"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": [
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "AWS_REGION"
+    ]
+  },
+  "code_style_notes": [
+    "aws-sdk-js v3 ships TypeScript types"
+  ],
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "node_fetch",
+  "version_pin": "node-fetch==3.3.2",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "node-fetch@^3.3.0"
+  },
+  "imports": {
+    "primary": "import fetch from 'node-fetch';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._baseUrl = baseUrl;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "baseUrl"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(url: string): Promise<unknown>",
+      "sdk_call": "const r = await fetch(this._baseUrl + url); return await r.json();",
+      "error_types": [
+        "FetchError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "post",
+      "signature": "(url: string, body: unknown): Promise<unknown>",
+      "sdk_call": "const r = await fetch(this._baseUrl + url, { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }); return await r.json();",
+      "error_types": [
+        "FetchError"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "fetch does NOT throw on non-2xx; check r.ok"
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/node-fetch/node-fetch"
+  ]
+}

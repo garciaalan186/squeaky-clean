@@ -1,0 +1,22 @@
+{
+  "name": "KafkaOrderEventPublisherFlush",
+  "pattern": "Gateway",
+  "implements": "OrderEventPublisherFlush",
+  "fields": [],
+  "methods": [
+    "publish(topic: str, payload: bytes) -> None",
+    "flush(timeout: float) -> None"
+  ],
+  "depends": ["OrderEventPublisherFlush"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderEventPublisherFlush (Gateway, file=src.domain.events.order_event_publisher_flush): fields=[], methods=[\"publish(topic: str, payload: bytes) -> None\", \"flush(timeout: float) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.kafka_order_event_publisher_flush",
+  "tech_spec_path": "message_queue_producer/kafka/confluent-kafka==2.5.json",
+  "expected_imports": [
+    "from confluent_kafka import Producer",
+    "from confluent_kafka.error import KafkaException, KafkaError",
+    "from src.domain.events.order_event_publisher_flush import OrderEventPublisherFlush"
+  ],
+  "expected_error_types": ["KafkaException", "KafkaError"]
+}

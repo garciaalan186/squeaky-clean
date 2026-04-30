@@ -1,0 +1,25 @@
+MODULE Calculator
+LAYER Domain
+EXPORTS [Calculator, Operand, Result]
+DEPENDS []
+CLASSES {
+  Operand -> ValueObject {
+    fields:     [value: float]
+    methods:    []
+    depends:    []
+    invariants: []
+  }
+  Result -> ValueObject {
+    fields:     [value: float]
+    methods:    []
+    depends:    []
+    invariants: []
+  }
+  Calculator -> SimpleClass {
+    fields:     []
+    methods:    [add(a: Operand, b: Operand): Result, subtract(a: Operand, b: Operand): Result, multiply(a: Operand, b: Operand): Result, divide(a: Operand, b: Operand): Result]
+    depends:    [Operand, Result]
+    invariants: ["divide raises on zero divisor"]
+  }
+}
+INVARIANTS ["divide raises ValueError when divisor is zero"]

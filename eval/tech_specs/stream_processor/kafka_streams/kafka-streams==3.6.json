@@ -1,0 +1,65 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "kafka_streams",
+  "version_pin": "kafka-streams==3.6",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.apache.kafka:kafka-streams:3.6.1"},
+  "imports": {
+    "primary": "import org.apache.kafka.streams.StreamsBuilder;",
+    "types": [
+      "import org.apache.kafka.streams.kstream.KStream;",
+      "import org.apache.kafka.streams.kstream.KTable;",
+      "import org.apache.kafka.streams.kstream.TimeWindows;",
+      "import org.apache.kafka.streams.kstream.Materialized;",
+      "import org.apache.kafka.streams.errors.StreamsException;",
+      "import java.time.Duration;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.streamsBuilder = streamsBuilder; this.inputTopic = inputTopic;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["streams_builder", "input_topic"]
+  },
+  "primary_operations": [
+    {
+      "name": "process",
+      "signature": "(String record)",
+      "sdk_call": "KStream<String,String> in = this.streamsBuilder.stream(this.inputTopic); in.mapValues(v -> v + \":processed\"); return record;",
+      "error_types": ["StreamsException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "aggregate",
+      "signature": "(long windowSeconds)",
+      "sdk_call": "KStream<String,String> in = this.streamsBuilder.stream(this.inputTopic); in.groupByKey().windowedBy(TimeWindows.of(Duration.ofSeconds(windowSeconds))); return \"aggregated\";",
+      "error_types": ["StreamsException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "window",
+      "signature": "(long windowSeconds)",
+      "sdk_call": "KStream<String,String> in = this.streamsBuilder.stream(this.inputTopic); in.groupByKey().windowedBy(TimeWindows.of(Duration.ofSeconds(windowSeconds))); return \"windowed\";",
+      "error_types": ["StreamsException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["KAFKA_BOOTSTRAP_SERVERS"]
+  },
+  "observability_hooks": ["kafka-jmx-metrics"],
+  "rate_limit_defaults": {"rps": 100000, "burst": 250000},
+  "code_style_notes": [
+    "Build the topology via StreamsBuilder; don't instantiate KafkaStreams here.",
+    "Lifecycle (start/close) is the operator's responsibility — do NOT call streams.start() in the adapter.",
+    "TimeWindows.of(Duration.ofSeconds(N)) for tumbling windows; .ofSizeWithNoGrace for ES."
+  ],
+  "allowed_doc_origins": [
+    "https://kafka.apache.org/documentation/streams/"
+  ]
+}

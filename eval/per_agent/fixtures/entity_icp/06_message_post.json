@@ -1,0 +1,11 @@
+{
+  "name": "Post",
+  "pattern": "Entity",
+  "fields": ["id: str", "content: str", "author_id: str"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["content must not be empty"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.social.post"
+}

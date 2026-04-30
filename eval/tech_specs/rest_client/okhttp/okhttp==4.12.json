@@ -1,0 +1,61 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "okhttp",
+  "version_pin": "okhttp==4.12",
+  "language": "java",
+  "install": {"manager": "maven", "package": "com.squareup.okhttp3:okhttp:4.12.0"},
+  "imports": {
+    "primary": "import okhttp3.OkHttpClient;",
+    "types": [
+      "import okhttp3.Request;",
+      "import okhttp3.Response;",
+      "import okhttp3.RequestBody;",
+      "import okhttp3.MediaType;",
+      "import java.io.IOException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.client = new OkHttpClient(); this.baseUrl = baseUrl;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["base_url"]
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(String url)",
+      "sdk_call": "Request req = new Request.Builder().url(this.baseUrl + url).build(); try (Response r = this.client.newCall(req).execute()) { return r.body() == null ? \"\" : r.body().string(); }",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "post",
+      "signature": "(String url, String body)",
+      "sdk_call": "RequestBody rb = RequestBody.create(body, MediaType.get(\"application/json\")); Request req = new Request.Builder().url(this.baseUrl + url).post(rb).build(); try (Response r = this.client.newCall(req).execute()) { return r.body() == null ? \"\" : r.body().string(); }",
+      "error_types": ["IOException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete",
+      "signature": "(String url)",
+      "sdk_call": "Request req = new Request.Builder().url(this.baseUrl + url).delete().build(); try (Response r = this.client.newCall(req).execute()) { /* ignore body */ }",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["okhttp-eventListener"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "OkHttpClient is thread-safe; share one instance across the application.",
+    "Always close the Response in a try-with-resources block.",
+    "Use Interceptor to add auth headers."
+  ],
+  "allowed_doc_origins": ["https://square.github.io/okhttp/"]
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "axios_js",
+  "version_pin": "axios==1.6.7",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "axios@^1.6.0"
+  },
+  "imports": {
+    "primary": "import axios from 'axios';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = axios.create({ baseURL: baseUrl });",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "baseUrl"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(url: string): Promise<unknown>",
+      "sdk_call": "const res = await this._client.get(url); return res.data;",
+      "error_types": [
+        "AxiosError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "post",
+      "signature": "(url: string, body: unknown): Promise<unknown>",
+      "sdk_call": "const res = await this._client.post(url, body); return res.data;",
+      "error_types": [
+        "AxiosError"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "axios throws on non-2xx by default"
+  ],
+  "allowed_doc_origins": [
+    "https://axios-http.com/"
+  ]
+}

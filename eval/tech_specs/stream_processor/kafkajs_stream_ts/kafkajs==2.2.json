@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "kafkajs_stream_ts",
+  "version_pin": "kafkajs==2.2.4",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "kafkajs@^2.2.4"
+  },
+  "imports": {
+    "primary": "import { Kafka, Consumer } from 'kafkajs';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "const kafka = new Kafka({ brokers: brokers.split(',') }); this._consumer = kafka.consumer({ groupId: 'default' }); this._topic = topic;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "brokers",
+      "topic"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "processStream",
+      "signature": "(handler: (msg: Buffer) => Promise<void>): Promise<void>",
+      "sdk_call": "await this._consumer.connect(); await this._consumer.subscribe({ topic: this._topic, fromBeginning: false }); await this._consumer.run({ eachMessage: async ({ message }) => handler(message.value as Buffer) });",
+      "error_types": [
+        "KafkaJSError"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "KAFKA_BOOTSTRAP_SERVERS",
+      "KAFKA_GROUP_ID",
+      "KAFKA_TOPIC"
+    ]
+  },
+  "code_style_notes": [
+    "kafkajs ships TS types"
+  ],
+  "allowed_doc_origins": [
+    "https://kafka.js.org/"
+  ]
+}

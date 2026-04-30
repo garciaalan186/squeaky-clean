@@ -1,0 +1,11 @@
+{
+  "name": "CurrencyCode",
+  "pattern": "ValueObject",
+  "fields": ["code: str"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["code must be 3 uppercase letters"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.payments.currency_code"
+}

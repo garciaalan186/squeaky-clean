@@ -1,0 +1,11 @@
+{
+  "name": "Money",
+  "pattern": "Entity",
+  "fields": ["amount: float", "currency: Currency"],
+  "methods": [],
+  "depends": ["Currency"],
+  "concretes": [],
+  "invariants": ["amount must be >= 0"],
+  "sibling_interfaces": "Currency (ValueObject, file=src.domain.payments.currency): fields=[code: str], methods=[], invariants=[\"code must be 3 uppercase letters\"]",
+  "target_file": "src.domain.payments.money"
+}

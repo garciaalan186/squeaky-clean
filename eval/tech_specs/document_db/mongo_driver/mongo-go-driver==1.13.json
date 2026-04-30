@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "mongo_driver",
+  "version_pin": "mongo-go-driver==1.13.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "go.mongodb.org/mongo-driver@v1.13.0"},
+  "imports": {
+    "primary": "\"go.mongodb.org/mongo-driver/mongo\"",
+    "types": ["\"context\"", "\"go.mongodb.org/mongo-driver/bson\"", "\"go.mongodb.org/mongo-driver/mongo/options\""]
+  },
+  "client_construction": {
+    "code": "c, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri)); if err != nil { return nil, err }; coll := c.Database(\"app\").Collection(\"entities\")",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["uri"]
+  },
+  "primary_operations": [
+    {
+      "name": "Save",
+      "signature": "(entity Entity) error",
+      "sdk_call": "_, err := r.coll.InsertOne(context.Background(), entity); return err",
+      "error_types": ["mongo.WriteException", "mongo.CommandError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "FindById",
+      "signature": "(id string) (Entity, error)",
+      "sdk_call": "var e Entity; err := r.coll.FindOne(context.Background(), bson.M{\"_id\": id}).Decode(&e); return e, err",
+      "error_types": ["mongo.ErrNoDocuments"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Delete",
+      "signature": "(id string) error",
+      "sdk_call": "_, err := r.coll.DeleteOne(context.Background(), bson.M{\"_id\": id}); return err",
+      "error_types": ["mongo.WriteException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["MONGO_URI"]},
+  "code_style_notes": [
+    "mongo.ErrNoDocuments is the standard 'no doc matched' sentinel",
+    "Connect is fire-and-forget; first IO operation triggers actual TCP connection"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo"]
+}

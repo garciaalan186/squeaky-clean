@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "mongodb_rust",
+  "version_pin": "mongodb==2.8.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "mongodb==2.8"},
+  "imports": {
+    "primary": "use mongodb::Client;",
+    "types": ["use mongodb::bson::doc;", "use mongodb::Collection;"]
+  },
+  "client_construction": {
+    "code": "let client = Client::with_uri_str(uri).await?; let coll = client.database(db_name).collection(coll_name);",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["uri", "db_name", "coll_name"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(id: &str, body: String) -> Result<(), mongodb::error::Error>",
+      "sdk_call": "self.coll.insert_one(doc! {\"_id\": id, \"body\": body}, None).await?; Ok(())",
+      "error_types": ["mongodb::error::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(id: &str) -> Result<Option<String>, mongodb::error::Error>",
+      "sdk_call": "let res = self.coll.find_one(doc! {\"_id\": id}, None).await?; Ok(res.and_then(|d| d.get_str(\"body\").ok().map(String::from)))",
+      "error_types": ["mongodb::error::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(id: &str) -> Result<(), mongodb::error::Error>",
+      "sdk_call": "self.coll.delete_one(doc! {\"_id\": id}, None).await?; Ok(())",
+      "error_types": ["mongodb::error::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["MONGODB_URI"]},
+  "code_style_notes": [
+    "Client is internally Arc'd — cheap to clone",
+    "doc! macro is the idiomatic BSON document builder"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/mongodb/"]
+}

@@ -1,0 +1,65 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "elasticsearch_java",
+  "version_pin": "elasticsearch-java==8.13",
+  "language": "java",
+  "install": {"manager": "maven", "package": "co.elastic.clients:elasticsearch-java:8.13.4"},
+  "imports": {
+    "primary": "import co.elastic.clients.elasticsearch.ElasticsearchClient;",
+    "types": [
+      "import co.elastic.clients.elasticsearch._types.ElasticsearchException;",
+      "import co.elastic.clients.elasticsearch.core.SearchResponse;",
+      "import java.io.IOException;",
+      "import java.util.List;",
+      "import java.util.Map;",
+      "import java.util.stream.Collectors;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.client = client; this.indexName = indexName;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["client", "index_name"]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(String docId, Map<String,Object> body)",
+      "sdk_call": "this.client.index(i -> i.index(this.indexName).id(docId).document(body));",
+      "error_types": ["IOException", "ElasticsearchException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "query",
+      "signature": "(String queryString)",
+      "sdk_call": "SearchResponse<Map> r = this.client.search(s -> s.index(this.indexName).query(q -> q.queryString(qs -> qs.query(queryString))), Map.class); return r.hits().hits().stream().map(h -> (Map<String,Object>) h.source()).collect(Collectors.toList());",
+      "error_types": ["IOException", "ElasticsearchException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "search",
+      "signature": "(String queryString)",
+      "sdk_call": "SearchResponse<Map> r = this.client.search(s -> s.index(this.indexName).query(q -> q.queryString(qs -> qs.query(queryString))), Map.class); return r.hits().hits().stream().map(h -> (Map<String,Object>) h.source()).collect(Collectors.toList());",
+      "error_types": ["IOException", "ElasticsearchException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["ELASTICSEARCH_HOSTS", "ELASTICSEARCH_USERNAME", "ELASTICSEARCH_PASSWORD"]
+  },
+  "observability_hooks": ["elastic-apm-java"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "ElasticsearchClient is the modern (8.x) replacement for RestHighLevelClient.",
+    "Builds requests via lambda DSL: s -> s.index(...).query(q -> q.term(...)).",
+    "Always close the underlying transport on application exit."
+  ],
+  "allowed_doc_origins": [
+    "https://www.elastic.co/guide/en/elasticsearch/client/java-api-client/current/index.html"
+  ]
+}

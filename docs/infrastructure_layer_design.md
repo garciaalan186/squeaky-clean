@@ -1,0 +1,1235 @@
+# Infrastructure Layer Design — Generalized Adapter Generation
+
+**Status:** Design draft. No code yet. Inputs to a future roadmap milestone (provisional name **Milestone H**).
+**Author:** orchestrator role acting on behalf of the Squeaky Clean project.
+**Last updated:** 2026-04-26.
+
+---
+
+## Table of contents
+
+1. [Scope and non-goals](#section-1--scope-and-non-goals)
+2. [Three-tier composition model](#section-2--three-tier-composition-model)
+3. [Where the technology choice comes from](#section-3--where-the-technology-choice-comes-from)
+4. [Documentation acquisition: trust, freshness, caching](#section-4--documentation-acquisition-trust-freshness-caching)
+5. [Bridge agents (Tier B)](#section-5--bridge-agents-tier-b)
+6. [TechSpec schema](#section-6--techspec-schema)
+7. [Coupling with existing Clean Architecture layers](#section-7--coupling-with-existing-clean-architecture-layers)
+8. [Cost, evaluation, and the "kill switch"](#section-8--cost-evaluation-and-the-kill-switch)
+9. [Phased delivery](#section-9--phased-delivery)
+10. [Open questions and recommendations](#section-10--open-questions-and-recommendations)
+
+---
+
+## Section 1 — Scope and non-goals
+
+### 1.1 What this design covers
+
+This design describes how the Squeaky Clean framework should generate **concrete infrastructure adapter implementations** for the *user's* generated project. Today the framework's existing pattern library (e.g. `RepositoryICP.md`, `GatewayICP.md`, `AdapterICP.md` once those land — see Section 2.4) is *technology-agnostic*: it knows how to produce a class that fits the GoF/DDD shape, but it has no information about which SDK to import, how that SDK constructs its client, what error types it raises, or what authentication model it uses. As a result, when the architecture spec says "MODULE Persistence has class `OrderRepository -> Repository`", the framework can produce a *port* and a *trivial in-memory adapter*, but cannot produce a working adapter against `boto3`, `psycopg2`, `confluent-kafka`, or `azure-storage-blob`.
+
+The user's role today is to **hand-write all real infrastructure adapters after generation**, exactly as we did during the Twitter-clone v2 build, where SQLite repositories were the orchestrator's responsibility and not the framework's. That gap is the subject of this document.
+
+In scope:
+
+| Category | Examples covered by this design |
+|---|---|
+| Blob / object storage | local filesystem, AWS S3 (boto3), Azure Blob Storage, GCS |
+| Relational databases | SQLite, PostgreSQL (psycopg2 / asyncpg), MySQL, MariaDB |
+| Document / NoSQL databases | MongoDB, DynamoDB, CosmosDB |
+| Key-value / distributed cache | Redis, Memcached, ElastiCache, Azure Cache |
+| Message queues / brokers | RabbitMQ (pika), Kafka (confluent-kafka), AWS SQS, Azure Service Bus, NATS |
+| Stream processors | Kafka Streams, Flink, Beam (only the *consumer-facing* surface, not the cluster) |
+| RPC / HTTP clients | REST (httpx, requests), gRPC (grpc-python), GraphQL |
+| RPC / HTTP servers | REST (Flask, FastAPI, Express), gRPC servers |
+| WebSockets | server (websockets, FastAPI WebSocket), client |
+| Observability | structured logging (structlog), metrics (prometheus_client), traces (opentelemetry) |
+| Secrets | env-var reader, AWS Secrets Manager, Azure Key Vault, HashiCorp Vault |
+| Search | Elasticsearch / OpenSearch |
+
+Out of scope:
+
+- **Deployment / IaC.** Terraform, CloudFormation, Pulumi, Kubernetes manifests. The framework generates code; provisioning is operator responsibility.
+- **Container runtime.** Dockerfiles, compose files, Helm charts.
+- **Package management** beyond declaring required dependencies in the generated project's manifest. The framework will not run `pip install` for the user's project; it will only emit the dependency declarations.
+- **Distributed-systems orchestration.** Saga / outbox / CQRS plumbing patterns are real but live in the *application layer*, not infrastructure. They belong to a separate roadmap item adjacent to Milestone F4 (Custom-pattern extension hook).
+- **Test doubles for cloud SDKs.** moto, localstack, testcontainers — relevant but distinct concerns; covered separately under "test infrastructure" in Section 7.4.
+
+### 1.2 What this generates vs. what the framework eats today
+
+A critical disambiguation: the Squeaky Clean framework's *own* `squeaky_clean/infrastructure/` directory contains hand-written adapters that the framework itself depends on — `claude_cli_gateway.py`, `anthropic_sdk_gateway.py`, `git_worktree_manager.py`, `local_file_system.py`, `eval_metric_collector.py`, `token_bucket_rate_limiter.py`, etc. Those are **not** in scope for this design. Those are framework-orchestrator code, written by humans (or by the orchestrator role acting as a human), and they will continue to be maintained by hand. The framework's prime directive ("the framework IS its own first user") still holds — but the framework's *self*-adapters predate this design and will not be regenerated by it.
+
+What this design generates: adapters for *user projects* the framework produces in `meta-evaluation-results/.../problem-set-N-X-code/`. These are the adapters that today land as empty placeholders or trivial in-memory implementations and require the orchestrator to hand-rewrite them before the generated app can run against real infrastructure.
+
+### 1.3 Boundary with existing CLAUDE.md §Rules
+
+CLAUDE.md §Rules currently constrain *every* generated class to ≤80 lines, ≤3 public methods, ≤2 args/method, one class per file, layered import discipline. This design preserves all of those constraints. Concretely: every generated infrastructure adapter must still pass `granularity_rule.py` and `dependency_rule.py`. If an SDK's idiomatic usage requires more than 3 methods (e.g. a Kafka consumer with `subscribe`, `poll`, `commit`, `close`), the design forces a decomposition into multiple collaborating classes — the same way the framework already handles a Facade with multiple use cases.
+
+### 1.4 Design tension surfaced upfront
+
+The user's framing identifies the central tension: SDK-specific knowledge (boto3 method signatures, the difference between `confluent-kafka` 1.x and 2.x consumer error handling, etc.) is **fast-changing**, while pattern-level knowledge (the Repository pattern, the Gateway pattern) is **slow-changing**. Encoding fast-changing knowledge as static `.md` files inside the framework guarantees staleness within months. Encoding it as on-demand fetched documentation introduces trust, freshness-verification, and cache-coherence problems.
+
+The three-tier model in Section 2 is the proposed resolution: keep what's slow-changing in the framework, push what's fast-changing out to a versioned **TechSpec** registry that can be both bundled-static and live-fetched, and add **bridge agents** (Section 5) that splice the two together at runtime per call.
+
+---
+
+## Section 2 — Three-tier composition model
+
+### 2.1 The three tiers
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Tier C (Category) — stable, framework-owned, versioned with the framework  │
+│  Examples: BlobStorageAdapterICP, MessageQueueProducerICP, KvCacheICP        │
+│  Lives in: squeaky_clean/interface/agent_specs/icps/<lang>/infrastructure/             │
+│  Consumes: ClassSpec + (resolved) TechSpec injected by bridge                │
+│  Produces: One adapter file (<=80 lines, <=3 methods, port-conformant)       │
+└──────────────────────────────────────────────────────────────────────────────┘
+                            │ composed at runtime via
+                            ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Tier B (Bridge) — TechSpecComposer + InfrastructureChoiceArchitect          │
+│  Lives in: squeaky_clean/application/use_cases/                                        │
+│  Consumes: ClassSpec, ProblemSpec.infrastructure_choices, TechSpec catalog   │
+│  Produces: Instantiated ICP prompt (transient; not persisted)                │
+└──────────────────────────────────────────────────────────────────────────────┘
+                            │ resolves
+                            ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Tier T (Technology) — fast-changing, versioned independently of framework  │
+│  Examples: TechSpec(blob_storage, s3, boto3==1.34)                           │
+│  Lives in: eval/tech_specs/<category>/<technology>/<version>.json            │
+│  Consumed by: Tier B (which selects + composes)                              │
+│  Maintained by: bundled snapshots primary, MCP/web fetch fallback            │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+Read top-down: a Tier C agent spec is the *only* thing the framework's prompt-assembly pipeline needs to load. The actual prompt sent to the LLM is the Tier C body **plus** the Tier T-derived "TECH_SPEC" block that Tier B inlines just before the call. Read bottom-up: TechSpecs are data (JSON), not prompts; they're the volatile knowledge that has to be refreshed independently of framework releases.
+
+### 2.2 Tier C — Category agents
+
+Tier C agents are new pattern-level ICP specs that fill the current gap between `RepositoryICP.md` (which describes the *pattern*) and a real adapter (which needs SDK details). Each Tier C agent describes a **category-of-infrastructure**, not a specific technology.
+
+**Initial Tier C catalog**:
+
+| File path | Category | What it generates | Existing pattern overlap |
+|---|---|---|---|
+| `BlobStorageAdapterICP.md` | object/blob storage | adapter implementing a `BlobStore` port (`put`, `get`, `delete`) | Adapter, Gateway |
+| `RelationalDBRepositoryICP.md` | RDBMS | repository implementing a domain repo port over SQL | Repository |
+| `DocumentDBRepositoryICP.md` | document/NoSQL | repository over a doc store | Repository |
+| `KvCacheICP.md` | distributed cache | adapter over KV with `get`/`set`/`delete`/`expire` | Adapter |
+| `MessageQueueProducerICP.md` | broker producer | publisher implementing a `MessagePublisher` port | Gateway |
+| `MessageQueueConsumerICP.md` | broker consumer | consumer loop dispatching to a use-case port | Gateway |
+| `RestClientICP.md` | outbound HTTP | client wrapper implementing a domain gateway port | Gateway |
+| `RestServerHandlerICP.md` | inbound HTTP | thin web-handler that delegates to a use case | Adapter / Presenter |
+| `GrpcClientICP.md` | outbound gRPC | client wrapper | Gateway |
+| `GrpcServerHandlerICP.md` | inbound gRPC | servicer delegating to a use case | Adapter |
+| `WebSocketServerHandlerICP.md` | WS server | handler delegating to use case | Adapter |
+| `ObservabilityLoggerICP.md` | structured logs | logger implementing a `Logger` port | Adapter |
+| `SecretsProviderICP.md` | secrets | reader implementing a `Secret` port | Adapter |
+
+Each Tier C spec is **stable** because its responsibility ends at "implement the port; receive an SDK detail block; emit a clean adapter". Adding a new technology (e.g. NATS for messaging) requires *no change* to Tier C; only a new TechSpec under Tier T.
+
+**Tier C input contract** (canonical):
+```
+TARGET_FILE <dotted_path>
+TARGET_CLASS <ClassName>
+PORT <PortClassName>
+PORT_METHODS [<method signatures from the port>]
+SIBLING_INTERFACES <as today>
+TECH_SPEC                                      ← injected by Tier B
+  category: <enum>
+  technology: <enum>
+  version_pin: <string>
+  language: <enum>
+  install: {pip|npm|cargo|gem}: <package@version>
+  imports:
+    primary: from <module> import <Symbol>
+    types:   from <module> import <TypeA>, <TypeB>
+  client_construction:
+    code: |
+      <verbatim client-construction snippet, with placeholders {{var}}>
+    dependencies: [<env_vars>, <config_keys>]
+  primary_operations:
+    - name: put_blob
+      signature: (key: str, body: bytes) -> None
+      sdk_call: client.put_object(Bucket=..., Key=..., Body=...)
+      error_types: [ClientError, EndpointConnectionError]
+      idempotency: idempotent
+      retry_policy: exponential_backoff(max=3)
+    - <... other ops needed by PORT_METHODS ...>
+  auth:
+    method: env_credentials | iam_role | static_keys
+    env_vars: [AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY]
+  observability_hooks: [opentelemetry_compatible | none]
+  rate_limit_defaults: {rps: 100, burst: 200}
+  code_style_notes:
+    - "boto3 clients are not thread-safe; instantiate per-call or per-thread"
+    - "always close streams in a try/finally"
+```
+
+**Tier C output contract**: identical to today's ICP — one fenced Python file, ≤80 lines, port-conformant, mypy-strict, layered imports. The TECH_SPEC block tells the model *what* to import and *how* to call the SDK; the Tier C spec tells it *what shape* the resulting class must take.
+
+**Tier C model tier**: ICP (low parameter, high parallelism). Tier B does the heavy lifting; Tier C is mechanical.
+
+### 2.3 Tier T — Technology specs
+
+Tier T is **data, not prompts**. Each TechSpec is a JSON document conforming to the schema in Section 6. They live under VCS:
+
+```
+eval/tech_specs/
+  blob_storage/
+    s3/
+      boto3==1.34.json
+      boto3==1.30.json    # historical, kept for replay
+    azure_blob/
+      azure-storage-blob==12.19.json
+    local_disk/
+      stdlib.json
+  message_queue_producer/
+    kafka/
+      confluent-kafka==2.5.json
+    rabbitmq/
+      pika==1.3.json
+  ...
+```
+
+A TechSpec changes when:
+- a tracked SDK releases a new version with API surface changes
+- a new technology is added to a category
+- a defect is found in the existing TechSpec (e.g. a wrong error type)
+
+A TechSpec does **not** change when:
+- the framework version bumps
+- a Tier C spec is reworded
+- the user's ProblemSpec changes
+
+This separation is the whole point: the framework can ship a stable v1.0 in 2026 and still produce correct boto3 code in 2028 because TechSpecs are versioned independently and refreshed on a different cadence.
+
+**TechSpec maintenance cadence**: target a quarterly review of bundled snapshots for the top-five technologies in each category (defined as: most-used in the last 100 framework runs across all users, or curated by the maintainer if telemetry is unavailable). Live web fetch handles unbundled versions on demand (Section 4).
+
+### 2.4 Tier B — Bridge agents
+
+Tier B has two roles:
+
+1. **InfrastructureChoiceArchitect** — only invoked when ProblemSpec leaves a category undefined. Produces a `tuple[InfrastructureChoice, ...]` selecting (category, technology, version_pin) tuples. Detailed in Section 5.1.
+
+2. **TechSpecComposer** — invoked once per Tier C call. Inputs: the Tier C agent_spec_path, the resolved TechSpec, and the focal ClassSpec. Output: an *instantiated* ICP user prompt that contains both the ClassSpec block (as today) and the TECH_SPEC block (Section 2.2). Detailed in Section 5.2.
+
+Tier B agents are **Manager-tier** model selections (mid-parameter). They are not pattern-level ICPs; they are orchestration steps in the spirit of `OrchestrateModule` and `OrchestrateArchitecture`.
+
+### 2.5 What changes vs stays the same
+
+| Surface | Today | After this design |
+|---|---|---|
+| `pattern_name.py` enum | `Repository`, `Gateway`, `Adapter`, etc. | unchanged; Tier C agents map *from* these patterns by category |
+| `MapPatternToICP` (`squeaky_clean/application/use_cases/map_pattern_to_icp.py`) | dispatches by pattern | extended to consider *layer* + *category* when the assigned pattern is one of `Repository`/`Gateway`/`Adapter` AND the module's `LAYER` is `Infrastructure` |
+| ICP file tree | `icps/<lang>/{ddd_clean,behavioral,structural,...}/` | adds `icps/<lang>/infrastructure/` directory containing the Tier C specs |
+| `ProblemSpec` DTO | unchanged from F5 schema (domain_conventions, query_semantics, etc.) | adds `infrastructure_choices: tuple[InfrastructureChoice, ...]` |
+| `RunEval` use case | runs PrincipalArchitect → TestArchitect → ICPs → integrate | inserts Tier B steps between architect and ICPs when infrastructure modules are present |
+| Per-run cost | dominated by ICPs + test architect | adds modest overhead from TechSpecComposer (one Manager call per infrastructure ICP); see Section 8 |
+| Static framework size | ~400 source files | grows by ~13 Tier C specs × N languages (~50 new spec files) + bridge code (~10 new use cases). TechSpec catalog grows independently. |
+
+---
+
+## Section 3 — Where the technology choice comes from
+
+### 3.1 Two paths, both first-class
+
+**Path (a): ExplicitChoice.** ProblemSpec declares the choice. This is the production path: a real user knows their target stack and pins it. The framework validates and uses verbatim.
+
+```json
+{
+  "id": "TWITTER_KAFKA",
+  "infrastructure_choices": [
+    {"category": "blob_storage", "technology": "s3", "version_pin": "boto3==1.34"},
+    {"category": "message_queue_producer", "technology": "kafka", "version_pin": "confluent-kafka==2.5"},
+    {"category": "message_queue_consumer", "technology": "kafka", "version_pin": "confluent-kafka==2.5"},
+    {"category": "relational_db", "technology": "postgres", "version_pin": "psycopg2==2.9"}
+  ]
+}
+```
+
+**Path (b): DerivedChoice.** ProblemSpec leaves a category undefined. The InfrastructureChoiceArchitect runs MCDA and writes its decision into the EvalReport. This is the exploration path: "I want a real-time event processor; pick the stack."
+
+Both paths must be tested. The framework defaults to (a); (b) is explicit opt-in via `--infer-infrastructure`.
+
+### 3.2 MCDA shape
+
+Multi-Criteria Decision Analysis: a deterministic scoring model that picks among technology candidates per category.
+
+**Criteria** (each scored 1–5 per (technology, criterion); higher = better):
+
+| Criterion | Default weight | Source of truth |
+|---|---:|---|
+| Operational complexity (lower is better, inverted) | 0.20 | maintainer-curated registry |
+| Cost at expected scale | 0.20 | maintainer-curated registry, conditional on a `scale_class` ProblemSpec field |
+| Cold-start latency | 0.10 | maintainer-curated registry |
+| Throughput at expected scale | 0.15 | maintainer-curated registry |
+| Ecosystem maturity (libraries, SO answers, official docs) | 0.10 | maintainer-curated registry |
+| Regional availability | 0.05 | maintainer-curated registry |
+| License compatibility | 0.05 | maintainer-curated registry, plus `ProblemSpec.license_constraint` |
+| Team familiarity | 0.15 | ProblemSpec input only (`ProblemSpec.team_familiarity`); 3 = neutral default |
+
+**Scoring source**: the registry — *not* live web fetch — sits at `eval/mcda_scores/<category>.json`. Scores change rarely (a database engine's operational profile is more stable than its API surface), so this is checked into VCS. Per-problem overrides happen via the weights.
+
+**Tie-breaker order** (applied when two candidates differ by ≤ 0.10 weighted-score):
+1. ProblemSpec's `infrastructure_preferences: tuple[str, ...]` if any (e.g. `["postgres", "redis", "kafka"]`).
+2. Stability tier of the technology (ga > beta > preview).
+3. Alphabetical order of technology name (deterministic fallback).
+
+**Worked example** — ProblemSpec asks for a real-time event processor:
+
+```
+ProblemSpec:
+  description: "Build a high-throughput event processing service that aggregates clickstream
+                events from web clients and emits per-user session summaries."
+  scale_class: "high_throughput"             # 10k events/sec target
+  team_familiarity: {kafka: 4, rabbitmq: 2, sqs: 3, kinesis: 3}
+  infrastructure_preferences: []             # no override
+  infrastructure_choices: []                 # opt-in to DerivedChoice for messaging
+
+InfrastructureChoiceArchitect runs MCDA on category = message_queue_consumer:
+
+  Candidates: [kafka, rabbitmq, sqs, kinesis, nats]
+
+  Weighted scoring (rows = technology, cols = criterion · weight):
+
+  tech       ops   cost  cold  thru   eco   reg   lic   team   weighted
+  kafka      2·.20 3·.20 4·.10 5·.15 5·.10 5·.05 5·.05 4·.15  3.75
+  rabbitmq   3·.20 4·.20 5·.10 3·.15 5·.10 5·.05 5·.05 2·.15  3.65
+  sqs        5·.20 4·.20 3·.10 4·.15 4·.10 5·.05 5·.05 3·.15  4.05  ← winner
+  kinesis    4·.20 3·.20 3·.10 5·.15 4·.10 4·.05 5·.05 3·.15  3.75
+  nats       3·.20 4·.20 5·.10 4·.15 3·.10 5·.05 5·.05 1·.15  3.45
+
+Decision: sqs wins on weighted score (4.05).
+Ties: kafka and kinesis tie at 3.75 for runner-up; tie-breaker order applies
+      (no ProblemSpec preferences set → stability tier: both ga →
+      alphabetical: kafka < kinesis → kafka takes runner-up). Winner unaffected.
+Captured in EvalReport.json.infrastructure_choices.derived = [
+  {"category": "message_queue_consumer",
+   "technology": "sqs",
+   "version_pin": "boto3==1.34",
+   "scores": {ops: 5, cost: 4, cold: 3, thru: 4, eco: 4, reg: 5, lic: 5, team: 3},
+   "weighted_score": 4.05,
+   "rationale": "Highest weighted score driven by low ops complexity and managed posture; throughput
+                 sufficient for stated scale_class=high_throughput."}
+]
+```
+
+The rationale field is *generated* by the InfrastructureChoiceArchitect (a Manager call) summarizing the score table. The score table itself is *computed* deterministically — the LLM cannot override the math.
+
+### 3.3 Why MCDA is data, not LLM judgment
+
+A natural alternative is "ask an LLM to pick the best messaging system for this problem". Rejected because:
+
+- **Reproducibility.** MCDA with deterministic inputs is bitwise reproducible. LLM judgment is not, even at temperature 0.
+- **Auditability.** A score table can be inspected, defended, and overridden by adjusting weights or scores. LLM rationales can shift between runs.
+- **Prime directive compliance.** "The framework deliberately avoids domain inference." LLM-judged technology selection re-introduces domain inference through the back door. MCDA stays inside the framework as math.
+- **Cost.** A 5-candidate × 8-criterion MCDA is a single Manager call to *summarize* the result. An LLM-judged selection would burn many candidate-comparison rounds per category × per call.
+
+The LLM's role is constrained to: (i) summarize the score table into a 1–2 sentence rationale, (ii) propose the inclusion of a *new* candidate if none of the registry's candidates match an unusual ProblemSpec hint (the proposal is then validated by a maintainer before it can be accepted into the registry — never auto-approved).
+
+### 3.4 Cutover logic
+
+```python
+def select_infrastructure_choices(problem: ProblemSpec) -> tuple[InfrastructureChoice, ...]:
+    explicit = {c.category: c for c in problem.infrastructure_choices}
+    required_categories = derive_required_categories(problem)  # from architecture analysis
+    derived: list[InfrastructureChoice] = []
+    for cat in required_categories:
+        if cat in explicit:
+            continue
+        if not config.infer_infrastructure_enabled:
+            raise MissingInfrastructureChoiceError(
+                f"category={cat} not declared in ProblemSpec.infrastructure_choices "
+                f"and --infer-infrastructure is OFF; declare or enable inference"
+            )
+        derived.append(InfrastructureChoiceArchitect.run(cat, problem))
+    return tuple(explicit.values()) + tuple(derived)
+```
+
+**Default is OFF.** A ProblemSpec missing a required infrastructure choice fails loudly with a clear error pointing at the category. Inference is opt-in. This forces real users to think about their stack; exploration users get the easy path with one flag.
+
+`derive_required_categories` is a pure function over the architect's output: it walks `ArchitectureSpec.modules`, looks at each Infrastructure-layer module's classes, and emits the set of categories implied by the assigned patterns and method signatures. (Concretely: a `Repository` class with methods over a domain entity → `relational_db` or `document_db`, narrowed by the `data_classification` field from F5 if present.)
+
+---
+
+## Section 4 — Documentation acquisition: trust, freshness, caching
+
+The TechSpecResolver subsystem is responsible for turning a `(category, technology, version)` triple into a validated `TechSpec` JSON document. It is the most security-sensitive component in this design — anything that imports text from the open internet into an LLM prompt is a prompt-injection vector.
+
+### 4.1 Source priority order
+
+```
+Resolver.resolve(category, technology, version) →
+  1. eval/tech_specs/<cat>/<tech>/<version>.json     ← bundled snapshot, primary
+  2. eval/tech_specs/.cache/<cat>/<tech>/<version>.json ← cached prior fetch (TTL-bounded)
+  3. trusted MCP server (if configured)              ← optional secondary
+  4. live web fetch via WebFetch with strict allowlist
+  5. fail loudly with TechSpecUnresolvableError
+```
+
+**Rule:** never silently fall back to outdated knowledge. If 1, 2, 3, and 4 all fail, the run aborts with a clear error message.
+
+### 4.2 Bundled snapshots — the primary source
+
+A snapshot is a JSON document conforming to the Section 6 schema, hand-curated by maintainers from official SDK documentation. Stored in VCS at `eval/tech_specs/<category>/<technology>/<version>.json`. Reviewed quarterly.
+
+A bundled snapshot has these properties:
+- **Determinism.** Same input → same output, no network involvement.
+- **Speed.** A disk read replaces a multi-second web fetch.
+- **Auditability.** Diffs are reviewable on every framework PR.
+- **Offline.** The framework runs without internet access.
+
+The bundled set should cover the **top three technologies per category** at minimum. Additional technologies trigger live fetch (4.4).
+
+### 4.3 MCP secondary
+
+A user can configure a trusted MCP server (e.g. an internal docs aggregator) via an env var: `CLEAN_AGENT_TECHSPEC_MCP_URL`. When set, the resolver tries the MCP after cache miss but before web fetch. The MCP must return JSON conforming to the TechSpec schema; otherwise the response is rejected and the resolver falls through to web fetch. MCPs are treated as semi-trusted (better than open web, worse than bundled).
+
+### 4.4 Live web fetch with strict allowlist
+
+The fallback. Each `(category, technology)` registry entry includes an `allowed_doc_origins: tuple[str, ...]` field naming the official documentation domains for that technology:
+
+```json
+{
+  "technology": "s3",
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/AmazonS3/",
+    "https://boto3.amazonaws.com/v1/documentation/"
+  ]
+}
+```
+
+The fetcher refuses to fetch from any URL not under one of the listed prefixes. There is no general web crawl; there is no "find the docs"; the resolver fetches *exactly* the URLs the registry pre-declares, in a fixed order, and stops at the first that returns a parseable response.
+
+**What "parseable" means**: the fetched HTML is run through a deterministic extractor that looks for known structural anchors (e.g. "Methods", "Constructor", "Exceptions"). The extractor produces a draft TechSpec JSON, which is then run through the schema validator (Section 6.4). If validation fails, the fetch is treated as a miss.
+
+### 4.5 Caching
+
+Successful fetches are written to `eval/tech_specs/.cache/<cat>/<tech>/<version>.json` with metadata:
+
+```json
+{
+  "fetched_at": "2026-04-26T12:00:00Z",
+  "expires_at": "2026-05-26T12:00:00Z",
+  "source_urls": ["https://docs.aws.amazon.com/..."],
+  "content_hash": "sha256:abc123...",
+  "spec": {}
+}
+```
+
+Default TTL: 30 days. Configurable via `--techspec-cache-ttl-days`. Expiration triggers re-fetch on next access; the previous spec is retained until the new one passes validation (so a transient web outage doesn't break a run if a stale cached spec is "recent enough" — defined as TTL × 1.5).
+
+Cache invalidation triggers:
+- TTL expiry
+- Version pin change (`boto3==1.34` vs `boto3==1.35` are separate cache keys)
+- Schema version bump (TechSpec schema itself is versioned; cached entries from prior schema versions are ignored)
+
+### 4.6 Anti-poisoning
+
+Every fetched payload passes through a **sanitizer** before reaching any LLM prompt:
+- Strip all `<script>`, `<style>`, and `<iframe>` tags.
+- Strip all attribute starting with `on` (event handlers).
+- Reject content longer than 100 KB (a real SDK doc page is well under this; longer is a signal of nonsense or attack).
+- Reject content containing common prompt-injection markers ("Ignore prior instructions", "You are now", "system:" embedded in content, etc.) detected by a small regex set.
+- Reject content where the parsed JSON contains free-form `code` or `description` fields longer than 5 KB (a method-doc snippet doesn't need a novel).
+
+The sanitizer is **deterministic** and runs *before* the schema validator. A failed sanitization is a hard fetch failure.
+
+### 4.7 Validation pipeline
+
+```
+fetched_html
+  ↓ extract_to_draft_techspec()         # pure function, deterministic
+draft_json
+  ↓ sanitize()                          # strips dangerous content; rejects overlong
+clean_json
+  ↓ validate_against_schema()           # JSON Schema check
+techspec_candidate
+  ↓ semantic_consistency_check()        # e.g. method count > 0; auth method known
+final_techspec
+```
+
+A failure at any stage discards the fetched payload and either falls through to the next resolver source or aborts the run if exhausted.
+
+### 4.8 Failure mode summary
+
+| Scenario | Behavior |
+|---|---|
+| Bundled snapshot exists | use it; no network |
+| Bundled missing, cache hit + valid | use cached |
+| Bundled missing, cache hit + expired | fetch; on success update cache; on failure use stale-tolerant cached if within TTL × 1.5 |
+| Bundled missing, cache miss, MCP configured + responsive | use MCP response if valid |
+| All above miss, web fetch succeeds + validates | use fetched; cache it |
+| All above miss, web fetch returns but fails sanitizer | log security event, fall through |
+| All above miss, no network | raise `TechSpecUnresolvableError` with category/tech/version + suggested action |
+
+The fail-loud guarantee: a generated adapter never imports an SDK whose contract the framework hasn't validated.
+
+---
+
+## Section 5 — Bridge agents (Tier B)
+
+### 5.1 InfrastructureChoiceArchitect
+
+**Identity.** Layer architect that runs MCDA over candidate technologies for one category, returning a single decision per category.
+
+**Model tier.** Manager.
+
+**When invoked.** Only when `--infer-infrastructure` is enabled AND ProblemSpec leaves the category undeclared (Section 3.4).
+
+**Input contract.**
+```
+ProblemSpec.scale_class: enum
+ProblemSpec.team_familiarity: dict[technology, int 1-5]
+ProblemSpec.infrastructure_preferences: tuple[str, ...]
+ProblemSpec.license_constraint: str | None
+Category: str
+CandidateTechnologies: tuple[str, ...]    # from registry
+RegistryScores: dict[(tech, criterion), int 1-5]
+RegistryWeights: dict[criterion, float]
+```
+
+**Output contract.**
+```
+InfrastructureChoice {
+  category: str
+  technology: str
+  version_pin: str        # default-latest from registry
+  scores: dict[criterion, int]
+  weighted_score: float
+  rationale: str          # 1-2 sentences, LLM-generated summary
+}
+```
+
+**Process.** All math is a pure function; the LLM is invoked once at the end to produce `rationale`. Concretely:
+
+1. Compute `weighted_score` for each candidate as `sum(scores[(tech, c)] * weights[c] for c in criteria)`.
+2. Identify the winner (highest weighted score). Apply tie-breaker order (Section 3.2) on near-ties.
+3. Construct the `InfrastructureChoice` dataclass with the score table.
+4. Send a single Manager-tier prompt with the winner's score table + the runner-up's score table + the ProblemSpec scale/familiarity context, asking for a 1–2 sentence rationale. Reject responses longer than 50 words.
+
+**Failure modes.**
+- Empty candidate list → raise `NoCandidatesAvailableError(category)`.
+- All scores zero → raise `ScoringIncompleteError(category)`.
+- LLM rationale exceeds 50 words → re-prompt once with stricter limit; if still long, truncate at 50 words.
+
+### 5.2 TechSpecComposer
+
+**Identity.** Bridge step that takes a Tier C spec body, a resolved TechSpec, and a focal ClassSpec and produces a single instantiated user prompt for the ICP call.
+
+**Model tier.** Manager (mid-parameter; the composition step itself is mostly templating, but a Manager does final validation that the assembled prompt is internally consistent — e.g. that the `PORT_METHODS` listed in the ClassSpec correspond to `primary_operations` declared in the TechSpec).
+
+**Why a Manager call rather than a pure function.** Most of the work *is* templating — injecting strings into a template — and is implemented as such. The Manager call is invoked **only when validation fails**: a ClassSpec method doesn't have a corresponding TechSpec operation, or a TechSpec field references a primitive type the language profile doesn't recognize. In the happy path, the Manager call is skipped and the bridge is essentially a string substitution. This keeps the per-call cost of routine cases to zero LLM calls.
+
+**Input contract.**
+```
+TierCSpecPath: str               # e.g. python/infrastructure/BlobStorageAdapterICP
+TechSpec: dict (the JSON)        # from TechSpecResolver
+ClassSpec: ClassSpec             # the focal class
+ArchitectureSpec: ArchitectureSpec
+Toolkit: LanguageToolkit         # for snake_case, dotted-path conventions
+```
+
+**Output contract.**
+```
+InstantiatedICPPrompt {
+  system_prompt: str       # Tier C body, unmodified
+  user_prompt: str         # ClassSpec block + SIBLING_INTERFACES block + TECH_SPEC block
+  model_tier: ModelTier.ICP
+}
+```
+
+**Process.**
+
+1. Load Tier C body as `system_prompt`.
+2. Build the ClassSpec / SIBLING_INTERFACES portion using the existing `SiblingInterfaceFormatter` (`squeaky_clean/application/use_cases/sibling_interface_formatter.py`) — no changes needed.
+3. Render the TECH_SPEC block from the TechSpec JSON, mechanically.
+4. **Validation** (pure-function pass before LLM):
+   - Every method in `ClassSpec.methods` whose name implies an SDK operation (heuristic: matches one of the generic verbs `save|put|get|delete|find|publish|consume|set|expire|invoke`) must have a corresponding entry in `TechSpec.primary_operations`.
+   - Every dependency in `ClassSpec.depends` must either be a declared sibling (intra/cross-module) or a TechSpec-declared `imports.types` symbol.
+   - Every `auth.env_vars` entry must be a valid env-var identifier (`[A-Z][A-Z0-9_]+`).
+5. If validation passes, return the instantiated prompt and skip the Manager call.
+6. If validation fails, invoke the Manager prompt with the validation errors and the assembled-but-broken TECH_SPEC block, asking the Manager to either (a) propose a TechSpec correction, or (b) flag the ClassSpec as un-implementable against this TechSpec. The Manager output is rejected if it doesn't conform to one of these two shapes.
+
+**Failure modes.**
+- Validation fails AND Manager proposes correction → apply correction, re-validate; if still failing, raise `TechSpecComposerError` with both the original and Manager-proposed specs attached for human review.
+- Tier C spec missing → raise `TierCAgentSpecMissingError(path)`.
+- TechSpec missing → resolver should have caught this already; this is a programming error if reached.
+
+### 5.3 Bridge agents are NOT pattern ICPs
+
+A common mistake would be to model these as additional `*ICP.md` files alongside `EntityICP.md` etc. They aren't ICPs — they're orchestration steps that *produce* ICP prompts. They live under `squeaky_clean/application/use_cases/` and are invoked by the pipeline, not loaded by `LoadAgentSpec`. Concretely:
+
+- `squeaky_clean/application/use_cases/infrastructure_choice_architect.py`
+- `squeaky_clean/application/use_cases/techspec_composer.py`
+- `squeaky_clean/application/use_cases/techspec_resolver.py`
+
+Each has a corresponding deps DTO and follows the existing use-case conventions (≤80 lines, ≤3 public methods).
+
+### 5.4 The runtime flow, end-to-end
+
+```
+1. ProblemSpec loaded                                     [existing]
+2. PrincipalArchitect → ArchitectureSpec                  [existing]
+3. F5 spec-conformance validation                         [existing]
+4. derive_required_categories(arch) → set[Category]       [NEW]
+5. select_infrastructure_choices(problem) → tuple[Choice] [NEW; see 3.4]
+6. for each Infrastructure module class:
+     6a. resolve TechSpec for the module's category       [NEW; Section 4]
+     6b. compose instantiated ICP prompt                  [NEW; Section 5.2]
+     6c. invoke ICP via existing pipeline                 [existing]
+7. Integrate, validate, run tests                         [existing]
+8. EvalReport written, including derived choices + scores [NEW field]
+```
+
+Steps 4, 5, 6a, 6b, and the EvalReport extension in 8 are the new code. Everything else flows through the existing pipeline unchanged. Domain and application layer modules continue down the existing path with no infrastructure involvement.
+
+---
+
+## Section 6 — TechSpec schema
+
+### 6.1 Authoritative schema
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TechSpec",
+  "type": "object",
+  "required": [
+    "schema_version", "category", "technology", "version_pin", "language",
+    "install", "imports", "client_construction", "primary_operations", "auth"
+  ],
+  "properties": {
+    "schema_version":  {"type": "string", "const": "v1"},
+    "category":        {"type": "string", "enum": [
+      "blob_storage", "relational_db", "document_db", "kv_cache",
+      "message_queue_producer", "message_queue_consumer", "stream_processor",
+      "rest_client", "rest_server_handler", "grpc_client", "grpc_server_handler",
+      "websocket_server_handler", "observability_logger", "secrets_provider", "search"
+    ]},
+    "technology":      {"type": "string", "minLength": 1},
+    "version_pin":     {"type": "string", "minLength": 1},
+    "language":        {"type": "string", "enum": ["python", "javascript", "typescript", "java"]},
+    "install": {
+      "type": "object",
+      "required": ["manager", "package"],
+      "properties": {
+        "manager": {"type": "string", "enum": ["pip", "npm", "cargo", "gem"]},
+        "package": {"type": "string", "minLength": 1}
+      }
+    },
+    "imports": {
+      "type": "object",
+      "required": ["primary"],
+      "properties": {
+        "primary": {"type": "string"},
+        "types":   {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "client_construction": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code":         {"type": "string", "minLength": 1},
+        "is_async":     {"type": "boolean", "default": false},
+        "thread_safe":  {"type": "boolean", "default": true},
+        "dependencies": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "primary_operations": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "signature", "sdk_call", "error_types", "idempotency"],
+        "properties": {
+          "name":         {"type": "string"},
+          "signature":    {"type": "string"},
+          "sdk_call":     {"type": "string", "maxLength": 500},
+          "error_types":  {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "idempotency":  {"type": "string", "enum": ["idempotent", "non_idempotent", "conditional"]},
+          "retry_policy": {"type": "string", "default": "none"}
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "required": ["method"],
+      "properties": {
+        "method":   {"type": "string", "enum": [
+          "env_credentials", "iam_role", "static_keys", "oauth2", "none"
+        ]},
+        "env_vars": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"}}
+      }
+    },
+    "observability_hooks": {"type": "array", "items": {"type": "string"}},
+    "rate_limit_defaults": {
+      "type": "object",
+      "properties": {"rps": {"type": "integer"}, "burst": {"type": "integer"}}
+    },
+    "code_style_notes": {
+      "type": "array",
+      "items": {"type": "string", "maxLength": 200}
+    },
+    "allowed_doc_origins": {
+      "type": "array",
+      "items": {"type": "string", "format": "uri"}
+    }
+  }
+}
+```
+
+### 6.2 Worked example: blob_storage / s3 / boto3==1.34
+
+```json
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "s3",
+  "version_pin": "boto3==1.34",
+  "language": "python",
+  "install": {"manager": "pip", "package": "boto3==1.34"},
+  "imports": {
+    "primary": "import boto3",
+    "types":   ["from botocore.exceptions import ClientError, EndpointConnectionError"]
+  },
+  "client_construction": {
+    "code": "self._client = boto3.client('s3', region_name=region)",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"]
+  },
+  "primary_operations": [
+    {
+      "name": "put_blob",
+      "signature": "(key: str, body: bytes) -> None",
+      "sdk_call": "self._client.put_object(Bucket=self._bucket, Key=key, Body=body)",
+      "error_types": ["ClientError", "EndpointConnectionError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "get_blob",
+      "signature": "(key: str) -> bytes",
+      "sdk_call": "obj = self._client.get_object(Bucket=self._bucket, Key=key); return obj['Body'].read()",
+      "error_types": ["ClientError", "EndpointConnectionError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete_blob",
+      "signature": "(key: str) -> None",
+      "sdk_call": "self._client.delete_object(Bucket=self._bucket, Key=key)",
+      "error_types": ["ClientError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"]
+  },
+  "observability_hooks": ["aws-xray-compatible"],
+  "rate_limit_defaults": {"rps": 3500, "burst": 5500},
+  "code_style_notes": [
+    "boto3 clients are not thread-safe; instantiate per-thread or per-call",
+    "always call get_object().Body.read() inside a try/finally to release the stream",
+    "ClientError.response['Error']['Code'] gives the AWS error code (e.g. 'NoSuchKey')"
+  ],
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/AmazonS3/",
+    "https://boto3.amazonaws.com/v1/documentation/"
+  ]
+}
+```
+
+### 6.3 Worked example: message_queue_consumer / kafka / confluent-kafka==2.5
+
+```json
+{
+  "schema_version": "v1",
+  "category": "message_queue_consumer",
+  "technology": "kafka",
+  "version_pin": "confluent-kafka==2.5",
+  "language": "python",
+  "install": {"manager": "pip", "package": "confluent-kafka==2.5"},
+  "imports": {
+    "primary": "from confluent_kafka import Consumer, KafkaError",
+    "types":   ["from confluent_kafka import Message", "from confluent_kafka.error import KafkaException"]
+  },
+  "client_construction": {
+    "code": "self._consumer = Consumer({'bootstrap.servers': bootstrap_servers, 'group.id': group_id, 'auto.offset.reset': 'earliest', 'enable.auto.commit': False}); self._consumer.subscribe([topic])",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_GROUP_ID", "KAFKA_TOPIC"]
+  },
+  "primary_operations": [
+    {
+      "name": "poll_one",
+      "signature": "(timeout_seconds: float) -> bytes | None",
+      "sdk_call": "result = self._consumer.poll(timeout_seconds)\nif result is None:\n    return None\nif result.error():\n    raise KafkaException(result.error())\nreturn result.value()",
+      "error_types": ["KafkaException", "KafkaError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "commit",
+      "signature": "() -> None",
+      "sdk_call": "self._consumer.commit(asynchronous=False)",
+      "error_types": ["KafkaException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "sdk_call": "self._consumer.close()",
+      "error_types": ["KafkaException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_SASL_USERNAME", "KAFKA_SASL_PASSWORD"]
+  },
+  "observability_hooks": ["opentelemetry_kafka_instrumentation"],
+  "rate_limit_defaults": {"rps": 100000, "burst": 200000},
+  "code_style_notes": [
+    "Confluent's Consumer is not thread-safe; use one consumer per thread.",
+    "Always close on shutdown — uncommitted offsets get rolled back.",
+    "KafkaError code -191 (PARTITION_EOF) is informational, not an error.",
+    "Commit synchronously before re-balancing; async commits can lose ordering."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.confluent.io/platform/current/clients/confluent-kafka-python/",
+    "https://kafka.apache.org/documentation/"
+  ]
+}
+```
+
+Both examples validate against the schema in 6.1.
+
+### 6.4 Validator implementation note
+
+The schema validator is `jsonschema>=4.0` (already in many Python projects' transitive deps; explicit dep needed). The validator runs:
+
+```python
+from jsonschema import Draft202012Validator
+
+class TechSpecValidator:
+    def __init__(self, schema_path: Path) -> None:
+        self._validator = Draft202012Validator(json.loads(schema_path.read_text()))
+
+    def validate(self, candidate: dict) -> tuple[str, ...]:
+        return tuple(e.message for e in self._validator.iter_errors(candidate))
+```
+
+Wired as a port (`TechSpecValidator` ABC in `squeaky_clean/domain/interfaces/`) with the JSON-Schema implementation as an infrastructure adapter. This preserves the dependency rule even for the framework's own infrastructure code.
+
+### 6.5 Versioning the schema
+
+The `schema_version: "v1"` field gates evolution. When the schema changes:
+1. Bump to `v2`.
+2. Bundled snapshots stay on `v1` until manually upgraded.
+3. The resolver rejects mismatched-version cached entries (forces a re-fetch into the new schema).
+4. The framework supports reading both versions for one minor release, then drops `v1` support.
+
+This is a standard schema-evolution play and prevents the cache from becoming a hidden compatibility liability.
+
+---
+
+## Section 7 — Coupling with existing Clean Architecture layers
+
+### 7.1 Where generated adapters land
+
+C5's layered output paths (`src/<layer>/<module>/<file>.py`) place every infrastructure adapter under `src/infrastructure/<module_slug>/`. A specific example, taken from a hypothetical "Twitter clone with S3 image storage":
+
+```
+src/
+├── domain/
+│   └── posts/
+│       ├── tweet.py
+│       ├── tweet_id.py
+│       └── ...
+├── application/
+│   └── posts/
+│       ├── ports.py                       ← TweetMediaStorage port (abstract)
+│       └── post_tweet_use_case.py
+├── infrastructure/
+│   ├── posts_persistence/                  ← module that the architect named
+│   │   └── sqlite_tweet_repository.py
+│   └── posts_media_storage/                ← module the architect named
+│       └── s3_tweet_media_storage.py       ← generated by Tier C BlobStorageAdapterICP
+└── interface/
+    └── posts/
+        └── post_handler.py
+```
+
+The S3 adapter implements the abstract `TweetMediaStorage` port from `application/posts/ports.py`. The dependency rule (`squeaky_clean/domain/rules/dependency_rule.py`, activated in C5) verifies:
+- `domain/posts/tweet.py` imports nothing from `application/`, `infrastructure/`, or `interface/`. ✓
+- `application/posts/post_tweet_use_case.py` imports the port from `application/posts/ports.py`, never the concrete S3 class. ✓
+- `infrastructure/posts_media_storage/s3_tweet_media_storage.py` imports the port (since Infrastructure depends on Application) and the SDK. ✓
+
+### 7.2 Port location convention
+
+Ports continue to live in the **application layer**, not infrastructure (matching Clean Architecture's dependency-inversion rule: the application owns the abstractions; infrastructure provides concretions). The infrastructure adapter imports the port; the application use case takes the port as a constructor argument; the wiring in the Interface layer (e.g. a Flask `create_app`) instantiates the concrete adapter and injects it.
+
+Tier C agents must produce code consistent with this. The Tier C spec template explicitly states: "Always import the port from `<application_module>.ports`. Never define a new abstract base class in the adapter file."
+
+### 7.3 Granularity-rule conformance
+
+Each Tier C agent generates a single class with ≤3 methods and ≤2 args/method. SDKs whose idiomatic usage exceeds this are decomposed by Tier B before the Tier C call. Concretely:
+
+- A Kafka consumer needs `subscribe`, `poll`, `commit`, `close` — 4 methods. **Decomposition**: TechSpec composer recognizes the count and asks Tier B to split into a `KafkaSubscriber` (subscribe + close) and a `KafkaPoller` (poll + commit) — two collaborating classes. The application layer composes them.
+- A REST client with 5 endpoints needs 5 methods. **Decomposition**: each endpoint becomes its own Adapter class implementing a single-method port.
+
+This decomposition is mechanical: the bridge counts methods, splits when count > 3, and generates one ICP call per decomposed class. The orchestrator (humans) MAY override by setting a `--allow-larger-adapters` flag, but the default is strict.
+
+### 7.4 Test infrastructure
+
+Each Tier C agent produces a corresponding *test scaffold* alongside the adapter. Mirroring C5's test layout: `tests/infrastructure/<module>/test_<adapter>.py`. The test uses a **null adapter** — a minimal in-memory or local-disk stand-in — by default, so generated tests don't require live AWS / Kafka / Redis.
+
+For technologies with mature test doubles (moto for AWS, fakeredis for Redis, testcontainers for Postgres/Kafka), the TechSpec includes a `test_double: {kind, package, setup_snippet}` field. The test scaffold uses the test double when declared. If absent, the scaffold falls back to a hand-written stub the orchestrator must complete.
+
+### 7.5 Wiring in the interface layer
+
+The Interface layer's `create_app` (or equivalent) is the composition root. It instantiates concrete adapters and injects them into use cases. The framework already knows how to generate the Interface layer (`InterfaceArchitect.md`). After this design lands, the Interface ICPs need a small extension: when a constructor argument is a port whose concrete adapter is in `src/infrastructure/`, import the concrete adapter and instantiate it with config drawn from env vars (the env var names come from the TechSpec's `auth.env_vars` and `client_construction.dependencies`).
+
+This is a 10–20 line addition to the Interface layer's wiring template and is specified in the existing `InterfaceArchitect.md` as part of this milestone's delivery.
+
+### 7.6 Boundary with framework's own infrastructure
+
+Reiterating Section 1.2: this design does not regenerate the framework's own `squeaky_clean/infrastructure/` adapters. Those stay hand-written. The framework's TechSpec catalog *does* contain entries for the framework's own dependencies (`anthropic-sdk==0.40`, `dspy-ai==3.2`, etc.) but only for *user* generation purposes — if a user's ProblemSpec asks for "an LLM-calling service", they get the same adapter the framework eats internally.
+
+---
+
+## Section 8 — Cost, evaluation, and the "kill switch"
+
+### 8.1 Per-tier projected cost
+
+A representative high-complexity problem (P3-style: ~6 modules, ~60 classes, with one Infrastructure module containing 4 adapters across 2 categories):
+
+| Stage | Calls | Tier | Avg in-toks | Avg out-toks | Cost @ Anthropic 2026 prices |
+|---|---:|---|---:|---:|---:|
+| PrincipalArchitect | 1 | Architect | 2,000 | 2,000 | ~$0.04 |
+| Layer Architects | 4 | Manager | 1,500 | 200 | ~$0.02 |
+| TestArchitect | 6 | Manager | 5,000 | 4,000 | ~$0.40 |
+| **InfrastructureChoiceArchitect** (NEW) | 0–4 | Manager | 800 | 80 | $0–$0.05 |
+| **TechSpecComposer Manager fallback** (NEW) | 0–2 | Manager | 1,200 | 200 | $0–$0.04 |
+| ICPs (regular) | 60 | ICP | 1,500 | 700 | ~$0.30 |
+| **Tier C Infrastructure ICPs** (NEW) | 4 | ICP | 2,800 | 900 | ~$0.04 |
+| FixerStage | 0–2 | Fixer | 3,000 | 1,000 | $0–$0.03 |
+| Total today | | | | | **~$0.80** |
+| Total with infrastructure | | | | | **~$0.96** |
+
+Increment from this design on a P3-style problem: **~$0.16** per run, or +20%. Acceptable.
+
+The TechSpecComposer Manager call only fires on validation failure; in the happy path it's $0. Empirically, expect 1 in 4 runs to hit a validation failure during early adoption (improves as TechSpecs mature).
+
+### 8.2 Interaction with E3 (CostBudget)
+
+E3 (just landed) introduces `--max-cost-usd` with graceful partial-results exit. The new agents in this design respect the budget the same way every other call site does: each call goes through `BudgetedGateway.complete`, which records spend and triggers `BudgetExceededError` when the cap is crossed. Because the InfrastructureChoiceArchitect runs *early* (after layer architects, before ICPs), a budget exit there leaves a complete architecture but no generated adapter code — a useful partial-result state.
+
+The `BUDGET_EXIT.txt` from E3 should mention which infrastructure category was being processed when the budget tripped, to help users decide whether to raise the cap or simplify the architecture.
+
+### 8.3 Per-agent eval fixtures (extends A1)
+
+Each Tier C agent gets a fixture set under `eval/per_agent/fixtures/<tier_c_name>/`. Per-agent metrics extend the EntityICP scoring approach from D1:
+
+| Metric component | Weight | Check |
+|---|---:|---|
+| compiles | 0.25 | `ast.parse` succeeds |
+| mypy clean | 0.15 | mypy --strict on the file with sibling stubs |
+| port conformance | 0.20 | every method declared in the port is implemented; signatures match |
+| imports valid | 0.10 | every import resolves against TechSpec.imports + bundled stubs |
+| error semantics | 0.15 | declared error types from TechSpec are caught/re-raised consistently |
+| idempotency claim respected | 0.10 | declared idempotent ops don't carry retry-on-success guards |
+| granularity rules | 0.05 | ≤3 methods, ≤2 args/method, ≤80 lines |
+
+Fixture set: 5 fixtures per Tier C agent, parametrized over 2–3 technologies each. With 13 Tier C agents at first ship, that's 13 × 5 × ~2.5 = ~160 fixtures. Each fixture takes one ICP call to evaluate; full sweep ~$2–5. Run quarterly (or on every Tier C / TechSpec change touching the fixture's technology).
+
+Fixtures live with their tier:
+```
+eval/per_agent/fixtures/blob_storage_adapter_icp/
+  01_s3_simple_put_get.json
+  02_s3_with_versioning.json
+  03_azure_blob_simple.json
+  04_local_disk_simple.json
+  05_gcs_simple.json
+```
+
+### 8.4 The kill switch: `--infra=manual`
+
+A new CLI flag at `squeaky_clean/interface/cli/cli_args_parser.py`:
+
+```
+--infra {auto,manual}        # default: manual
+--infer-infrastructure       # opt-in to DerivedChoice path (Section 3.4)
+```
+
+`--infra=manual` (default during rollout): the framework treats Infrastructure-layer modules exactly as today — produces port stubs and trivial in-memory adapters; the orchestrator hand-writes the rest. This is the safe, well-understood path.
+
+`--infra=auto`: invokes the full Tier B + Tier C pipeline. Requires either `infrastructure_choices` in ProblemSpec or `--infer-infrastructure`.
+
+**During rollout:** `--infra=manual` is the default, with `--infra=auto` opt-in. After 6+ months of green meta-eval runs across the full Tier C catalog, the default flips to `auto`. This is a 1-line change gated on measurement, not opinion.
+
+### 8.5 Telemetry
+
+Per-run additions to `EvalMetrics`:
+
+| Field | Purpose |
+|---|---|
+| `infrastructure_choices_explicit: int` | how many came from ProblemSpec |
+| `infrastructure_choices_derived: int` | how many came from MCDA |
+| `techspec_resolutions: int` | how many TechSpec resolves succeeded |
+| `techspec_cache_hits: int` | of those, how many came from the cache |
+| `techspec_web_fetches: int` | how many required a live fetch |
+| `techspec_resolution_failures: int` | how many failed entirely (run aborted if >0) |
+| `techspec_composer_validation_failures: int` | how many bridge calls escalated to the Manager |
+| `infrastructure_icp_count: int` | Tier C calls made |
+| `infrastructure_cost_usd: float` | sum of cost for Tier B + Tier C calls |
+
+The SUMMARY.md report (existing) gains an "Infrastructure" section showing these counts and totals.
+
+---
+
+## Section 9 — Phased delivery
+
+A new milestone family. Slot under **Milestone H** (after current G).
+
+### H1 — Resolver + first bundled snapshot + first Tier C agent
+
+**Deliverables**:
+- `squeaky_clean/application/use_cases/techspec_resolver.py` (resolver itself, paths 1+2 only — bundled and cache, no MCP, no web)
+- `squeaky_clean/application/use_cases/techspec_validator.py` + `squeaky_clean/domain/interfaces/techspec_validator.py` (port + adapter)
+- `eval/tech_specs/blob_storage/local_disk/stdlib.json` (one bundled snapshot)
+- `squeaky_clean/interface/agent_specs/icps/python/infrastructure/BlobStorageAdapterICP.md` (one Tier C agent)
+- `MapPatternToICP` extension to dispatch Repository/Gateway/Adapter assigned to Infrastructure-layer modules to the new Tier C path
+- `--infra=manual` (default) and `--infra=auto` flag wiring; only manual works
+
+**Exit criteria** (measurable):
+- 5 unit tests for the resolver pass.
+- 1 fixture for `BlobStorageAdapterICP` in `eval/per_agent/fixtures/` scores ≥0.80.
+- A run with `--infra=auto` and a ProblemSpec declaring `local_disk` blob storage produces a clean `LocalDiskBlobStorage` adapter under `src/infrastructure/<module>/`.
+- 420+ framework tests still pass (current baseline after E2/E3); mypy --strict clean.
+- Per-run cost on the test problem ≤ existing baseline + $0.05.
+
+**Target line count**: ~400 lines new code, ~150 lines new tests.
+
+### H2 — Composer + second technology in the same category
+
+**Deliverables**:
+- `squeaky_clean/application/use_cases/techspec_composer.py` with the Manager-fallback branch
+- Sibling-class decomposition logic for Tier C agents whose method count > 3
+- `eval/tech_specs/blob_storage/s3/boto3==1.34.json` (second snapshot)
+- ProblemSpec validation for `infrastructure_choices` field
+- ExplicitChoice path live; DerivedChoice still off
+
+**Exit criteria**:
+- A run with `infrastructure_choices: [{category: blob_storage, technology: s3, ...}]` produces an S3 adapter that imports boto3 correctly and conforms to the port.
+- Per-agent eval covers `blob_storage_adapter_icp` × {local_disk, s3} ≥0.80 mean.
+- Decomposition test: a 5-method synthetic class is split into two classes and both pass validation.
+
+**Target line count**: ~500 lines new code, ~200 lines new tests.
+
+### H3 — InfrastructureChoiceArchitect + MCDA registry + two more categories
+
+**Deliverables**:
+- `squeaky_clean/application/use_cases/infrastructure_choice_architect.py` + `mcda_scorer.py` (deterministic math) + `mcda_registry.py` (loads scores from `eval/mcda_scores/`)
+- `eval/mcda_scores/blob_storage.json`, `kv_cache.json`, `rest_client.json`
+- New Tier C agents: `KvCacheICP.md`, `RestClientICP.md`
+- Bundled snapshots: `kv_cache/redis/redis-py==5.0.json`, `rest_client/httpx/httpx==0.27.json`
+- DerivedChoice path enabled with `--infer-infrastructure`
+- EvalReport extensions for derived-choice telemetry
+
+**Exit criteria**:
+- A run with `--infer-infrastructure` and no infrastructure_choices produces deterministic MCDA decisions; same ProblemSpec → same decisions across two runs.
+- Worked example from Section 3.2 runs end-to-end and produces the documented score table.
+- Per-agent eval for `kv_cache_icp` and `rest_client_icp` ≥0.80 mean.
+
+**Target line count**: ~700 lines new code, ~300 lines new tests.
+
+### H4 — MCP secondary + live web fetch with allowlist
+
+**Deliverables**:
+- MCP-source resolver path (3rd in priority order)
+- Web fetch path with strict per-technology allowlist
+- HTML→TechSpec extractor for the top-3 documentation site formats (AWS docs, ReadTheDocs/Sphinx, GitHub Pages)
+- Anti-poisoning sanitizer
+- `--techspec-cache-ttl-days` flag
+- Fail-loud `TechSpecUnresolvableError` with actionable message
+
+**Exit criteria**:
+- A run requesting an unbundled-but-allowlisted version (e.g. `boto3==1.36`) succeeds via web fetch, validates, and caches.
+- A run requesting an unallowlisted source (e.g. `random-blogpost.com`) fails immediately.
+- Sanitizer rejects a synthetic prompt-injection payload in a fixture HTML.
+- 3 cache-coherence tests pass (TTL expiry triggers re-fetch; stale-tolerant grace works on transient outage; schema-version mismatch invalidates).
+
+**Target line count**: ~600 lines new code, ~250 lines new tests.
+
+### H5 — Full category coverage + default flip
+
+**Deliverables**:
+- Tier C agents for the remaining 9 categories listed in Section 1.1
+- Bundled snapshots for the top-3 technologies in each category (~30 new TechSpecs)
+- Per-agent fixtures for every Tier C agent (~160 fixtures)
+- Default flip: `--infra=auto` becomes default after 6+ months of green meta-evals
+
+**Exit criteria**:
+- All 13 Tier C agents have ≥0.80 per-agent eval scores across their bundled technologies.
+- A representative end-to-end problem (P3-style with 4 infrastructure categories) generates a runnable application without orchestrator hand-writing.
+- Default flip rolls; `--infra=manual` becomes the opt-out for users who want to keep hand-writing.
+
+**Target line count**: ~1,500 lines new code (mostly Tier C agent .md content + TechSpec JSON), ~600 lines new tests.
+
+### Total program
+
+~5,200 lines across 5 phases (3,700 new framework code + 1,500 new tests), expected duration spread across 2–3 framework releases. Each phase is shippable in isolation and improves the framework's autonomy by a measurable increment.
+
+---
+
+## Section 10 — Open questions and recommendations
+
+The following questions remain open. Each is followed by the document author's recommendation; these recommendations are inputs to a planning conversation, not unilateral decisions.
+
+### Q1. Should TechSpecResolver run AT eval time or AT framework-build time?
+
+**Recommendation: eval time.** Build-time resolution would freeze TechSpecs at framework release, which is exactly the staleness problem we're avoiding. Bundled snapshots are still primary, so the eval-time resolver is fast in the common case. The narrow exception: a CI workflow that pre-warms the cache for known-stable TechSpecs is fine, but it must still go through the runtime resolver (no shortcut).
+
+### Q2. Should MCDA weights be problem-specific or framework-default?
+
+**Recommendation: framework-default with per-problem override.** A reasonable default ships with the framework; ProblemSpec carries `mcda_weights: dict[str, float] | None`. When `None`, defaults apply. When provided, validate that weights sum to 1.0 (within ε). This keeps the common case zero-effort and the advanced case fully controllable.
+
+### Q3. Should the same category support concurrent technologies in one project?
+
+**Recommendation: yes.** Real systems use Postgres for transactional data AND DynamoDB for high-write counters; or Kafka for analytics events AND SQS for transactional jobs. ProblemSpec's `infrastructure_choices` is `tuple[InfrastructureChoice, ...]` already; nothing prevents two entries with the same category. The architect must explicitly assign which Repository in which module uses which adapter — this is *already* a domain-modeling decision, not an infrastructure-layer surprise.
+
+### Q4. Should InfrastructureChoiceArchitect be allowed to recommend new candidates?
+
+**Recommendation: only as suggestions, never as auto-accepts.** When ProblemSpec hints at an unusual technology (`description: "ScyllaDB-compatible store"`) and no registry candidate matches, the architect MAY emit a `proposed_candidate` field in its output. The bridge ignores it for the current run (using the closest registry match instead) and writes the proposal to `eval/proposals/<run_id>.json` for maintainer review. This keeps the registry curated.
+
+### Q5. How do we handle SDK *breaking* changes between bundled snapshots and live-fetched specs?
+
+**Recommendation: pin majors in registry, allow live fetch to advance minors.** The registry's bundled snapshot for `boto3==1.34` is authoritative for the major.minor. A live fetch may pull `boto3==1.34.5` for a patch version but must reject anything ≥`1.35`. Major-version bumps require an explicit registry update (and a new bundled snapshot) — the resolver will not silently jump majors.
+
+### Q6. Should TechSpecs be language-agnostic with per-language renderers?
+
+**Recommendation: no, keep them language-specific.** The same SDK has different idiomatic APIs per language (boto3 vs aws-sdk-go-v2). Trying to express a single canonical TechSpec and render to language is a worse fit than maintaining `boto3@python` and `aws-sdk-go-v2@go` as separate TechSpecs sharing a category. The registry tracks 4 × 13 = ~52 (language × category) keys; that's manageable.
+
+### Q7. Where does TechSpec source-of-truth live during the registry's early days, before MCDA scoring stabilizes?
+
+**Recommendation: maintainer-curated for first 12 months, with an explicit "scores last reviewed: <date>" field per TechSpec.** Telemetry from real runs (which technologies users pick, which adapters break, which TechSpecs need updates) can later inform a more data-driven update process. Don't try to crowd-source scoring on day one.
+
+### Q8. Do we require `--infra=auto` to also enable `--infer-infrastructure`?
+
+**Recommendation: no, decouple them.** `--infra=auto` plus explicit `infrastructure_choices` in ProblemSpec is the production path: deterministic, auditable, full-pipeline. `--infra=auto --infer-infrastructure` is the exploration path: MCDA-driven. Forcing the second flag for the first would push every user into MCDA-by-default, which we don't want.
+
+### Q9. How does this interact with F4 (Custom-pattern extension hook)?
+
+**Recommendation: F4 is the fallback.** F4 lets users add domain-specific patterns (CQRS handler, event-sourced aggregate). Tier C is the *infrastructure*-shaped subset of that capability. F4 stays for non-infrastructure custom patterns. Both can use the same registry mechanism; concretely, `eval/tech_specs/` is the infrastructure registry and `eval/custom_patterns/` is the F4 registry — separate paths, similar shape.
+
+### Q10. What happens to tests of the framework itself when this lands?
+
+**Recommendation: no impact on existing 420+ framework tests.** This design adds new capability behind `--infra=auto` (default OFF). Existing tests don't enable the flag and continue to pass. New tests cover the new code. After H5's default flip, existing P0–P3 problems gain `infrastructure_choices: []` in their fixtures (defaulting to manual mode); this is a one-line change per fixture and doesn't alter test outcomes.
+
+### Q11. What's the upgrade story for in-flight projects?
+
+**Recommendation: orchestrator-controlled.** A user with an existing generated project can re-run with `--infra=auto` on a new ProblemSpec and the framework will produce updated adapter files. The user diffs them against their hand-written code and merges manually. The framework does not perform code migration. This matches today's posture — the framework generates fresh outputs; integration is the orchestrator's job.
+
+### Q12. Final check: does this design create new domain-inference paths?
+
+**Recommendation: no, by construction.** Every technology choice comes from data: ProblemSpec, the MCDA registry, or the TechSpec catalog. The only LLM judgment is the 50-word rationale at the end of MCDA, which describes the decision but cannot change it. The Tier C ICPs receive technology details as data, not as inferred from problem context. The prime directive holds.
+
+---
+
+## Appendix A — File map of new components
+
+```
+squeaky-clean/
+├── docs/
+│   └── infrastructure_layer_design.md                       (THIS FILE)
+├── squeaky_clean/
+│   ├── application/
+│   │   ├── dtos/
+│   │   │   ├── infrastructure_choice.py                     (H2)
+│   │   │   ├── tech_spec.py                                 (H1)
+│   │   │   ├── mcda_score_table.py                          (H3)
+│   │   │   └── instantiated_icp_prompt.py                   (H2)
+│   │   └── use_cases/
+│   │       ├── infrastructure_choice_architect.py           (H3)
+│   │       ├── mcda_scorer.py                               (H3)
+│   │       ├── mcda_registry.py                             (H3)
+│   │       ├── techspec_composer.py                         (H2)
+│   │       ├── techspec_resolver.py                         (H1)
+│   │       ├── techspec_web_fetcher.py                      (H4)
+│   │       ├── techspec_html_extractor.py                   (H4)
+│   │       ├── techspec_sanitizer.py                        (H4)
+│   │       ├── techspec_validator.py                        (H1)
+│   │       └── select_infrastructure_choices.py             (H1)
+│   ├── domain/
+│   │   ├── interfaces/
+│   │   │   ├── techspec_validator.py                        (H1; ABC)
+│   │   │   ├── techspec_resolver.py                         (H1; ABC)
+│   │   │   └── tech_doc_fetcher.py                          (H4; ABC)
+│   │   └── value_objects/
+│   │       └── infrastructure_category.py                   (H1)
+│   ├── infrastructure/
+│   │   └── techspec/
+│   │       ├── jsonschema_techspec_validator.py             (H1)
+│   │       ├── filesystem_techspec_resolver.py              (H1)
+│   │       ├── webfetch_tech_doc_fetcher.py                 (H4)
+│   │       └── mcp_tech_doc_fetcher.py                      (H4)
+│   └── interface/
+│       ├── agent_specs/
+│       │   └── icps/
+│       │       └── python/infrastructure/                   (H1+)
+│       │           ├── BlobStorageAdapterICP.md             (H1)
+│       │           ├── KvCacheICP.md                        (H3)
+│       │           ├── RestClientICP.md                     (H3)
+│       │           ├── RelationalDBRepositoryICP.md         (H5)
+│       │           ├── DocumentDBRepositoryICP.md           (H5)
+│       │           ├── MessageQueueProducerICP.md           (H5)
+│       │           ├── MessageQueueConsumerICP.md           (H5)
+│       │           ├── GrpcClientICP.md                     (H5)
+│       │           ├── GrpcServerHandlerICP.md              (H5)
+│       │           ├── RestServerHandlerICP.md              (H5)
+│       │           ├── WebSocketServerHandlerICP.md         (H5)
+│       │           ├── ObservabilityLoggerICP.md            (H5)
+│       │           └── SecretsProviderICP.md                (H5)
+│       └── cli/
+│           └── cli_args_parser.py                           (H1; +flags)
+└── eval/
+    ├── mcda_scores/                                         (H3)
+    │   ├── blob_storage.json
+    │   ├── kv_cache.json
+    │   └── rest_client.json
+    ├── per_agent/fixtures/<tier_c_name>/                    (H1+)
+    └── tech_specs/                                          (H1)
+        ├── _schema.v1.json                                  (H1)
+        ├── .cache/...                                       (runtime-populated)
+        └── <category>/<technology>/<version>.json
+```
+
+## Appendix B — Cross-references to existing design
+
+| New component | Touches existing |
+|---|---|
+| `MapPatternToICP` extension | `squeaky_clean/application/use_cases/map_pattern_to_icp.py` |
+| `InfrastructureChoice` DTO | `squeaky_clean/application/dtos/problem_spec.py` (F5 schema) |
+| MCDA respects budget | `squeaky_clean/application/use_cases/budgeted_gateway.py` (E3) |
+| Tier C ICPs deterministic | `TemperaturePolicy.ICP` (A4) |
+| Generated adapter paths | `squeaky_clean/application/use_cases/assign_patterns_paths.py` (C5) |
+| Validator wiring | `squeaky_clean/domain/rules/dependency_rule.py` (C5) |
+| Per-agent eval | `eval/per_agent/` (D1) |
+| EvalMetrics extensions | `squeaky_clean/application/dtos/eval_metrics.py` |
+| SUMMARY.md infrastructure section | `squeaky_clean/application/use_cases/run_eval_report_writer.py` |
+| Conventions registry pattern | `squeaky_clean/application/use_cases/convention_to_invariant.py` (F5) |
+| CostBudget integration | `squeaky_clean/application/dtos/cost_budget.py` (E2/E3) |
+
+This design depends on, and respects, every milestone landed before it. Nothing here invalidates A4, C5, D1, E2/E3, F5, or B2a.
+
+---
+
+*End of design document.*

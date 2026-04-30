@@ -1,0 +1,11 @@
+{
+  "name": "Username",
+  "pattern": "ValueObject",
+  "fields": ["value: str"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["value must not be empty"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.auth.username"
+}

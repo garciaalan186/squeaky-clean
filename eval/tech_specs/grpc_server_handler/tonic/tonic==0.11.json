@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "tonic",
+  "version_pin": "tonic==0.11.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "tonic==0.11"},
+  "imports": {
+    "primary": "use tonic::{Request, Response, Status};",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let _ = ();",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "rpc",
+      "signature": "(request: Request<()>) -> Result<Response<()>, Status>",
+      "sdk_call": "let _ = request; Ok(Response::new(()))",
+      "error_types": ["tonic::Status"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "implementations live behind #[tonic::async_trait] impl <Service> for <Name>",
+    "tonic::transport::Server::builder().add_service(...).serve(addr).await runs the server"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/tonic/"]
+}

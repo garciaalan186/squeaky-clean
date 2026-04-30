@@ -1,0 +1,21 @@
+{
+  "name": "MongoOrderRepositoryFind",
+  "pattern": "Repository",
+  "implements": "OrderRepositoryFind",
+  "fields": [],
+  "methods": [
+    "find_by_id(order_id: str) -> bytes"
+  ],
+  "depends": ["OrderRepositoryFind"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositoryFind (Repository, file=src.domain.orders.order_repository_find): fields=[], methods=[\"find_by_id(order_id: str) -> bytes\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.mongo_order_repository_find",
+  "tech_spec_path": "document_db/mongodb/pymongo==4.6.json",
+  "expected_imports": [
+    "from pymongo import MongoClient",
+    "from pymongo.errors import PyMongoError, DuplicateKeyError",
+    "from src.domain.orders.order_repository_find import OrderRepositoryFind"
+  ],
+  "expected_error_types": ["PyMongoError"]
+}

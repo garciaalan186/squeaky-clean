@@ -1,0 +1,23 @@
+{
+  "name": "S3BlobStorage",
+  "pattern": "Adapter",
+  "implements": "BlobStore",
+  "fields": [],
+  "methods": [
+    "put_blob(key: str, body: bytes) -> None",
+    "get_blob(key: str) -> bytes",
+    "delete_blob(key: str) -> None"
+  ],
+  "depends": ["BlobStore"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "BlobStore (Gateway, file=src.domain.storage.blob_store): fields=[], methods=[\"put_blob(key: str, body: bytes) -> None\", \"get_blob(key: str) -> bytes\", \"delete_blob(key: str) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.storage.s3_blob_storage",
+  "tech_spec_path": "blob_storage/s3/boto3==1.34.json",
+  "expected_imports": [
+    "import boto3",
+    "from botocore.exceptions import ClientError, EndpointConnectionError",
+    "from src.domain.storage.blob_store import BlobStore"
+  ],
+  "expected_error_types": ["ClientError", "EndpointConnectionError"]
+}

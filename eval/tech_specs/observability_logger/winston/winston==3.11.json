@@ -1,0 +1,62 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "winston",
+  "version_pin": "winston==3.11.0",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "winston@^3.11.0"
+  },
+  "imports": {
+    "primary": "import winston from 'winston';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._logger = winston.createLogger({ level: 'info', transports: [new winston.transports.Console()] });",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(message: string, context: Record<string, unknown>): void",
+      "sdk_call": "this._logger.info(message, context);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(message: string, context: Record<string, unknown>): void",
+      "sdk_call": "this._logger.warn(message, context);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(message: string, context: Record<string, unknown>): void",
+      "sdk_call": "this._logger.error(message, context);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "winston logger is fire-and-forget"
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/winstonjs/winston"
+  ]
+}

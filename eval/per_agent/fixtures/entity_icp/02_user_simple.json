@@ -1,0 +1,11 @@
+{
+  "name": "User",
+  "pattern": "Entity",
+  "fields": ["id: str", "username: Username", "email: str"],
+  "methods": [],
+  "depends": ["Username"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "Username (ValueObject, file=src.domain.auth.username): fields=[value: str], methods=[], invariants=[\"value must be non-empty\"]",
+  "target_file": "src.domain.auth.user"
+}

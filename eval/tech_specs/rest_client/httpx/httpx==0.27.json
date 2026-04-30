@@ -1,0 +1,57 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "httpx",
+  "version_pin": "httpx==0.27",
+  "language": "python",
+  "install": {"manager": "pip", "package": "httpx>=0.27"},
+  "imports": {
+    "primary": "import httpx",
+    "types":   ["from httpx import HTTPError, Response"]
+  },
+  "client_construction": {
+    "code": "self._client = httpx.Client(base_url=base_url)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["base_url"]
+  },
+  "primary_operations": [
+    {
+      "name": "request",
+      "signature": "(method: str, url: str) -> httpx.Response",
+      "sdk_call": "return self._client.request(method, url)",
+      "error_types": ["HTTPError"],
+      "idempotency": "conditional",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "get",
+      "signature": "(url: str) -> httpx.Response",
+      "sdk_call": "return self._client.get(url)",
+      "error_types": ["HTTPError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "post",
+      "signature": "(url: str, body: bytes) -> httpx.Response",
+      "sdk_call": "return self._client.post(url, content=body)",
+      "error_types": ["HTTPError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 100, "burst": 200},
+  "code_style_notes": [
+    "httpx.Client is sync; use httpx.AsyncClient for async contexts",
+    "always pass `content=` (bytes) rather than `data=` (form) for raw bodies",
+    "share a single Client per host for connection pooling"
+  ],
+  "allowed_doc_origins": [
+    "https://www.python-httpx.org/"
+  ]
+}

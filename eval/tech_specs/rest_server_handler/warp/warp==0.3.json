@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "warp",
+  "version_pin": "warp==0.3.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "warp==0.3"},
+  "imports": {
+    "primary": "use warp::Filter;",
+    "types": ["use serde_json::Value;"]
+  },
+  "client_construction": {
+    "code": "let _ = ();",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(payload: Value) -> Result<impl warp::Reply, warp::Rejection>",
+      "sdk_call": "Ok(warp::reply::json(&payload))",
+      "error_types": ["warp::Rejection"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "warp::path!(\"x\").and(warp::body::json()).and_then(handle) composes filters",
+    "warp::serve(routes).run((addr, port)).await runs the server"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/warp/"]
+}

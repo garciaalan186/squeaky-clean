@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "kafka_go",
+  "version_pin": "segmentio-kafka-go==0.4.47",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/segmentio/kafka-go@v0.4.47"},
+  "imports": {
+    "primary": "\"github.com/segmentio/kafka-go\"",
+    "types": ["\"context\""]
+  },
+  "client_construction": {
+    "code": "reader := kafka.NewReader(kafka.ReaderConfig{Brokers: []string{brokers}, GroupID: groupID, Topic: topic})",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["brokers", "groupID", "topic"]
+  },
+  "primary_operations": [
+    {
+      "name": "Process",
+      "signature": "(ctx context.Context) error",
+      "sdk_call": "for { msg, err := s.reader.ReadMessage(ctx); if err != nil { return err }; _ = msg.Value }",
+      "error_types": ["kafka.Error", "context.Canceled"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=5)"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_GROUP_ID", "KAFKA_TOPIC"]},
+  "code_style_notes": [
+    "ReadMessage commits offsets automatically when GroupID is set",
+    "Pure-Go (no librdkafka) — easier to deploy than confluent-kafka-go"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/github.com/segmentio/kafka-go"]
+}

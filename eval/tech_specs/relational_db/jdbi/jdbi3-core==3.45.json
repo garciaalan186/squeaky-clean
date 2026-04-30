@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "jdbi",
+  "version_pin": "jdbi3-core==3.45",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.jdbi:jdbi3-core:3.45.1"},
+  "imports": {
+    "primary": "import org.jdbi.v3.core.Jdbi;",
+    "types": [
+      "import org.jdbi.v3.core.statement.UnableToCreateStatementException;",
+      "import org.jdbi.v3.core.JdbiException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.jdbi = jdbi;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["jdbi"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(String id, byte[] payload)",
+      "sdk_call": "this.jdbi.useHandle(h -> h.createUpdate(\"INSERT INTO t(id,payload) VALUES (:id,:p)\").bind(\"id\", id).bind(\"p\", payload).execute());",
+      "error_types": ["JdbiException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "findById",
+      "signature": "(String id)",
+      "sdk_call": "return this.jdbi.withHandle(h -> h.createQuery(\"SELECT payload FROM t WHERE id = :id\").bind(\"id\", id).mapTo(byte[].class).one());",
+      "error_types": ["JdbiException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "deleteById",
+      "signature": "(String id)",
+      "sdk_call": "this.jdbi.useHandle(h -> h.createUpdate(\"DELETE FROM t WHERE id = :id\").bind(\"id\", id).execute());",
+      "error_types": ["JdbiException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["JDBC_URL", "JDBC_USER", "JDBC_PASSWORD"]
+  },
+  "observability_hooks": ["sql-logger"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "JDBI is thread-safe; pass one Jdbi instance everywhere.",
+    "Use named parameter binding via :name placeholders.",
+    "useHandle for void writes, withHandle for queries that return a value."
+  ],
+  "allowed_doc_origins": ["https://jdbi.org/"]
+}

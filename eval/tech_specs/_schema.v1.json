@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TechSpec",
+  "type": "object",
+  "required": [
+    "schema_version", "category", "technology", "version_pin", "language",
+    "install", "imports", "client_construction", "primary_operations", "auth"
+  ],
+  "properties": {
+    "schema_version":  {"type": "string", "const": "v1"},
+    "category":        {"type": "string", "enum": [
+      "blob_storage", "relational_db", "document_db", "kv_cache",
+      "message_queue_producer", "message_queue_consumer", "stream_processor",
+      "rest_client", "rest_server_handler", "grpc_client", "grpc_server_handler",
+      "websocket_server_handler", "observability_logger", "secrets_provider", "search"
+    ]},
+    "technology":      {"type": "string", "minLength": 1},
+    "version_pin":     {"type": "string", "minLength": 1},
+    "language":        {"type": "string", "enum": ["python", "javascript", "typescript", "java", "go", "rust"]},
+    "install": {
+      "type": "object",
+      "required": ["manager", "package"],
+      "properties": {
+        "manager": {"type": "string", "enum": ["pip", "npm", "cargo", "gem", "stdlib", "maven", "gradle", "go"]},
+        "package": {"type": "string", "minLength": 1}
+      }
+    },
+    "imports": {
+      "type": "object",
+      "required": ["primary"],
+      "properties": {
+        "primary": {"type": "string"},
+        "types":   {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "client_construction": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code":         {"type": "string", "minLength": 1},
+        "is_async":     {"type": "boolean", "default": false},
+        "thread_safe":  {"type": "boolean", "default": true},
+        "dependencies": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "primary_operations": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "signature", "sdk_call", "error_types", "idempotency"],
+        "properties": {
+          "name":         {"type": "string"},
+          "signature":    {"type": "string"},
+          "sdk_call":     {"type": "string", "maxLength": 500},
+          "error_types":  {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "idempotency":  {"type": "string", "enum": ["idempotent", "non_idempotent", "conditional"]},
+          "retry_policy": {"type": "string", "default": "none"}
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "required": ["method"],
+      "properties": {
+        "method":   {"type": "string", "enum": [
+          "env_credentials", "iam_role", "static_keys", "oauth2", "none"
+        ]},
+        "env_vars": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"}}
+      }
+    },
+    "observability_hooks": {"type": "array", "items": {"type": "string"}},
+    "rate_limit_defaults": {
+      "type": "object",
+      "properties": {"rps": {"type": "integer"}, "burst": {"type": "integer"}}
+    },
+    "code_style_notes": {
+      "type": "array",
+      "items": {"type": "string", "maxLength": 200}
+    },
+    "allowed_doc_origins": {
+      "type": "array",
+      "items": {"type": "string", "format": "uri"}
+    }
+  }
+}

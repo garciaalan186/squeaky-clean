@@ -1,0 +1,20 @@
+{
+  "name": "FastApiUserHandler",
+  "pattern": "Adapter",
+  "implements": "UserHandler",
+  "fields": [],
+  "methods": [
+    "handle(payload: dict[str, Any]) -> dict[str, Any]"
+  ],
+  "depends": ["UserHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "UserHandler (UseCase, file=src.application.use_cases.create_user): fields=[], methods=[\"execute(payload: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.http.fastapi_user_handler",
+  "tech_spec_path": "rest_server_handler/fastapi/fastapi==0.110.json",
+  "expected_imports": [
+    "from fastapi import HTTPException",
+    "from src.application.use_cases.create_user import UserHandler"
+  ],
+  "expected_error_types": ["HTTPException", "ValueError"]
+}

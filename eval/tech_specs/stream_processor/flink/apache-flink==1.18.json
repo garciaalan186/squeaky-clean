@@ -1,0 +1,58 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "flink",
+  "version_pin": "apache-flink==1.18",
+  "language": "python",
+  "install": {"manager": "pip", "package": "apache-flink>=1.18"},
+  "imports": {
+    "primary": "from pyflink.datastream import StreamExecutionEnvironment",
+    "types":   ["from pyflink.common import Types", "from pyflink.datastream.functions import MapFunction"]
+  },
+  "client_construction": {
+    "code": "self._env = StreamExecutionEnvironment.get_execution_environment(); self._env.set_parallelism(parallelism)",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["parallelism", "job_name"]
+  },
+  "primary_operations": [
+    {
+      "name": "process",
+      "signature": "(record: bytes) -> bytes",
+      "sdk_call": "return record",
+      "error_types": ["RuntimeError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "aggregate",
+      "signature": "(window_seconds: int) -> bytes",
+      "sdk_call": "stream = self._env.from_collection([b''], type_info=Types.PICKLED_BYTE_ARRAY()); return stream.execute_and_collect_to_string()",
+      "error_types": ["RuntimeError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "window",
+      "signature": "(window_seconds: int) -> bytes",
+      "sdk_call": "return b''",
+      "error_types": ["RuntimeError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["flink_metric_reporter_prometheus"],
+  "rate_limit_defaults": {"rps": 50000, "burst": 100000},
+  "code_style_notes": [
+    "PyFlink uses py4j to bridge to the JVM; StreamExecutionEnvironment is NOT thread-safe",
+    "DataStream operations are lazy — call execute() to launch the job graph",
+    "use Types.PICKLED_BYTE_ARRAY() for opaque payloads; native types are faster but schema-bound"
+  ],
+  "allowed_doc_origins": [
+    "https://nightlies.apache.org/flink/flink-docs-release-1.18/api/python/",
+    "https://flink.apache.org/"
+  ]
+}

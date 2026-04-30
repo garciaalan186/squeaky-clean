@@ -1,0 +1,21 @@
+{
+  "name": "MysqlOrderRepositorySave",
+  "pattern": "Repository",
+  "implements": "OrderRepositorySave",
+  "fields": [],
+  "methods": [
+    "save(order_id: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderRepositorySave"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositorySave (Repository, file=src.domain.orders.order_repository_save): fields=[], methods=[\"save(order_id: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.mysql_order_repository_save",
+  "tech_spec_path": "relational_db/mysql/PyMySQL==1.1.json",
+  "expected_imports": [
+    "import pymysql",
+    "from pymysql.err import MySQLError, IntegrityError, OperationalError",
+    "from src.domain.orders.order_repository_save import OrderRepositorySave"
+  ],
+  "expected_error_types": ["MySQLError", "IntegrityError", "OperationalError"]
+}

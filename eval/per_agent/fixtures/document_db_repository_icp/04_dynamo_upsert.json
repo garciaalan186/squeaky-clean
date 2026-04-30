@@ -1,0 +1,21 @@
+{
+  "name": "DynamoOrderRepositoryUpsert",
+  "pattern": "Repository",
+  "implements": "OrderRepositoryUpsert",
+  "fields": [],
+  "methods": [
+    "upsert(order_id: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderRepositoryUpsert"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositoryUpsert (Repository, file=src.domain.orders.order_repository_upsert): fields=[], methods=[\"upsert(order_id: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.dynamo_order_repository_upsert",
+  "tech_spec_path": "document_db/dynamodb/boto3==1.34.json",
+  "expected_imports": [
+    "import boto3",
+    "from botocore.exceptions import ClientError, EndpointConnectionError",
+    "from src.domain.orders.order_repository_upsert import OrderRepositoryUpsert"
+  ],
+  "expected_error_types": ["ClientError", "EndpointConnectionError"]
+}

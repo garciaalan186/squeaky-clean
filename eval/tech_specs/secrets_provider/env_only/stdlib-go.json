@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "env_only",
+  "version_pin": "stdlib-go-1.21",
+  "language": "go",
+  "install": {"manager": "stdlib", "package": "stdlib"},
+  "imports": {
+    "primary": "\"os\"",
+    "types": ["\"fmt\""]
+  },
+  "client_construction": {
+    "code": "_ = os.Environ()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "GetSecret",
+      "signature": "(name string) (string, error)",
+      "sdk_call": "val := os.Getenv(name); if val == \"\" { return \"\", fmt.Errorf(\"secret %q not set\", name) }; return val, nil",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "Empty env var is indistinguishable from missing — both return an error",
+    "For secret rotation, env-only forces a process restart"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/os"]
+}

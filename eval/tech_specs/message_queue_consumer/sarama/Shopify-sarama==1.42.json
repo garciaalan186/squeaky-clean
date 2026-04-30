@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_consumer",
+  "technology": "sarama",
+  "version_pin": "Shopify-sarama==1.42.1",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/IBM/sarama@v1.42.1"},
+  "imports": {
+    "primary": "\"github.com/IBM/sarama\"",
+    "types": []
+  },
+  "client_construction": {
+    "code": "c, err := sarama.NewConsumer([]string{brokers}, nil); if err != nil { return nil, err }; pc, err := c.ConsumePartition(topic, 0, sarama.OffsetNewest); if err != nil { return nil, err }",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["brokers", "topic"]
+  },
+  "primary_operations": [
+    {
+      "name": "ConsumeRaw",
+      "signature": "() ([]byte, error)",
+      "sdk_call": "msg, ok := <-k.pc.Messages(); if !ok { return nil, sarama.ErrClosedClient }; return msg.Value, nil",
+      "error_types": ["sarama.ErrClosedClient", "*sarama.ConsumerError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_TOPIC"]},
+  "code_style_notes": [
+    "PartitionConsumer.Messages() is a Go channel — closed channel signals shutdown",
+    "Use ConsumerGroup for cooperative consumption across instances"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/github.com/IBM/sarama"]
+}

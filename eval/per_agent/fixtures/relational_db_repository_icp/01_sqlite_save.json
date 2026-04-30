@@ -1,0 +1,21 @@
+{
+  "name": "SqliteOrderRepositorySave",
+  "pattern": "Repository",
+  "implements": "OrderRepositorySave",
+  "fields": [],
+  "methods": [
+    "save(order_id: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderRepositorySave"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositorySave (Repository, file=src.domain.orders.order_repository_save): fields=[], methods=[\"save(order_id: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.sqlite_order_repository_save",
+  "tech_spec_path": "relational_db/sqlite/stdlib.json",
+  "expected_imports": [
+    "import sqlite3",
+    "from sqlite3 import DatabaseError, IntegrityError",
+    "from src.domain.orders.order_repository_save import OrderRepositorySave"
+  ],
+  "expected_error_types": ["DatabaseError", "IntegrityError"]
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "spring_data_redis",
+  "version_pin": "spring-boot-starter-data-redis==2.7",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.boot:spring-boot-starter-data-redis:2.7.18"},
+  "imports": {
+    "primary": "import org.springframework.data.redis.core.RedisTemplate;",
+    "types": [
+      "import org.springframework.data.redis.RedisSystemException;",
+      "import java.util.concurrent.TimeUnit;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.redisTemplate = redisTemplate;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["redis_template"]
+  },
+  "primary_operations": [
+    {
+      "name": "set",
+      "signature": "(String key, String value)",
+      "sdk_call": "this.redisTemplate.opsForValue().set(key, value);",
+      "error_types": ["RedisSystemException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "get",
+      "signature": "(String key)",
+      "sdk_call": "return this.redisTemplate.opsForValue().get(key);",
+      "error_types": ["RedisSystemException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "expire",
+      "signature": "(String key, long seconds)",
+      "sdk_call": "this.redisTemplate.expire(key, seconds, TimeUnit.SECONDS);",
+      "error_types": ["RedisSystemException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete",
+      "signature": "(String key)",
+      "sdk_call": "this.redisTemplate.delete(key);",
+      "error_types": ["RedisSystemException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["SPRING_REDIS_HOST", "SPRING_REDIS_PORT", "SPRING_REDIS_PASSWORD"]
+  },
+  "observability_hooks": ["spring_actuator", "micrometer"],
+  "rate_limit_defaults": {"rps": 50000, "burst": 100000},
+  "code_style_notes": [
+    "Spring Boot auto-configures RedisTemplate via spring.redis.* properties.",
+    "RedisTemplate is thread-safe; share one instance via @Bean.",
+    "Use opsForValue() for simple GET/SET; opsForHash() for field-level access."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-data/redis/docs/"
+  ]
+}

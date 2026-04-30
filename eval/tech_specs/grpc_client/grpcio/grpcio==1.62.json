@@ -1,0 +1,58 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "grpcio",
+  "version_pin": "grpcio==1.62",
+  "language": "python",
+  "install": {"manager": "pip", "package": "grpcio>=1.62"},
+  "imports": {
+    "primary": "import grpc",
+    "types":   ["from grpc import RpcError, StatusCode"]
+  },
+  "client_construction": {
+    "code": "self._channel = grpc.insecure_channel(target); self._stub = stub_factory(self._channel)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["target", "stub_factory"]
+  },
+  "primary_operations": [
+    {
+      "name": "call",
+      "signature": "(method: str, request: bytes) -> bytes",
+      "sdk_call": "return getattr(self._stub, method)(request).SerializeToString()",
+      "error_types": ["RpcError"],
+      "idempotency": "conditional",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "invoke",
+      "signature": "(method: str, request: bytes) -> bytes",
+      "sdk_call": "return getattr(self._stub, method)(request).SerializeToString()",
+      "error_types": ["RpcError"],
+      "idempotency": "conditional",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "sdk_call": "self._channel.close()",
+      "error_types": ["RpcError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "iam_role"
+  },
+  "observability_hooks": ["opentelemetry_grpc_instrumentation"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "grpc.insecure_channel is for local/dev only; use secure_channel with credentials in production.",
+    "Channels are thread-safe; create one per upstream service and share across requests.",
+    "Always close the channel on shutdown to flush in-flight RPCs."
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.io/docs/languages/python/",
+    "https://grpc.github.io/grpc/python/"
+  ]
+}

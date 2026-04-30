@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "elasticsearch",
+  "version_pin": "elasticsearch==8.13",
+  "language": "python",
+  "install": {"manager": "pip", "package": "elasticsearch>=8.13"},
+  "imports": {
+    "primary": "from elasticsearch import Elasticsearch",
+    "types":   ["from elasticsearch.exceptions import ApiError, TransportError", "from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._client = Elasticsearch(hosts=[host])",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["host"]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(doc_id: str, body: dict[str, Any]) -> None",
+      "sdk_call": "self._client.index(index=self._index_name, id=doc_id, document=body)",
+      "error_types": ["ApiError", "TransportError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "query",
+      "signature": "(query: dict[str, Any]) -> list[dict[str, Any]]",
+      "sdk_call": "result = self._client.search(index=self._index_name, query=query); return [hit['_source'] for hit in result['hits']['hits']]",
+      "error_types": ["ApiError", "TransportError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "search",
+      "signature": "(query: dict[str, Any]) -> list[dict[str, Any]]",
+      "sdk_call": "result = self._client.search(index=self._index_name, query=query); return [hit['_source'] for hit in result['hits']['hits']]",
+      "error_types": ["ApiError", "TransportError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": ["ELASTIC_API_KEY"]
+  },
+  "observability_hooks": ["opentelemetry_elasticsearch"],
+  "rate_limit_defaults": {"rps": 1000, "burst": 2000},
+  "code_style_notes": [
+    "elasticsearch>=8 expects 'document=' keyword (not 'body='); the API changed in 8.0.",
+    "Bulk indexing is preferred for >100 docs/sec; use elasticsearch.helpers.bulk.",
+    "ApiError carries .meta.status — distinguish 4xx (client) from 5xx (transport/cluster) errors."
+  ],
+  "allowed_doc_origins": [
+    "https://www.elastic.co/guide/en/elasticsearch/client/python-api/current/",
+    "https://www.elastic.co/guide/en/elasticsearch/reference/current/"
+  ]
+}

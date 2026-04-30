@@ -1,0 +1,11 @@
+{
+  "name": "PaymentMethod",
+  "pattern": "Entity",
+  "fields": ["id: str", "kind: str", "last_four: str"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.payments.payment_method"
+}

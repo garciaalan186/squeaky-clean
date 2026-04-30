@@ -1,0 +1,21 @@
+{
+  "name": "PostgresOrderRepositoryDelete",
+  "pattern": "Repository",
+  "implements": "OrderRepositoryDelete",
+  "fields": [],
+  "methods": [
+    "delete(order_id: str) -> None"
+  ],
+  "depends": ["OrderRepositoryDelete"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositoryDelete (Repository, file=src.domain.orders.order_repository_delete): fields=[], methods=[\"delete(order_id: str) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.postgres_order_repository_delete",
+  "tech_spec_path": "relational_db/postgres/psycopg2==2.9.json",
+  "expected_imports": [
+    "import psycopg2",
+    "from psycopg2 import DatabaseError, IntegrityError, OperationalError",
+    "from src.domain.orders.order_repository_delete import OrderRepositoryDelete"
+  ],
+  "expected_error_types": ["DatabaseError", "OperationalError"]
+}

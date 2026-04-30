@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "spring_boot",
+  "version_pin": "spring-boot-starter-web==3.2",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.boot:spring-boot-starter-web:3.2.0"},
+  "imports": {
+    "primary": "import org.springframework.web.bind.annotation.RestController;",
+    "types": [
+      "import org.springframework.web.bind.annotation.PostMapping;",
+      "import org.springframework.web.bind.annotation.RequestBody;",
+      "import org.springframework.web.bind.annotation.RequestHeader;",
+      "import org.springframework.http.ResponseEntity;",
+      "import java.util.Map;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(@RequestBody String body, @RequestHeader Map<String, String> headers)",
+      "sdk_call": "Map<String, String> result = this.useCase.execute(body, headers);\nreturn ResponseEntity.ok(result);",
+      "error_types": ["IllegalArgumentException", "RuntimeException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["spring_actuator", "micrometer"],
+  "rate_limit_defaults": {"rps": 1000, "burst": 2000},
+  "code_style_notes": [
+    "Annotate the class with @RestController for Spring component scanning.",
+    "Use @PostMapping(\"/path\") on the handle method to map an HTTP route.",
+    "Catch IllegalArgumentException -> ResponseEntity.badRequest(); RuntimeException -> 500.",
+    "Spring Boot auto-wires the bean via @SpringBootApplication scanning."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-boot/",
+    "https://docs.spring.io/spring-framework/reference/web.html"
+  ]
+}

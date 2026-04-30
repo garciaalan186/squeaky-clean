@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "grpc_js_ts",
+  "version_pin": "@grpc/grpc-js==1.10.6",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@grpc/grpc-js@^1.10.0"
+  },
+  "imports": {
+    "primary": "import grpc from '@grpc/grpc-js';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = new grpc.Client(address, grpc.credentials.createInsecure());",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "address"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "echo",
+      "signature": "(message: Buffer): Promise<Buffer>",
+      "sdk_call": "return await new Promise<Buffer>((resolve, reject) => { this._client.makeUnaryRequest('/echo.Echo/Echo', (v: Buffer) => v, (b: Buffer) => b, message, null, null, (err, value) => err ? reject(err) : resolve(value ?? Buffer.alloc(0))); });",
+      "error_types": [
+        "ServiceError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "@grpc/grpc-js ships its own .d.ts"
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.io/docs/languages/node/"
+  ]
+}

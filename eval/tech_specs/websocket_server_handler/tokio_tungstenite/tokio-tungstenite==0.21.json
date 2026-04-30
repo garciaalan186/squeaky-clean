@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "tokio_tungstenite",
+  "version_pin": "tokio-tungstenite==0.21.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "tokio-tungstenite==0.21"},
+  "imports": {
+    "primary": "use tokio_tungstenite::WebSocketStream;",
+    "types": ["use tokio::net::TcpStream;", "use tokio_tungstenite::tungstenite::Message;", "use futures_util::{SinkExt, StreamExt};"]
+  },
+  "client_construction": {
+    "code": "let _ = ();",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(ws: WebSocketStream<TcpStream>) -> Result<(), tokio_tungstenite::tungstenite::Error>",
+      "sdk_call": "let mut ws = ws; while let Some(msg) = ws.next().await { let m = msg?; if m.is_text() || m.is_binary() { ws.send(Message::Text(m.to_text().unwrap_or(\"\").to_string())).await?; } } Ok(())",
+      "error_types": ["tokio_tungstenite::tungstenite::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "futures-util's SinkExt and StreamExt provide .send/.next on the WS stream",
+    "accept_async upgrades a TcpStream into WebSocketStream"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/tokio-tungstenite/"]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "CosmosOrderRepositorySave",
+  "pattern": "Repository",
+  "implements": "OrderRepositorySave",
+  "fields": [],
+  "methods": [
+    "save(order_id: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderRepositorySave"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositorySave (Repository, file=src.domain.orders.order_repository_save): fields=[], methods=[\"save(order_id: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.cosmos_order_repository_save",
+  "tech_spec_path": "document_db/cosmos/azure-cosmos==4.5.json",
+  "expected_imports": [
+    "from azure.cosmos import CosmosClient",
+    "from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError",
+    "from src.domain.orders.order_repository_save import OrderRepositorySave"
+  ],
+  "expected_error_types": ["CosmosHttpResponseError"]
+}

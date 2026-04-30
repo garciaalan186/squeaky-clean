@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "ws_ts",
+  "version_pin": "ws==8.16.0",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "ws@^8.16.0"
+  },
+  "imports": {
+    "primary": "import type { WebSocket, RawData } from 'ws';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "useCase"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "onMessage",
+      "signature": "(socket: WebSocket, message: RawData): Promise<void>",
+      "sdk_call": "const reply = await this._useCase.execute(JSON.parse(message.toString())); socket.send(JSON.stringify(reply));",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "@types/ws may be needed if not bundled"
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/websockets/ws"
+  ]
+}

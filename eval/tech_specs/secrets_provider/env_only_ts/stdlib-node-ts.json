@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "env_only_ts",
+  "version_pin": "stdlib",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@types/node@^20.0.0"
+  },
+  "imports": {
+    "primary": "import process from 'node:process';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._prefix = prefix;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "prefix"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "getSecret",
+      "signature": "(name: string): Promise<string>",
+      "sdk_call": "return process.env[this._prefix + name] ?? '';",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "@types/node provides node:process types"
+  ],
+  "allowed_doc_origins": [
+    "https://nodejs.org/api/process.html"
+  ]
+}

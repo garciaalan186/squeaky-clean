@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "fastapi",
+  "version_pin": "fastapi==0.110",
+  "language": "python",
+  "install": {"manager": "pip", "package": "fastapi>=0.110"},
+  "imports": {
+    "primary": "from fastapi import WebSocketDisconnect",
+    "types":   ["from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._use_case = use_case",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "on_message",
+      "signature": "(message: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = self._use_case.execute(message); return {'event': 'reply', 'data': result}",
+      "error_types": ["WebSocketDisconnect", "ValueError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "accept_connection",
+      "signature": "(client_id: str) -> dict[str, Any]",
+      "sdk_call": "return {'event': 'connected', 'client_id': client_id}",
+      "error_types": ["WebSocketDisconnect"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["fastapi_ws_middleware"],
+  "rate_limit_defaults": {"rps": 800, "burst": 1600},
+  "code_style_notes": [
+    "FastAPI WebSocket route awaits ws.accept() then ws.receive_json() in a loop and forwards to handler.on_message(payload).",
+    "Use ws.send_json on the dict returned by handle(); never let the handler touch the WebSocket type.",
+    "Catch WebSocketDisconnect at the wrapping route to terminate the loop cleanly."
+  ],
+  "allowed_doc_origins": [
+    "https://fastapi.tiangolo.com/advanced/websockets/"
+  ]
+}

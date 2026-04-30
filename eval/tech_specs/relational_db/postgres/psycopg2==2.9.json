@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "postgres",
+  "version_pin": "psycopg2==2.9",
+  "language": "python",
+  "install": {"manager": "pip", "package": "psycopg2-binary>=2.9"},
+  "imports": {
+    "primary": "import psycopg2",
+    "types":   ["from psycopg2 import DatabaseError, IntegrityError, OperationalError"]
+  },
+  "client_construction": {
+    "code": "self._conn = psycopg2.connect(dsn)",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["dsn"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(entity_id: str, payload: bytes) -> None",
+      "sdk_call": "with self._conn.cursor() as cur: cur.execute('INSERT INTO entities(id, payload) VALUES (%s, %s) ON CONFLICT (id) DO UPDATE SET payload = EXCLUDED.payload', (entity_id, payload)); self._conn.commit()",
+      "error_types": ["DatabaseError", "IntegrityError", "OperationalError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(entity_id: str) -> bytes",
+      "sdk_call": "with self._conn.cursor() as cur: cur.execute('SELECT payload FROM entities WHERE id = %s', (entity_id,)); row = cur.fetchone(); return bytes(row[0])",
+      "error_types": ["DatabaseError", "OperationalError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(entity_id: str) -> None",
+      "sdk_call": "with self._conn.cursor() as cur: cur.execute('DELETE FROM entities WHERE id = %s', (entity_id,)); self._conn.commit()",
+      "error_types": ["DatabaseError", "OperationalError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["PGHOST", "PGUSER", "PGPASSWORD", "PGDATABASE"]
+  },
+  "observability_hooks": ["opentelemetry_psycopg2_instrumentation"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "psycopg2 connections are NOT thread-safe; use a connection pool (psycopg2.pool) in concurrent code",
+    "use %s as the parameter placeholder; never %d or f-strings with user input",
+    "ON CONFLICT requires PostgreSQL >= 9.5; for older servers use UPDATE then INSERT pattern"
+  ],
+  "allowed_doc_origins": [
+    "https://www.psycopg.org/docs/",
+    "https://www.postgresql.org/docs/"
+  ]
+}

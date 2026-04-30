@@ -1,0 +1,11 @@
+{
+  "name": "Age",
+  "pattern": "ValueObject",
+  "fields": ["years: int"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["years must be >= 0"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.profiles.age"
+}

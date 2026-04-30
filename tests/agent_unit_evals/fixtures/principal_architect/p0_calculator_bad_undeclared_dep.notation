@@ -1,0 +1,13 @@
+MODULE Calculator
+LAYER Domain
+EXPORTS [Calculator]
+DEPENDS []
+CLASSES {
+  Calculator -> SimpleClass {
+    fields:     []
+    methods:    [add(a: Operand, b: Operand): Result]
+    depends:    [Operand, Result]
+    invariants: []
+  }
+}
+INVARIANTS []

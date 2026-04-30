@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "tracing",
+  "version_pin": "tracing==0.1.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "tracing==0.1"},
+  "imports": {
+    "primary": "use tracing::{info, warn, error};",
+    "types": []
+  },
+  "client_construction": {
+    "code": "tracing_subscriber::fmt::init();",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(msg: &str)",
+      "sdk_call": "info!(message = msg);",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(msg: &str)",
+      "sdk_call": "warn!(message = msg);",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(msg: &str)",
+      "sdk_call": "error!(message = msg);",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "tracing_subscriber::fmt::init must be called once (panics on second init)",
+    "structured fields: info!(user_id = %id, \"login\")"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/tracing/"]
+}

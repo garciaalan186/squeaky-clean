@@ -1,0 +1,163 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "squeaky-clean"
+version = "0.1.0"
+description = "Generate Clean-Architecture-shaped applications across Python, Java, Go, Rust, JavaScript, and TypeScript from a single declarative ProblemSpec."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+  { name = "Alan Garcia", email = "alan.javier.garcia@gmail.com" },
+]
+maintainers = [
+  { name = "Alan Garcia", email = "alan.javier.garcia@gmail.com" },
+]
+keywords = [
+  "clean-architecture",
+  "ddd",
+  "design-patterns",
+  "code-generation",
+  "ai-agents",
+  "anthropic",
+  "claude",
+  "llm",
+  "solid",
+  "agentic",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development",
+  "Topic :: Software Development :: Code Generators",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "Typing :: Typed",
+]
+dependencies = [
+  "anthropic>=0.40",
+  "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "mypy>=1.10",
+  "ruff>=0.5",
+  "build>=1.2",
+  "twine>=5.0",
+]
+dspy = [
+  "dspy-ai>=2.5",
+]
+sast = [
+  "bandit>=1.7",
+]
+
+[project.scripts]
+squeaky = "squeaky_clean.interface.cli.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/garciaalan186/squeaky-clean"
+Documentation = "https://github.com/garciaalan186/squeaky-clean/tree/main/docs"
+Repository = "https://github.com/garciaalan186/squeaky-clean"
+Issues = "https://github.com/garciaalan186/squeaky-clean/issues"
+Changelog = "https://github.com/garciaalan186/squeaky-clean/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["squeaky_clean"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "squeaky_clean",
+  "docs",
+  "examples",
+  "eval",
+  "scripts",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "CONTRIBUTING.md",
+  "CODE_OF_CONDUCT.md",
+  "BENCHMARK_METHODOLOGY.md",
+  "Dockerfile",
+  "pyproject.toml",
+]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["squeaky_clean", "tests"]
+disallow_any_explicit = true
+disallow_any_generics = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = ["dspy", "dspy.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["jsonschema", "jsonschema.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["squeaky_clean.infrastructure.dspy.*"]
+disallow_subclassing_any = false
+disallow_any_explicit = false
+warn_unused_ignores = false
+
+# Serializer modules round-trip arbitrary JSON; Any is intrinsic at the
+# JSON boundary. Keeps the strict policy elsewhere.
+[[tool.mypy.overrides]]
+module = [
+    "squeaky_clean.application.use_cases.architecture_spec_serializer",
+    "squeaky_clean.application.use_cases.module_implementation_serializer",
+    "squeaky_clean.application.use_cases.test_architecture_serializer",
+    "squeaky_clean.application.use_cases.checkpoint_reader",
+]
+disallow_any_explicit = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Embedded-code template lines that can't reasonably wrap.
+"squeaky_clean/application/use_cases/language_toolkit_factory.py" = ["E501"]
+"squeaky_clean/application/use_cases/dashboard_generator.py" = ["E501"]
+"squeaky_clean/application/use_cases/run_eval_pipeline.py" = ["E501"]
+"squeaky_clean/application/use_cases/techspec_composer.py" = ["E501"]
+"squeaky_clean/infrastructure/testing/maven_test_runner.py" = ["E501"]
+"squeaky_clean/interface/cli/language_adapter_registry.py" = ["E501"]
+# Test code: relax style rules that mask test intent.
+"tests/**" = ["E501", "E702", "B017"]
+# Eval/research scripts: long Gherkin acceptance-criteria strings.
+"eval/problems/**" = ["E501"]
+"eval/d2_entity_icp_ablation.py" = ["E501"]
+"eval/per_agent/entity_icp_metric.py" = ["E501", "B905"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = [
+  "integration: live LLM call; requires RUN_INTEGRATION_TESTS=1",
+]
+addopts = "-m 'not integration'"
+filterwarnings = [
+  "ignore::pytest.PytestCollectionWarning",
+]

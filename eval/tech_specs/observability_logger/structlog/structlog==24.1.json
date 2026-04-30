@@ -1,0 +1,57 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "structlog",
+  "version_pin": "structlog==24.1",
+  "language": "python",
+  "install": {"manager": "pip", "package": "structlog>=24.1"},
+  "imports": {
+    "primary": "import structlog",
+    "types":   ["from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._logger = structlog.get_logger(name)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["name"]
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.info(event, **context)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.warning(event, **context)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.error(event, **context)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["structlog_processor_chain"],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "structlog.get_logger returns a BoundLogger; bound contexts are thread-local.",
+    "Configure processors (e.g. JSONRenderer) once at application startup, not per logger instance.",
+    "Context kwargs become structured fields; avoid passing nested objects without converters."
+  ],
+  "allowed_doc_origins": [
+    "https://www.structlog.org/"
+  ]
+}

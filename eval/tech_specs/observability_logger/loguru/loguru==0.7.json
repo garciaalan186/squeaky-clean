@@ -1,0 +1,57 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "loguru",
+  "version_pin": "loguru==0.7",
+  "language": "python",
+  "install": {"manager": "pip", "package": "loguru>=0.7"},
+  "imports": {
+    "primary": "from loguru import logger",
+    "types":   ["from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._logger = logger.bind(component=name)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["name"]
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.bind(**context).info(event)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.bind(**context).warning(event)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.bind(**context).error(event)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["loguru_sink"],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "loguru's global logger is shared; .bind() returns a contextualized child.",
+    "Configure sinks (e.g. logger.add('app.log', serialize=True)) once at startup.",
+    "Avoid logger.opt(lazy=True) inside hot paths; bind() is preferred."
+  ],
+  "allowed_doc_origins": [
+    "https://loguru.readthedocs.io/"
+  ]
+}

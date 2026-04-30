@@ -1,0 +1,22 @@
+```python
+from operand import Operand
+from result import Result
+
+
+class Calculator:
+    """Simple four-op calculator."""
+
+    def add(self, a: Operand, b: Operand) -> Result:
+        return Result(a.value + b.value)
+
+    def subtract(self, a: Operand, b: Operand) -> Result:
+        return Result(a.value - b.value)
+
+    def multiply(self, a: Operand, b: Operand) -> Result:
+        return Result(a.value * b.value)
+
+    def divide(self, a: Operand, b: Operand) -> Result:
+        if b.value == 0:
+            raise ValueError("divisor must be non-zero")
+        return Result(a.value / b.value)
+```

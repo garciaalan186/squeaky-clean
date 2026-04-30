@@ -1,0 +1,64 @@
+{
+  "schema_version": "v1",
+  "category": "stream_processor",
+  "technology": "spring_cloud_stream",
+  "version_pin": "spring-cloud-stream-binder-kafka-streams==4.0",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.cloud:spring-cloud-stream-binder-kafka-streams:4.0.4"},
+  "imports": {
+    "primary": "import org.springframework.kafka.config.StreamsBuilderFactoryBean;",
+    "types": [
+      "import org.apache.kafka.streams.StreamsBuilder;",
+      "import org.apache.kafka.streams.kstream.KStream;",
+      "import org.apache.kafka.streams.kstream.TimeWindows;",
+      "import org.apache.kafka.streams.errors.StreamsException;",
+      "import java.time.Duration;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.streamsBuilder = factoryBean.getObject(); this.inputTopic = inputTopic;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["factory_bean", "input_topic"]
+  },
+  "primary_operations": [
+    {
+      "name": "process",
+      "signature": "(String record)",
+      "sdk_call": "KStream<String,String> in = this.streamsBuilder.stream(this.inputTopic); in.mapValues(v -> v + \":processed\"); return record;",
+      "error_types": ["StreamsException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "aggregate",
+      "signature": "(long windowSeconds)",
+      "sdk_call": "KStream<String,String> in = this.streamsBuilder.stream(this.inputTopic); in.groupByKey().windowedBy(TimeWindows.of(Duration.ofSeconds(windowSeconds))); return \"aggregated\";",
+      "error_types": ["StreamsException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "window",
+      "signature": "(long windowSeconds)",
+      "sdk_call": "KStream<String,String> in = this.streamsBuilder.stream(this.inputTopic); in.groupByKey().windowedBy(TimeWindows.of(Duration.ofSeconds(windowSeconds))); return \"windowed\";",
+      "error_types": ["StreamsException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["SPRING_KAFKA_BOOTSTRAP_SERVERS"]
+  },
+  "observability_hooks": ["spring_actuator", "micrometer_kafka_metrics"],
+  "rate_limit_defaults": {"rps": 80000, "burst": 200000},
+  "code_style_notes": [
+    "Spring Cloud Stream with Kafka Streams binder wires Function<KStream<K,V>, KStream<K,V>> beans.",
+    "StreamsBuilderFactoryBean is provided by Spring; call getObject() to get the underlying StreamsBuilder.",
+    "Topology start/close is managed by Spring lifecycle — do NOT call streams.start() here."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-cloud-stream/reference/"
+  ]
+}

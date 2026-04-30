@@ -1,0 +1,11 @@
+{
+  "name": "MoneyAmount",
+  "pattern": "ValueObject",
+  "fields": ["cents: int"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["cents must be >= 0"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.payments.money_amount"
+}

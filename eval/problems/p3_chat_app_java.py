@@ -1,0 +1,29 @@
+"""P3 Chat Application (Java)."""
+
+from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+
+P3JAVA: ProblemSpec = ProblemSpec(
+    id="P3JAVA",
+    tier=3,
+    slug="chat_app",
+    description=(
+        "In-memory chat application where users join rooms, send messages, "
+        "and retrieve history. Only room members may send. Message content "
+        "must be non-empty. Rooms track their members and message history."
+    ),
+    required_bounded_contexts=["chat"],
+    acceptance_criteria=[
+        "Given username 'Alice', When create_user is called, Then the user name is 'Alice'",
+        "Given room name 'General', When create_room is called, Then the room name is 'General'",
+        "Given user 'Alice' and room 'General', When join_room is called, Then the room member_count is 1",
+        "Given 'Alice' is a member of 'General', When send_message is called with content 'Hello', Then the room message_count is 1",
+        "Given 'Alice' sent 'Hello' in 'General', When get_history is called, Then the result length is 1",
+        "Given 'Bob' is not a member of 'General', When send_message is called, Then a ValueError is raised",
+        "Given 'Alice' is a member of 'General', When send_message is called with empty content, Then a ValueError is raised",
+    ],
+    expected_module_count=(1, 4),
+    expected_class_count=(6, 15),
+    required_patterns=["Entity", "ValueObject", "SimpleClass"],
+    target_language=TargetLanguage.JAVA,
+)

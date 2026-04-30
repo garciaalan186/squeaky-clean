@@ -1,0 +1,41 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "hyper",
+  "version_pin": "hyper==1.2.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "hyper==1.2"},
+  "imports": {
+    "primary": "use hyper_util::client::legacy::Client;",
+    "types": ["use hyper::body::Bytes;", "use http_body_util::BodyExt;"]
+  },
+  "client_construction": {
+    "code": "let client = Client::builder(hyper_util::rt::TokioExecutor::new()).build_http();",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(url: &str) -> Result<Vec<u8>, hyper_util::client::legacy::Error>",
+      "sdk_call": "let uri: hyper::Uri = url.parse().unwrap(); let resp = self.client.get(uri).await?; let body = resp.into_body().collect().await.map_err(|_| ())?.to_bytes(); Ok(body.to_vec())",
+      "error_types": ["hyper_util::client::legacy::Error", "hyper::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "post",
+      "signature": "(url: &str, body: Bytes) -> Result<Vec<u8>, hyper_util::client::legacy::Error>",
+      "sdk_call": "let req = hyper::Request::post(url).body(http_body_util::Full::new(body)).unwrap(); let resp = self.client.request(req).await?; Ok(resp.into_body().collect().await.unwrap().to_bytes().to_vec())",
+      "error_types": ["hyper_util::client::legacy::Error", "hyper::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "hyper 1.x split into hyper-util for legacy::Client and http-body-util for body collection"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/hyper/"]
+}

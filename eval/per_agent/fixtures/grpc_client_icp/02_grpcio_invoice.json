@@ -1,0 +1,22 @@
+{
+  "name": "GrpcioInvoiceClient",
+  "pattern": "Adapter",
+  "implements": "InvoiceClient",
+  "fields": [],
+  "methods": [
+    "invoke(method: str, request: bytes) -> bytes",
+    "close() -> None"
+  ],
+  "depends": ["InvoiceClient"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "InvoiceClient (Gateway, file=src.domain.rpc.invoice_client): fields=[], methods=[\"invoke(method: str, request: bytes) -> bytes\", \"close() -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.rpc.grpcio_invoice_client",
+  "tech_spec_path": "grpc_client/grpcio/grpcio==1.62.json",
+  "expected_imports": [
+    "import grpc",
+    "from grpc import RpcError, StatusCode",
+    "from src.domain.rpc.invoice_client import InvoiceClient"
+  ],
+  "expected_error_types": ["RpcError"]
+}

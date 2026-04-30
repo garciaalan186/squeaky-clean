@@ -1,0 +1,22 @@
+{
+  "name": "DynamoOrderRepositorySaveFind",
+  "pattern": "Repository",
+  "implements": "OrderRepositorySaveFind",
+  "fields": [],
+  "methods": [
+    "save(order_id: str, payload: bytes) -> None",
+    "find_by_id(order_id: str) -> bytes"
+  ],
+  "depends": ["OrderRepositorySaveFind"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositorySaveFind (Repository, file=src.domain.orders.order_repository_save_find): fields=[], methods=[\"save(order_id: str, payload: bytes) -> None\", \"find_by_id(order_id: str) -> bytes\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.dynamo_order_repository_save_find",
+  "tech_spec_path": "document_db/dynamodb/boto3==1.34.json",
+  "expected_imports": [
+    "import boto3",
+    "from botocore.exceptions import ClientError, EndpointConnectionError",
+    "from src.domain.orders.order_repository_save_find import OrderRepositorySaveFind"
+  ],
+  "expected_error_types": ["ClientError", "EndpointConnectionError"]
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "pg_node",
+  "version_pin": "pg==8.11.3",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "pg@^8.11.0"
+  },
+  "imports": {
+    "primary": "import { Pool } from 'pg';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._pool = new Pool({ connectionString });",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "connectionString"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(record: Record<string, unknown>): Promise<void>",
+      "sdk_call": "await this._pool.query('INSERT INTO t(id, name) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name', [record.id, record.name]);",
+      "error_types": [
+        "DatabaseError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "findById",
+      "signature": "(id: string): Promise<Record<string, unknown> | null>",
+      "sdk_call": "const r = await this._pool.query('SELECT * FROM t WHERE id = $1', [id]); return r.rows[0] ?? null;",
+      "error_types": [
+        "DatabaseError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "del",
+      "signature": "(id: string): Promise<void>",
+      "sdk_call": "await this._pool.query('DELETE FROM t WHERE id = $1', [id]);",
+      "error_types": [
+        "DatabaseError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "DATABASE_URL"
+    ]
+  },
+  "code_style_notes": [
+    "use $N placeholders to prevent SQL injection"
+  ],
+  "allowed_doc_origins": [
+    "https://node-postgres.com/"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "grpcio",
+  "version_pin": "grpcio==1.62",
+  "language": "python",
+  "install": {"manager": "pip", "package": "grpcio>=1.62"},
+  "imports": {
+    "primary": "import grpc",
+    "types":   ["from grpc import RpcError, StatusCode", "from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._use_case = use_case",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "serve",
+      "signature": "(request: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = self._use_case.execute(request); return {'status': 'ok', 'data': result}",
+      "error_types": ["RpcError", "ValueError"],
+      "idempotency": "conditional",
+      "retry_policy": "none"
+    },
+    {
+      "name": "handle_request",
+      "signature": "(request: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = self._use_case.execute(request); return {'status': 'ok', 'data': result}",
+      "error_types": ["RpcError", "ValueError"],
+      "idempotency": "conditional",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "iam_role"
+  },
+  "observability_hooks": ["opentelemetry_grpc_server"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "The handler class is framework-free; user wraps it inside a generated Servicer subclass that calls handler.serve().",
+    "Convert protobuf messages to/from dicts at the wrapping Servicer; keep handler protobuf-free.",
+    "Set context.abort(StatusCode.X, reason) in the wrapping Servicer for error returns; do NOT raise inside handle()."
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.io/docs/languages/python/",
+    "https://grpc.github.io/grpc/python/"
+  ]
+}

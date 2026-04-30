@@ -1,0 +1,41 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "reqwest",
+  "version_pin": "reqwest==0.12.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "reqwest==0.12"},
+  "imports": {
+    "primary": "use reqwest::Client;",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let client = Client::new();",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(url: &str) -> Result<String, reqwest::Error>",
+      "sdk_call": "self.client.get(url).send().await?.text().await",
+      "error_types": ["reqwest::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "post",
+      "signature": "(url: &str, body: String) -> Result<String, reqwest::Error>",
+      "sdk_call": "self.client.post(url).body(body).send().await?.text().await",
+      "error_types": ["reqwest::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "reqwest::Client is cheap to clone (Arc-internal) — share across tasks"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/reqwest/"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Email",
+  "pattern": "ValueObject",
+  "fields": ["value: str"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["value must not be empty", "value must contain '@'"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.users.email"
+}

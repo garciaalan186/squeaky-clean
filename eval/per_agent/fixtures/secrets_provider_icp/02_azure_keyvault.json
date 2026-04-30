@@ -1,0 +1,23 @@
+{
+  "name": "AzureKeyVaultProvider",
+  "pattern": "Adapter",
+  "implements": "Secrets",
+  "fields": [],
+  "methods": [
+    "get_secret(name: str) -> str",
+    "put_secret(name: str, value: str) -> None"
+  ],
+  "depends": ["Secrets"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "Secrets (Gateway, file=src.domain.security.secrets): fields=[], methods=[\"get_secret(name: str) -> str\", \"put_secret(name: str, value: str) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.security.azure_key_vault_provider",
+  "tech_spec_path": "secrets_provider/azure_key_vault/azure-keyvault-secrets==4.7.json",
+  "expected_imports": [
+    "from azure.keyvault.secrets import SecretClient",
+    "from azure.identity import DefaultAzureCredential",
+    "from azure.core.exceptions import AzureError",
+    "from src.domain.security.secrets import Secrets"
+  ],
+  "expected_error_types": ["AzureError"]
+}

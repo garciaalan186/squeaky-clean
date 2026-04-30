@@ -1,0 +1,22 @@
+{
+  "name": "StdlibLogger",
+  "pattern": "Adapter",
+  "implements": "Logger",
+  "fields": [],
+  "methods": [
+    "info(event: str, context: dict[str, Any]) -> None",
+    "warn(event: str, context: dict[str, Any]) -> None",
+    "error(event: str, context: dict[str, Any]) -> None"
+  ],
+  "depends": ["Logger"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "Logger (Gateway, file=src.domain.observability.logger): fields=[], methods=[\"info(event: str, context: dict[str, Any]) -> None\", \"warn(event: str, context: dict[str, Any]) -> None\", \"error(event: str, context: dict[str, Any]) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.observability.stdlib_logger",
+  "tech_spec_path": "observability_logger/stdlib/stdlib.json",
+  "expected_imports": [
+    "import logging",
+    "from src.domain.observability.logger import Logger"
+  ],
+  "expected_error_types": ["OSError"]
+}

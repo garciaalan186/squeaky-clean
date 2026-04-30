@@ -1,0 +1,28 @@
+{
+  "id": "EVENT_PERSISTER",
+  "tier": 5,
+  "slug": "event_persister",
+  "description": "Service that consumes events from Kafka topic 'events.raw' (produced by the upstream EVENT_PRODUCER service) and writes each event to blob storage at key 'events/<received_at>-<id>.json'. The Kafka payload is JSON with EXACT field names: id (str), received_at (str ISO 8601), headers (dict[str, str]), payload (str). The ConsumedEvent entity carries those four fields verbatim. Two bounded contexts: Consumption (Kafka consume + parse) and Archival (blob write).",
+  "required_bounded_contexts": ["Consumption", "Archival"],
+  "acceptance_criteria": [
+    "Given a Kafka message containing a serialized event with keys id, received_at, headers, payload, When consume_event is called, Then result is a ConsumedEvent",
+    "Given a malformed Kafka message, When consume_event is called, Then an error is raised",
+    "Given a ConsumedEvent and a blob storage adapter, When archive_event is called, Then the event is written to key 'events/<received_at>-<id>.json'",
+    "Given a blob write failure, When archive_event is called, Then an error is raised",
+    "Given the same ConsumedEvent twice, When archive_event is called, Then the second write is idempotent (overwrite)"
+  ],
+  "expected_module_count": [3, 5],
+  "expected_class_count": [10, 20],
+  "required_patterns": ["Entity", "ValueObject", "UseCase", "Adapter", "Gateway"],
+  "target_language": "python",
+  "infrastructure_choices": [
+    {"category": "message_queue_consumer", "technology": "kafka", "version_pin": "confluent-kafka==2.5"},
+    {"category": "blob_storage", "technology": "local_disk", "version_pin": "stdlib"}
+  ],
+  "domain_conventions": [
+    "idempotent_retries_safe"
+  ],
+  "consumes_contracts": [
+    {"contract_name": "events.raw", "role": "consumes"}
+  ]
+}

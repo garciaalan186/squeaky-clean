@@ -1,0 +1,62 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "local_disk",
+  "version_pin": "jdk",
+  "language": "java",
+  "install": {"manager": "stdlib", "package": "java.nio.file"},
+  "imports": {
+    "primary": "import java.nio.file.Path;",
+    "types": [
+      "import java.nio.file.Paths;",
+      "import java.nio.file.Files;",
+      "import java.io.IOException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.root = Paths.get(rootDir); Files.createDirectories(this.root);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["root_dir"]
+  },
+  "primary_operations": [
+    {
+      "name": "putBlob",
+      "signature": "(String key, byte[] body)",
+      "sdk_call": "Path target = this.root.resolve(key);\nFiles.createDirectories(target.getParent());\nFiles.write(target, body);",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "getBlob",
+      "signature": "(String key)",
+      "sdk_call": "return Files.readAllBytes(this.root.resolve(key));",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "deleteBlob",
+      "signature": "(String key)",
+      "sdk_call": "Files.deleteIfExists(this.root.resolve(key));",
+      "error_types": ["IOException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "java.nio.file.Files operations are synchronous and thread-safe at the OS level.",
+    "Files.deleteIfExists provides idempotent delete semantics.",
+    "Catch IOException and re-raise as RuntimeException with a descriptive message.",
+    "Callers should ensure 'key' does not contain '..' path traversal sequences."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/file/package-summary.html"
+  ]
+}

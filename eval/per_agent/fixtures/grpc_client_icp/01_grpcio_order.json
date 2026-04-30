@@ -1,0 +1,22 @@
+{
+  "name": "GrpcioOrderClient",
+  "pattern": "Adapter",
+  "implements": "OrderClient",
+  "fields": [],
+  "methods": [
+    "call(method: str, request: bytes) -> bytes",
+    "close() -> None"
+  ],
+  "depends": ["OrderClient"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderClient (Gateway, file=src.domain.rpc.order_client): fields=[], methods=[\"call(method: str, request: bytes) -> bytes\", \"close() -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.rpc.grpcio_order_client",
+  "tech_spec_path": "grpc_client/grpcio/grpcio==1.62.json",
+  "expected_imports": [
+    "import grpc",
+    "from grpc import RpcError, StatusCode",
+    "from src.domain.rpc.order_client import OrderClient"
+  ],
+  "expected_error_types": ["RpcError"]
+}

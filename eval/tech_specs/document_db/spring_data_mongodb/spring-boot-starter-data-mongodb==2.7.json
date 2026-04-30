@@ -1,0 +1,63 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "spring_data_mongodb",
+  "version_pin": "spring-boot-starter-data-mongodb==2.7",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.boot:spring-boot-starter-data-mongodb:2.7.18"},
+  "imports": {
+    "primary": "import org.springframework.data.mongodb.core.MongoTemplate;",
+    "types": [
+      "import org.springframework.data.mongodb.core.query.Criteria;",
+      "import org.springframework.data.mongodb.core.query.Query;",
+      "import org.springframework.dao.DataAccessException;",
+      "import org.bson.Document;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.mongoTemplate = mongoTemplate;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["mongo_template"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(String id, byte[] payload)",
+      "sdk_call": "this.mongoTemplate.save(new Document(\"_id\", id).append(\"payload\", payload), \"items\");",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "findById",
+      "signature": "(String id)",
+      "sdk_call": "Document d = this.mongoTemplate.findOne(Query.query(Criteria.where(\"_id\").is(id)), Document.class, \"items\"); return d == null ? new byte[0] : (byte[]) d.get(\"payload\");",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "deleteById",
+      "signature": "(String id)",
+      "sdk_call": "this.mongoTemplate.remove(Query.query(Criteria.where(\"_id\").is(id)), \"items\");",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["SPRING_DATA_MONGODB_URI"]
+  },
+  "observability_hooks": ["spring_actuator", "micrometer"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "Spring Boot auto-configures MongoTemplate from spring.data.mongodb.* properties.",
+    "MongoTemplate is thread-safe; share one instance via @Bean.",
+    "Use Query+Criteria builders rather than raw BSON strings."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-data/mongodb/docs/"
+  ]
+}
