@@ -12,8 +12,6 @@
 
 [![CI](https://github.com/garciaalan186/squeaky-clean/actions/workflows/ci.yml/badge.svg)](https://github.com/garciaalan186/squeaky-clean/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Tests](https://img.shields.io/badge/tests-1508_passing-brightgreen.svg)](#)
-[![mypy](https://img.shields.io/badge/mypy-strict-blue.svg)](#)
 
 ---
 
@@ -32,18 +30,18 @@ export ANTHROPIC_API_KEY="<your-key>"  # secret-scan: allow
 squeaky generate --problem-file examples/todo_api/todo_problem.json --infra=auto
 ```
 
-That command produces a runnable Flask Todo API in ~15 seconds for ~$0.07.
+That command produces a runnable Flask Todo API from a sample spec.
 
 ## What's different
 
 The market has plenty of "AI writes your app" demos. Squeaky Clean's differentiators:
 
-- **Deterministic by default.** `temperature=0` for architectural decisions; same ProblemSpec produces byte-identical architecture.notation across runs.
-- **Six languages at parity.** Same `ProblemSpec`, change `target_language: "python" | "java" | "go" | "rust" | "javascript" | "typescript"`. 60 Tier-C ICPs across 15 infrastructure categories.
-- **Real SDK integration.** Generated adapters import `boto3.S3Client` / `KafkaTemplate` / `redis.Client` / etc. and call real methods — not stubs.
+- **Cached replay.** All tiers pin `temperature=0` for architectural decisions; every LLM call routes through a content-addressed response cache. Repeats of the same input return cached output. First-call output depends on the API's runtime behavior.
+- **Six languages.** Same `ProblemSpec`, change `target_language: "python" | "java" | "go" | "rust" | "javascript" | "typescript"`. 60 Tier-C atomic agents across 15 infrastructure categories.
+- **Real SDK integration.** Generated adapters import `boto3.S3Client` / `KafkaTemplate` / `redis.Client` / etc. and call SDK methods directly.
 - **Cross-service contract fidelity.** When two services produce/consume the same Kafka topic, Squeaky Clean's Contract Registry enforces field-shape agreement across language boundaries with case-tolerant validation.
-- **Port/adapter discipline preserved.** Domain layer never imports infrastructure. Concrete adapters never live in the application layer. The generated `dependency_rule.py` validator catches violations.
-- **Honest tests_pass numbers published.** See the [coverage matrix](#coverage-matrix) below — we publish what works AND what doesn't.
+- **Port/adapter discipline.** Domain layer never imports infrastructure. Concrete adapters never live in the application layer. The generated `dependency_rule.py` validator catches violations.
+- **Benchmarks page** with measured `tests_pass`, cost, and wall-clock figures traceable to specific run IDs. See `BENCHMARK_METHODOLOGY.md` for the methodology and the docs site for the latest results.
 
 ## Quickstart
 
@@ -90,15 +88,13 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 | secrets_provider | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | search | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-`✅` = full Tier C ICP + ≥2 TechSpec snapshots + verified e2e build. `⏳` = on the roadmap.
+`✅` = full Tier C atomic agent + ≥2 TechSpec snapshots + e2e build available. `⏳` = on the roadmap.
 
-## Honest limits
+## Known limits
 
-What we publish that other tools don't:
-
-- **`tests_pass` is a real number, not a marketing claim.** On the canonical event-pipeline benchmark: Python 0.40, Java/Go/Rust/JS/TS 0.00 (toolchains report zero on availability fallback rather than crashing the pipeline; `mvn -q compile` does succeed against the generated Java).
-- **Cost is published.** $0.05–$0.10 for P0 (todo_api), $0.30–$0.40 for distributed multi-service problems. See `BENCHMARK_METHODOLOGY.md` for the Architectural Complexity Score (ACS) that normalizes cost across heterogeneous problem complexity.
-- **Honest failure modes documented.** TestArchitect can hallucinate verbs not in the ModuleSpec — we emit `pytest.fail("verb X not in ModuleSpec")` honestly rather than inventing methods. K5's per-module criterion filtering bounds this; remaining residue is genuine impl/test mismatches.
+- **`tests_pass`.** Per-language `tests_pass` figures depend on the toolchain availability of the run environment (per-language test runners report zero when their toolchain is missing rather than crashing the pipeline). Current measured figures by run ID are on the Benchmarks page in the docs.
+- **Cost.** Cost figures by problem and by run ID are on the Benchmarks page. Methodology, including the Architectural Complexity Score (ACS) for cross-problem normalization, is in `BENCHMARK_METHODOLOGY.md`.
+- **TestArchitect verb hallucination.** When the architect's emitted Squib doesn't declare a verb the acceptance criteria reference, the generated test calls `pytest.fail("verb X not in ModuleSpec")` rather than inventing methods. K5's per-module criterion filtering bounds this; remaining residue is genuine impl/test mismatches.
 
 ## How it works (60 seconds)
 
@@ -125,7 +121,7 @@ PrincipalArchitect ──► §Notation ModuleSpec (text)
                                           mvn / cargo / pytest / etc.
 ```
 
-Three model tiers — Architect (high-parameter, deterministic), Manager (mid, deterministic), ICP (low, lightly sampled, parallelized). Cost is dominated by ICPs.
+Three model tiers: Architect (high-parameter), Manager (mid), atomic agent (compact, lightly sampled, parallelized). Cost is dominated by the atomic-agent tier.
 
 ## Examples
 
@@ -135,13 +131,16 @@ Three model tiers — Architect (high-parameter, deterministic), Manager (mid, d
 
 ## Documentation
 
-- [`docs/overview.md`](docs/overview.md) — 5-minute pitch
-- [`docs/architecture.md`](docs/architecture.md) — three tiers + agent hierarchy
-- [`docs/notation.md`](docs/notation.md) — §Notation grammar reference
-- [`docs/writing_a_problem_spec.md`](docs/writing_a_problem_spec.md) — walkthrough + best practices
-- [`docs/extending.md`](docs/extending.md) — custom-pattern hook + custom Tier C agents
-- [`docs/infrastructure_layer_design.md`](docs/infrastructure_layer_design.md) — full design doc for the generalized infrastructure layer
-- [`docs/roadmap.md`](docs/roadmap.md) — public, milestone-level
+Docs live at https://docs.squeakyclean.ai. Highlights:
+
+- **Why Squeaky Clean?** — design philosophy + 5-minute pitch.
+- **Architecture deep-dive** — three tiers + agent hierarchy.
+- **Squib grammar** — the inter-tier instruction set.
+- **Author your first ProblemSpec** — walkthrough + best practices.
+- **Custom patterns** — extension hook + custom Tier C agents.
+- **Infrastructure layer design** — full design doc.
+- **Benchmarks** — methodology + measured run data.
+- **Roadmap** — public, milestone-level.
 
 ## Contributing
 
@@ -153,4 +152,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). The framework eats its own dog food: e
 
 ## Project status
 
-**Active development.** 1500+ tests; mypy strict clean; 60 Tier C ICPs; 6 languages. Pre-launch milestone (Milestone K) complete. Looking for early users with real ProblemSpecs.
+**Active development.** 60 Tier C atomic agents across 15 infrastructure categories; six target languages. Pre-launch milestone (Milestone K) complete. Looking for early users with real ProblemSpecs.
