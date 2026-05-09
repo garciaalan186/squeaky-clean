@@ -8,7 +8,7 @@ Each tier maps to a different model size + temperature + prompt-cache policy.
 
 | Tier | Default model | Temperature | Seeded? | What it does |
 |---|---|---:|---|---|
-| **Architect** | claude-sonnet-4-6 | 0 | seed=0 | Reads ProblemSpec, emits `ArchitectureSpec` in §Notation. One call per run. |
+| **Architect** | claude-sonnet-4-6 | 0 | seed=0 | Reads ProblemSpec, emits `ArchitectureSpec` in Squib. One call per run. |
 | **Manager** | claude-sonnet-4-6 | 0 | seed=0 | TestArchitect, SecurityArchitect, InfrastructureChoiceArchitect, EngineeringManager. Mid-tier orchestration. |
 | **ICP** | claude-haiku-4-5 | 0.2 | seed=run.seed | Implements one class. Parallelized N-wide. Cost driver. |
 | **Fixer** | claude-sonnet-4-6 | 0 | seed=0 | Single retry pass when a generated test fails. |
@@ -24,7 +24,7 @@ Each tier maps to a different model size + temperature + prompt-cache policy.
                        └────────────┬─────────────┘
                                     ▼
                        ┌──────────────────────────┐
-                       │  ArchitectureSpec        │  multi-MODULE §Notation
+                       │  ArchitectureSpec        │  multi-MODULE Squib
                        │  (validated DAG)         │
                        └────────────┬─────────────┘
                                     ▼
@@ -64,7 +64,7 @@ Each tier maps to a different model size + temperature + prompt-cache policy.
                      └──────────────────────────────────────┘
 ```
 
-## §Notation — the instruction set
+## Squib — the instruction set
 
 The compact text format passed from PrincipalArchitect to ICPs.
 
@@ -101,7 +101,7 @@ CLASSES {
 }
 ```
 
-Full grammar in [`notation.md`](notation.md).
+Full grammar in [`squib.md`](squib.md).
 
 ## Tier C — generalized infrastructure
 
@@ -135,7 +135,7 @@ A registry-driven `LanguageAdapterSelector` (registry coverage validated by unit
 ## See also
 
 - [`overview.md`](overview.md) — 5-min pitch
-- [`notation.md`](notation.md) — §Notation grammar reference
+- [`squib.md`](squib.md) — Squib grammar reference
 - [`writing_a_problem_spec.md`](writing_a_problem_spec.md) — author's guide
 - [`extending.md`](extending.md) — custom-pattern hook + custom Tier C agents
 - [`infrastructure_layer_design.md`](infrastructure_layer_design.md) — full Tier C design

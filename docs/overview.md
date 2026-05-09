@@ -12,11 +12,11 @@ What's missing is **architectural discipline**: the discipline that says domain 
 
 Squeaky Clean splits the codegen problem into three layers, each with its own constraints:
 
-1. **PrincipalArchitect (Architect tier)** — reads a `ProblemSpec`, emits a structured `ArchitectureSpec` in §Notation. Decides bounded contexts, classes per context, layer assignment, dep edges. Deterministic by default.
+1. **PrincipalArchitect (Architect tier)** — reads a `ProblemSpec`, emits a structured `ArchitectureSpec` in Squib. Decides bounded contexts, classes per context, layer assignment, dep edges. Deterministic by default.
 2. **ImplementClass (ICP tier)** — for each class in the architecture, runs a parallelizable Implements-Clean-Pattern agent. Each ICP specializes in exactly one GoF/DDD pattern (or a Tier C infrastructure category). One file in, one file out.
 3. **IntegrateModule + ValidateArchitecture** — assembles the per-class outputs into a runnable project, validates dependency rules, runs the generated test suite, computes metrics.
 
-The §Notation between tiers is the **instruction set architecture**. It's compact (~200 chars per class), unambiguous (validated against a frozen grammar), and the architect's mistakes get caught at the spec layer rather than after generation.
+The Squib between tiers is the **instruction set architecture**. It's compact (~200 chars per class), unambiguous (validated against a frozen grammar), and the architect's mistakes get caught at the spec layer rather than after generation.
 
 ## What you write
 
@@ -72,7 +72,7 @@ See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md) for the Architectu
 
 ## Differentiators
 
-- **Deterministic runs.** Same `ProblemSpec` + `--deterministic` produces byte-identical architecture.notation across two runs. Proven; reproduced in CI.
+- **Deterministic runs.** Same `ProblemSpec` + `--deterministic` produces byte-identical architecture.squib across two runs. Proven; reproduced in CI.
 - **Cross-language parity.** The same `ProblemSpec` switching `target_language` to `java` produces the equivalent Spring Boot project. Same architectural shape; idiomatic SDK calls.
 - **Cross-service contract fidelity.** When two services produce/consume the same Kafka topic, Squeaky Clean's Contract Registry enforces field-shape agreement across language boundaries — the consumer's `ConsumedEvent` carries the producer's contract field names verbatim, with case-tolerance for languages whose conventions would otherwise rename `received_at` → `receivedAt`.
 - **Architectural discipline preserved.** Domain layer never imports infrastructure. Concrete adapters never live in the application layer. Generated code passes the framework's own dependency rule.
@@ -86,5 +86,5 @@ See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md) for the Architectu
 ## Next steps
 
 - [Quickstart](../README.md#quickstart) — generate the Todo API in 15 seconds.
-- [Architecture deep-dive](architecture.md) — three model tiers + agent hierarchy + the §Notation grammar.
+- [Architecture deep-dive](architecture.md) — three model tiers + agent hierarchy + the Squib grammar.
 - [Writing a ProblemSpec](writing_a_problem_spec.md) — walkthrough + best practices.

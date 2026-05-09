@@ -29,7 +29,7 @@ Write a Markdown spec at any path on your filesystem. Mirror the structure of `s
 }
 ```
 
-`name` matches the §Notation `pattern` field the architect emits. `icp_spec_name` is the spec lookup key. `extra_spec_roots` is the directory the framework's `LoadAgentSpec` searches IN ADDITION to its bundled library.
+`name` matches the Squib `pattern` field the architect emits. `icp_spec_name` is the spec lookup key. `extra_spec_roots` is the directory the framework's `LoadAgentSpec` searches IN ADDITION to its bundled library.
 
 ### 3. Run with the manifest
 

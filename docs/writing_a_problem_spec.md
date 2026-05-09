@@ -59,7 +59,7 @@ Common social/e-commerce/auth semantics often have to be re-derived in every Ghe
 "domain_conventions": ["timeline_includes_self", "follow_asymmetric", "auth_session_single_active"]
 ```
 
-Each tag maps (in `convention_to_invariant.py`) to a §Notation INVARIANT the architect MUST surface verbatim. Today's registry covers ~9 common conventions; PRs welcome to add more.
+Each tag maps (in `convention_to_invariant.py`) to a Squib INVARIANT the architect MUST surface verbatim. Today's registry covers ~9 common conventions; PRs welcome to add more.
 
 ### 5. Cross-service contracts via `produces_contracts` / `consumes_contracts`
 
@@ -113,7 +113,7 @@ Sensitivity tags ground the SecurityArchitect's concern generation in declared s
 If a generated run looks wrong:
 
 1. Read `eval_report.json` for `tests_pass`, `architecture_violations`, `cross_module_dependency_violations`, `http_convention_violations`. Most violations are caught + retried automatically; persistent violations are logged + cause graceful exit.
-2. Read `architecture.notation` to see what the architect produced. If a class belongs to the wrong module, your `required_bounded_contexts` may be too coarse; split.
+2. Read `architecture.squib` to see what the architect produced. If a class belongs to the wrong module, your `required_bounded_contexts` may be too coarse; split.
 3. Use `--deterministic` to lock down stochastic variation and isolate spec-induced issues.
 4. Use `--replicates 5` to surface mean ± stddev of `tests_pass` if you suspect stochastic drift.
 
@@ -132,6 +132,6 @@ Cost: ~$0.40. ACS ≈ 16. Yields a working Flask app with port/adapter disciplin
 
 - [`overview.md`](overview.md) — what the framework does
 - [`architecture.md`](architecture.md) — the three model tiers
-- [`notation.md`](notation.md) — §Notation grammar reference
+- [`squib.md`](squib.md) — Squib grammar reference
 - [`extending.md`](extending.md) — custom-pattern hooks
 - `examples/` — three runnable sample ProblemSpecs

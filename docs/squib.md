@@ -1,6 +1,6 @@
-# §Notation — Grammar Reference
+# Squib — Grammar Reference
 
-§Notation is the compact text format the PrincipalArchitect emits and ICPs consume. It is the framework's instruction set architecture.
+Squib is the compact text format the PrincipalArchitect emits and ICPs consume. It is the framework's instruction set architecture.
 
 ## Top-level structure
 
@@ -65,9 +65,9 @@ CLASSES {
 
 ## Type vocabulary
 
-§Notation uses language-neutral type names. Per-language ICPs translate via the **type-fidelity rule** in each language's ICP spec:
+Squib uses language-neutral type names. Per-language ICPs translate via the **type-fidelity rule** in each language's ICP spec:
 
-| §Notation | Python | Java | Go | Rust | JS / TS |
+| Squib | Python | Java | Go | Rust | JS / TS |
 |---|---|---|---|---|---|
 | `str` | `str` | `String` | `string` | `String` / `&str` | `string` |
 | `int` | `int` | `int` | `int` | `i64` | `number` |
@@ -95,7 +95,7 @@ The `ProblemSpec` JSON drives the architect. Beyond `id`, `description`, `accept
 
 When any of these is present in the user prompt, the architect's spec includes a strict constraint to honor it (constraint #18-#22 in `PrincipalArchitect.md`).
 
-## Validators that run on §Notation
+## Validators that run on Squib
 
 Before ICP fan-out, the framework runs five validators against the architect's output:
 
