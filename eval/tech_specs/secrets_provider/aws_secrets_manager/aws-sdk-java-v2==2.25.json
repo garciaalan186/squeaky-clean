@@ -1,0 +1,55 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "aws_secrets_manager",
+  "version_pin": "aws-sdk-java-v2==2.25",
+  "language": "java",
+  "install": {"manager": "maven", "package": "software.amazon.awssdk:secretsmanager:2.25.0"},
+  "imports": {
+    "primary": "import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;",
+    "types": [
+      "import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;",
+      "import software.amazon.awssdk.services.secretsmanager.model.PutSecretValueRequest;",
+      "import software.amazon.awssdk.services.secretsmanager.model.SecretsManagerException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.client = SecretsManagerClient.builder().build();",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["region"]
+  },
+  "primary_operations": [
+    {
+      "name": "getSecret",
+      "signature": "(String name)",
+      "sdk_call": "return this.client.getSecretValue(GetSecretValueRequest.builder().secretId(name).build()).secretString();",
+      "error_types": ["SecretsManagerException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "putSecret",
+      "signature": "(String name, String value)",
+      "sdk_call": "this.client.putSecretValue(PutSecretValueRequest.builder().secretId(name).secretString(value).build());",
+      "error_types": ["SecretsManagerException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "iam_role",
+    "env_vars": ["AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
+  },
+  "observability_hooks": ["aws-xray-compatible"],
+  "rate_limit_defaults": {"rps": 1500, "burst": 3000},
+  "code_style_notes": [
+    "SecretsManagerClient.create() resolves credentials via the default provider chain.",
+    "SecretsManagerClient is thread-safe; share one instance across the application.",
+    "NEVER log the secret value — even on the error path."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/secretsmanager/latest/userguide/",
+    "https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/secretsmanager/"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "local_disk_ts",
+  "version_pin": "node-fs",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@types/node@^20.0.0"
+  },
+  "imports": {
+    "primary": "import { promises as fs } from 'node:fs';",
+    "types": [
+      "import path from 'node:path';"
+    ]
+  },
+  "client_construction": {
+    "code": "this._root = rootDir;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "rootDir"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "putBlob",
+      "signature": "(key: string, body: Buffer): Promise<void>",
+      "sdk_call": "await fs.mkdir(this._root, { recursive: true }); await fs.writeFile(path.join(this._root, key), body);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "getBlob",
+      "signature": "(key: string): Promise<Buffer>",
+      "sdk_call": "return await fs.readFile(path.join(this._root, key));",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "deleteBlob",
+      "signature": "(key: string): Promise<void>",
+      "sdk_call": "await fs.unlink(path.join(this._root, key));",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "@types/node provides node:fs types"
+  ],
+  "allowed_doc_origins": [
+    "https://nodejs.org/api/fs.html"
+  ]
+}

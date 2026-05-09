@@ -1,0 +1,11 @@
+{
+  "name": "Subscription",
+  "pattern": "Entity",
+  "fields": ["id: str", "plan: str", "active: bool = True"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.billing.subscription"
+}

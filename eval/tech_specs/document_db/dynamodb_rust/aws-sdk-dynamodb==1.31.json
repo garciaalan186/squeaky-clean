@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "dynamodb_rust",
+  "version_pin": "aws-sdk-dynamodb==1.31.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "aws-sdk-dynamodb==1.31"},
+  "imports": {
+    "primary": "use aws_sdk_dynamodb::Client;",
+    "types": ["use aws_sdk_dynamodb::types::AttributeValue;"]
+  },
+  "client_construction": {
+    "code": "let config = aws_config::load_from_env().await; let client = Client::new(&config);",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["table"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(id: &str, body: String) -> Result<(), aws_sdk_dynamodb::Error>",
+      "sdk_call": "self.client.put_item().table_name(&self.table).item(\"id\", AttributeValue::S(id.to_string())).item(\"body\", AttributeValue::S(body)).send().await?; Ok(())",
+      "error_types": ["aws_sdk_dynamodb::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(id: &str) -> Result<Option<String>, aws_sdk_dynamodb::Error>",
+      "sdk_call": "let out = self.client.get_item().table_name(&self.table).key(\"id\", AttributeValue::S(id.to_string())).send().await?; Ok(out.item.and_then(|m| m.get(\"body\").and_then(|v| v.as_s().ok().cloned())))",
+      "error_types": ["aws_sdk_dynamodb::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(id: &str) -> Result<(), aws_sdk_dynamodb::Error>",
+      "sdk_call": "self.client.delete_item().table_name(&self.table).key(\"id\", AttributeValue::S(id.to_string())).send().await?; Ok(())",
+      "error_types": ["aws_sdk_dynamodb::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"]},
+  "code_style_notes": [
+    "AttributeValue::S wraps owned String; .as_s() borrows back as &String"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/aws-sdk-dynamodb/"]
+}

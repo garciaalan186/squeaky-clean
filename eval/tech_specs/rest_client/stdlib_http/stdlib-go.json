@@ -1,0 +1,42 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "stdlib_http",
+  "version_pin": "stdlib-go-1.21",
+  "language": "go",
+  "install": {"manager": "stdlib", "package": "stdlib"},
+  "imports": {
+    "primary": "\"net/http\"",
+    "types": ["\"bytes\"", "\"io\""]
+  },
+  "client_construction": {
+    "code": "client := &http.Client{}",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Get",
+      "signature": "(url string) ([]byte, error)",
+      "sdk_call": "resp, err := c.client.Get(url); if err != nil { return nil, err }; defer resp.Body.Close(); return io.ReadAll(resp.Body)",
+      "error_types": ["*url.Error", "*net.OpError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Post",
+      "signature": "(url string, body []byte) ([]byte, error)",
+      "sdk_call": "resp, err := c.client.Post(url, \"application/json\", bytes.NewReader(body)); if err != nil { return nil, err }; defer resp.Body.Close(); return io.ReadAll(resp.Body)",
+      "error_types": ["*url.Error", "*net.OpError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "always defer resp.Body.Close() to release the connection",
+    "non-2xx HTTP status is NOT an error in net/http; check resp.StatusCode if required"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/net/http"]
+}

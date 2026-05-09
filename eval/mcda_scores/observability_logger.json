@@ -1,0 +1,23 @@
+{
+  "category": "observability_logger",
+  "candidates": [
+    {
+      "technology": "structlog",
+      "version_pin": "structlog==24.1",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 5, "thru": 5, "eco": 5, "reg": 5, "lic": 5, "team": 4}
+    },
+    {
+      "technology": "loguru",
+      "version_pin": "loguru==0.7",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 5, "cold": 5, "thru": 4, "eco": 4, "reg": 5, "lic": 5, "team": 5}
+    },
+    {
+      "technology": "stdlib",
+      "version_pin": "stdlib",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 5, "thru": 4, "eco": 5, "reg": 5, "lic": 5, "team": 5}
+    }
+  ]
+}

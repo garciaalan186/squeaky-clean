@@ -1,0 +1,66 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "redis",
+  "version_pin": "redis-py==5.0",
+  "language": "python",
+  "install": {"manager": "pip", "package": "redis>=5.0"},
+  "imports": {
+    "primary": "import redis",
+    "types":   ["from redis.exceptions import RedisError"]
+  },
+  "client_construction": {
+    "code": "self._client = redis.Redis(host=host, port=port)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["host", "port"]
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(key: str) -> bytes",
+      "sdk_call": "return self._client.get(key)",
+      "error_types": ["RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "set",
+      "signature": "(key: str, value: bytes) -> None",
+      "sdk_call": "self._client.set(key, value)",
+      "error_types": ["RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "expire",
+      "signature": "(key: str, ttl: int) -> None",
+      "sdk_call": "self._client.expire(key, ttl)",
+      "error_types": ["RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(key: str) -> None",
+      "sdk_call": "self._client.delete(key)",
+      "error_types": ["RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 10000, "burst": 20000},
+  "code_style_notes": [
+    "redis-py 5.x clients are thread-safe; share a single instance per process",
+    "TTL semantics: expire(key, 0) is treated as 'no-op' by the server",
+    "NOTE: this 4-op port triggers PortMethodDecomposer (H2): get/set in one ICP, expire/delete in another"
+  ],
+  "allowed_doc_origins": [
+    "https://redis.readthedocs.io/en/stable/",
+    "https://redis.io/docs/"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "SqsOrderEventSender",
+  "pattern": "Gateway",
+  "implements": "OrderEventSender",
+  "fields": [],
+  "methods": [
+    "send(queue_url: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderEventSender"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderEventSender (Gateway, file=src.domain.events.order_event_sender): fields=[], methods=[\"send(queue_url: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.sqs_order_event_sender",
+  "tech_spec_path": "message_queue_producer/sqs/boto3==1.34.json",
+  "expected_imports": [
+    "import boto3",
+    "from botocore.exceptions import ClientError, EndpointConnectionError",
+    "from src.domain.events.order_event_sender import OrderEventSender"
+  ],
+  "expected_error_types": ["ClientError", "EndpointConnectionError"]
+}

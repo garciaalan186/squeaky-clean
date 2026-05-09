@@ -1,0 +1,52 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "grpc_java",
+  "version_pin": "grpc-okhttp==1.62",
+  "language": "java",
+  "install": {"manager": "maven", "package": "io.grpc:grpc-okhttp:1.62.2"},
+  "imports": {
+    "primary": "import io.grpc.ManagedChannel;",
+    "types": [
+      "import io.grpc.okhttp.OkHttpChannelBuilder;",
+      "import io.grpc.StatusRuntimeException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.channel = channel;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["channel"]
+  },
+  "primary_operations": [
+    {
+      "name": "call",
+      "signature": "(String method, byte[] request)",
+      "sdk_call": "return new byte[0];",
+      "error_types": ["StatusRuntimeException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "close",
+      "signature": "()",
+      "sdk_call": "this.channel.shutdownNow();",
+      "error_types": ["StatusRuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["grpc-census"],
+  "rate_limit_defaults": {"rps": 15000, "burst": 30000},
+  "code_style_notes": [
+    "OkHttpChannelBuilder is the lightweight transport for Android/non-Netty environments.",
+    "Use OkHttpChannelBuilder.forAddress(host, port) and chain .usePlaintext() or .useTransportSecurity().",
+    "Shutdown the channel on application exit."
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.github.io/grpc-java/javadoc/io/grpc/okhttp/package-summary.html"
+  ]
+}

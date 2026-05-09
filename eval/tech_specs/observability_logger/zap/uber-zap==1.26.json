@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "zap",
+  "version_pin": "uber-zap==1.26.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "go.uber.org/zap@v1.26.0"},
+  "imports": {
+    "primary": "\"go.uber.org/zap\"",
+    "types": []
+  },
+  "client_construction": {
+    "code": "l, err := zap.NewProduction(); if err != nil { return nil, err }; sugar := l.Sugar()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Info",
+      "signature": "(msg string, fields ...any)",
+      "sdk_call": "l.sugar.Infow(msg, fields...)",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Warn",
+      "signature": "(msg string, fields ...any)",
+      "sdk_call": "l.sugar.Warnw(msg, fields...)",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Error",
+      "signature": "(msg string, fields ...any)",
+      "sdk_call": "l.sugar.Errorw(msg, fields...)",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "Call logger.Sync() at process shutdown to flush buffered entries",
+    "Sugar logger pairs alternating key-value any args; structured logger uses zap.Field"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/go.uber.org/zap"]
+}

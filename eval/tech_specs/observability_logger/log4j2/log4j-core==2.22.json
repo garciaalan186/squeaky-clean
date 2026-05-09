@@ -1,0 +1,60 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "log4j2",
+  "version_pin": "log4j-core==2.22",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.apache.logging.log4j:log4j-core:2.22.1"},
+  "imports": {
+    "primary": "import org.apache.logging.log4j.Logger;",
+    "types": [
+      "import org.apache.logging.log4j.LogManager;",
+      "import java.util.Map;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.logger = LogManager.getLogger(clazz);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["clazz"]
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(String event, Map<String,Object> context)",
+      "sdk_call": "this.logger.info(\"{} {}\", event, context);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(String event, Map<String,Object> context)",
+      "sdk_call": "this.logger.warn(\"{} {}\", event, context);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(String event, Map<String,Object> context)",
+      "sdk_call": "this.logger.error(\"{} {}\", event, context);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["log4j-threadcontext"],
+  "rate_limit_defaults": {"rps": 200000, "burst": 500000},
+  "code_style_notes": [
+    "Log4j2 is thread-safe; obtain Logger via LogManager.getLogger(SomeClass.class).",
+    "Async loggers (LMAX Disruptor) deliver high throughput; configure via log4j2.xml.",
+    "ThreadContext (MDC) is the structured-context mechanism — set/clear at request boundary."
+  ],
+  "allowed_doc_origins": [
+    "https://logging.apache.org/log4j/2.x/"
+  ]
+}

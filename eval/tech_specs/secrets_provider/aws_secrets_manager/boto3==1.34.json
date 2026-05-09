@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "aws_secrets_manager",
+  "version_pin": "boto3==1.34",
+  "language": "python",
+  "install": {"manager": "pip", "package": "boto3>=1.34"},
+  "imports": {
+    "primary": "import boto3",
+    "types":   ["from botocore.exceptions import ClientError"]
+  },
+  "client_construction": {
+    "code": "self._client = boto3.client('secretsmanager', region_name=region)",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["region"]
+  },
+  "primary_operations": [
+    {
+      "name": "get_secret",
+      "signature": "(name: str) -> str",
+      "sdk_call": "return self._client.get_secret_value(SecretId=name)['SecretString']",
+      "error_types": ["ClientError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "put_secret",
+      "signature": "(name: str, value: str) -> None",
+      "sdk_call": "self._client.put_secret_value(SecretId=name, SecretString=value)",
+      "error_types": ["ClientError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"]
+  },
+  "observability_hooks": ["aws-xray-compatible"],
+  "rate_limit_defaults": {"rps": 50, "burst": 100},
+  "code_style_notes": [
+    "boto3 secretsmanager clients are not thread-safe; instantiate per-thread.",
+    "ClientError.response['Error']['Code'] gives 'ResourceNotFoundException' for missing secrets.",
+    "put_secret_value creates a new version; rotate by updating, never overwrite stages."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/secretsmanager/",
+    "https://boto3.amazonaws.com/v1/documentation/"
+  ]
+}

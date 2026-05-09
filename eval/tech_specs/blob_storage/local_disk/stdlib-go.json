@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "local_disk",
+  "version_pin": "stdlib-go-1.21",
+  "language": "go",
+  "install": {"manager": "stdlib", "package": "stdlib"},
+  "imports": {
+    "primary": "\"os\"",
+    "types": ["\"path/filepath\""]
+  },
+  "client_construction": {
+    "code": "if err := os.MkdirAll(rootDir, 0o755); err != nil { return nil, err }",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["rootDir"]
+  },
+  "primary_operations": [
+    {
+      "name": "PutBlob",
+      "signature": "(key string, body []byte) error",
+      "sdk_call": "return os.WriteFile(filepath.Join(s.root, key), body, 0o644)",
+      "error_types": ["*os.PathError", "*fs.PathError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "GetBlob",
+      "signature": "(key string) ([]byte, error)",
+      "sdk_call": "return os.ReadFile(filepath.Join(s.root, key))",
+      "error_types": ["*os.PathError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "DeleteBlob",
+      "signature": "(key string) error",
+      "sdk_call": "return os.Remove(filepath.Join(s.root, key))",
+      "error_types": ["*os.PathError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "os.Remove of a missing file IS an error; if idempotent delete is required wrap in errors.Is(err, os.ErrNotExist)"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/os"]
+}

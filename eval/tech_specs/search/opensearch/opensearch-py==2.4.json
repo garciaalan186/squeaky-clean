@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "opensearch",
+  "version_pin": "opensearch-py==2.4",
+  "language": "python",
+  "install": {"manager": "pip", "package": "opensearch-py>=2.4"},
+  "imports": {
+    "primary": "from opensearchpy import OpenSearch",
+    "types":   ["from opensearchpy.exceptions import OpenSearchException, TransportError", "from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._client = OpenSearch(hosts=[host])",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["host"]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(doc_id: str, body: dict[str, Any]) -> None",
+      "sdk_call": "self._client.index(index=self._index_name, id=doc_id, body=body)",
+      "error_types": ["OpenSearchException", "TransportError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "query",
+      "signature": "(query: dict[str, Any]) -> list[dict[str, Any]]",
+      "sdk_call": "result = self._client.search(index=self._index_name, body={'query': query}); return [hit['_source'] for hit in result['hits']['hits']]",
+      "error_types": ["OpenSearchException", "TransportError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "search",
+      "signature": "(query: dict[str, Any]) -> list[dict[str, Any]]",
+      "sdk_call": "result = self._client.search(index=self._index_name, body={'query': query}); return [hit['_source'] for hit in result['hits']['hits']]",
+      "error_types": ["OpenSearchException", "TransportError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": ["OPENSEARCH_USERNAME", "OPENSEARCH_PASSWORD"]
+  },
+  "observability_hooks": ["opentelemetry_opensearch"],
+  "rate_limit_defaults": {"rps": 1000, "burst": 2000},
+  "code_style_notes": [
+    "opensearch-py keeps the legacy 'body=' keyword from elasticsearch<8 — DO NOT use 'document=' here.",
+    "Wrap a search query in {'query': ...} when passing as body; raw queries skip the wrapper.",
+    "TransportError covers connection-level failures; OpenSearchException covers server-rejected requests."
+  ],
+  "allowed_doc_origins": [
+    "https://opensearch.org/docs/latest/clients/python/",
+    "https://opensearch.org/docs/"
+  ]
+}

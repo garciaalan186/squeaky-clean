@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "cosmos",
+  "version_pin": "azure-cosmos==4.5",
+  "language": "python",
+  "install": {"manager": "pip", "package": "azure-cosmos>=4.5"},
+  "imports": {
+    "primary": "from azure.cosmos import CosmosClient",
+    "types":   ["from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError"]
+  },
+  "client_construction": {
+    "code": "self._container = CosmosClient(endpoint, credential=key).get_database_client('app').get_container_client(container_name)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["endpoint", "container_name"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(entity_id: str, payload: bytes) -> None",
+      "sdk_call": "self._container.upsert_item({'id': entity_id, 'payload': payload.decode('latin-1')})",
+      "error_types": ["CosmosHttpResponseError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(entity_id: str) -> bytes",
+      "sdk_call": "doc = self._container.read_item(item=entity_id, partition_key=entity_id); return doc['payload'].encode('latin-1')",
+      "error_types": ["CosmosHttpResponseError", "CosmosResourceNotFoundError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "upsert",
+      "signature": "(entity_id: str, payload: bytes) -> None",
+      "sdk_call": "self._container.upsert_item({'id': entity_id, 'payload': payload.decode('latin-1')})",
+      "error_types": ["CosmosHttpResponseError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": ["COSMOS_ENDPOINT", "COSMOS_KEY"]
+  },
+  "observability_hooks": ["azure-monitor-opentelemetry"],
+  "rate_limit_defaults": {"rps": 1000, "burst": 5000},
+  "code_style_notes": [
+    "CosmosClient is thread-safe; share one instance per application",
+    "partition keys MUST be supplied on read_item; mismatched keys raise CosmosResourceNotFoundError",
+    "binary payloads must be base64 or latin-1 encoded — Cosmos stores JSON strings, not raw bytes"
+  ],
+  "allowed_doc_origins": [
+    "https://learn.microsoft.com/en-us/python/api/azure-cosmos/",
+    "https://learn.microsoft.com/en-us/azure/cosmos-db/"
+  ]
+}

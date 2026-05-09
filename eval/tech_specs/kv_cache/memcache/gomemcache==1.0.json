@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "memcache",
+  "version_pin": "gomemcache==1.0.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/bradfitz/gomemcache/memcache@v1.0.0"},
+  "imports": {
+    "primary": "\"github.com/bradfitz/gomemcache/memcache\"",
+    "types": []
+  },
+  "client_construction": {
+    "code": "client := memcache.New(addr)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["addr"]
+  },
+  "primary_operations": [
+    {
+      "name": "Set",
+      "signature": "(key, value string) error",
+      "sdk_call": "return m.client.Set(&memcache.Item{Key: key, Value: []byte(value)})",
+      "error_types": ["memcache.ErrServerError", "memcache.ErrNotStored"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Get",
+      "signature": "(key string) (string, error)",
+      "sdk_call": "it, err := m.client.Get(key); if err != nil { return \"\", err }; return string(it.Value), nil",
+      "error_types": ["memcache.ErrCacheMiss"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Delete",
+      "signature": "(key string) error",
+      "sdk_call": "return m.client.Delete(key)",
+      "error_types": ["memcache.ErrCacheMiss"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "memcache.ErrCacheMiss is the standard 'key missing' sentinel"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/github.com/bradfitz/gomemcache/memcache"]
+}

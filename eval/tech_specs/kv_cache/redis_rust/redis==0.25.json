@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "redis_rust",
+  "version_pin": "redis==0.25.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "redis==0.25"},
+  "imports": {
+    "primary": "use redis::AsyncCommands;",
+    "types": ["use redis::Client;"]
+  },
+  "client_construction": {
+    "code": "let client = Client::open(url)?;",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["url"]
+  },
+  "primary_operations": [
+    {
+      "name": "set",
+      "signature": "(key: &str, value: &str) -> Result<(), redis::RedisError>",
+      "sdk_call": "let mut conn = self.client.get_async_connection().await?; conn.set(key, value).await",
+      "error_types": ["redis::RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "get",
+      "signature": "(key: &str) -> Result<String, redis::RedisError>",
+      "sdk_call": "let mut conn = self.client.get_async_connection().await?; conn.get(key).await",
+      "error_types": ["redis::RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete",
+      "signature": "(key: &str) -> Result<(), redis::RedisError>",
+      "sdk_call": "let mut conn = self.client.get_async_connection().await?; conn.del(key).await",
+      "error_types": ["redis::RedisError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["REDIS_URL"]},
+  "code_style_notes": [
+    "use AsyncCommands trait for await-able set/get/del",
+    "feature flag tokio-comp required in Cargo.toml"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/redis/"]
+}

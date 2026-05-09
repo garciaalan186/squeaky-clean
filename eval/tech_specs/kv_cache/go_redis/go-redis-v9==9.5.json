@@ -1,0 +1,58 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "go_redis",
+  "version_pin": "go-redis-v9==9.5.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/redis/go-redis/v9@v9.5.0"},
+  "imports": {
+    "primary": "\"github.com/redis/go-redis/v9\"",
+    "types": ["\"context\"", "\"time\""]
+  },
+  "client_construction": {
+    "code": "client := redis.NewClient(&redis.Options{Addr: addr}); ctx := context.Background()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["addr"]
+  },
+  "primary_operations": [
+    {
+      "name": "Set",
+      "signature": "(key, value string) error",
+      "sdk_call": "return r.client.Set(r.ctx, key, value, 0).Err()",
+      "error_types": ["redis.Error", "*net.OpError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Get",
+      "signature": "(key string) (string, error)",
+      "sdk_call": "return r.client.Get(r.ctx, key).Result()",
+      "error_types": ["redis.Nil", "redis.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Expire",
+      "signature": "(key string, ttl time.Duration) error",
+      "sdk_call": "return r.client.Expire(r.ctx, key, ttl).Err()",
+      "error_types": ["redis.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Delete",
+      "signature": "(key string) error",
+      "sdk_call": "return r.client.Del(r.ctx, key).Err()",
+      "error_types": ["redis.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "redis.Nil sentinel IS the standard 'key missing' error — return it, don't translate",
+    "Context-bound calls allow per-request deadlines"
+  ],
+  "allowed_doc_origins": ["https://redis.uptrace.dev/"]
+}

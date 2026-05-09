@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_consumer",
+  "technology": "kafkajs",
+  "version_pin": "kafkajs==2.2.4",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "kafkajs@^2.2.4"
+  },
+  "imports": {
+    "primary": "import { Kafka } from 'kafkajs';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._kafka = new Kafka({ brokers: brokers.split(',') }); this._consumer = this._kafka.consumer({ groupId }); this._topic = topic;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "brokers",
+      "topic",
+      "groupId"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "consumeRaw",
+      "signature": "(): Promise<Buffer | null>",
+      "sdk_call": "await this._consumer.connect(); await this._consumer.subscribe({ topic: this._topic, fromBeginning: false }); return new Promise((resolve) => { this._consumer.run({ eachMessage: async ({ message }) => resolve(message.value) }); });",
+      "error_types": [
+        "KafkaJSError"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "KAFKA_BOOTSTRAP_SERVERS",
+      "KAFKA_GROUP_ID",
+      "KAFKA_TOPIC"
+    ]
+  },
+  "code_style_notes": [
+    "consumer.run is the long-poll loop; wrap in promise for one-shot fetch"
+  ],
+  "allowed_doc_origins": [
+    "https://kafka.js.org/"
+  ]
+}

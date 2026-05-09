@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "betterproto",
+  "version_pin": "betterproto==2.0",
+  "language": "python",
+  "install": {"manager": "pip", "package": "betterproto[grpclib]>=2.0.0b6"},
+  "imports": {
+    "primary": "from grpclib.client import Channel",
+    "types":   ["from grpclib.exceptions import GRPCError"]
+  },
+  "client_construction": {
+    "code": "self._channel = Channel(host=host, port=port); self._stub = stub_factory(self._channel)",
+    "is_async": true,
+    "thread_safe": false,
+    "dependencies": ["host", "port", "stub_factory"]
+  },
+  "primary_operations": [
+    {
+      "name": "call",
+      "signature": "(method: str, request: bytes) -> bytes",
+      "sdk_call": "result = await getattr(self._stub, method)(request); return bytes(result)",
+      "error_types": ["GRPCError"],
+      "idempotency": "conditional",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "sdk_call": "self._channel.close()",
+      "error_types": ["GRPCError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "iam_role"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 4000, "burst": 8000},
+  "code_style_notes": [
+    "betterproto stubs are async; the wrapping use-case must await calls.",
+    "grpclib Channel is per event-loop; do NOT share between asyncio loops.",
+    "Use SecureChannel + ssl_context in production."
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/danielgtaylor/python-betterproto",
+    "https://grpclib.readthedocs.io/"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "FastApiRoomHandler",
+  "pattern": "Adapter",
+  "implements": "RoomHandler",
+  "fields": [],
+  "methods": [
+    "on_message(message: dict[str, Any]) -> dict[str, Any]",
+    "accept_connection(client_id: str) -> dict[str, Any]"
+  ],
+  "depends": ["RoomHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "RoomHandler (UseCase, file=src.application.use_cases.join_room): fields=[], methods=[\"execute(message: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.ws.fastapi_room_handler",
+  "tech_spec_path": "websocket_server_handler/fastapi/fastapi==0.110.json",
+  "expected_imports": [
+    "from fastapi import WebSocketDisconnect",
+    "from src.application.use_cases.join_room import RoomHandler"
+  ],
+  "expected_error_types": ["WebSocketDisconnect", "ValueError"]
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "spring_websocket",
+  "version_pin": "spring-boot-starter-websocket==2.7",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.boot:spring-boot-starter-websocket:2.7.18"},
+  "imports": {
+    "primary": "import org.springframework.web.socket.WebSocketHandler;",
+    "types": [
+      "import org.springframework.web.socket.WebSocketSession;",
+      "import org.springframework.web.socket.WebSocketMessage;",
+      "import org.springframework.web.socket.CloseStatus;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "afterConnectionEstablished",
+      "signature": "(WebSocketSession session)",
+      "sdk_call": "this.useCase.execute(\"connected:\" + session.getId());",
+      "error_types": ["Exception"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "handleMessage",
+      "signature": "(WebSocketSession session, WebSocketMessage<?> message)",
+      "sdk_call": "this.useCase.execute(message.getPayload().toString());",
+      "error_types": ["Exception"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "afterConnectionClosed",
+      "signature": "(WebSocketSession session, CloseStatus status)",
+      "sdk_call": "this.useCase.execute(\"closed:\" + session.getId());",
+      "error_types": ["Exception"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["spring_actuator"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "Implement WebSocketHandler and register via WebSocketConfigurer.addHandler().",
+    "Spring Boot autoconfigures the WebSocket endpoint via @EnableWebSocket.",
+    "Frame buffering is handled by the framework — do NOT call session.sendMessage in a tight loop."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-framework/reference/web/websocket.html"
+  ]
+}

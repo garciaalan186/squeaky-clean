@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "grpc_js_ts",
+  "version_pin": "@grpc/grpc-js==1.10.6",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@grpc/grpc-js@^1.10.0"
+  },
+  "imports": {
+    "primary": "import type { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "useCase"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "echo",
+      "signature": "(call: ServerUnaryCall<unknown, unknown>, callback: sendUnaryData<unknown>): Promise<void>",
+      "sdk_call": "const result = await this._useCase.execute(call.request); callback(null, result);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "use type-only import for ServerUnaryCall + sendUnaryData"
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.io/docs/languages/node/"
+  ]
+}

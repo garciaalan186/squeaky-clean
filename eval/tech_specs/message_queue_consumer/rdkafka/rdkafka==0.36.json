@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_consumer",
+  "technology": "rdkafka",
+  "version_pin": "rdkafka==0.36.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "rdkafka==0.36"},
+  "imports": {
+    "primary": "use rdkafka::consumer::{Consumer, StreamConsumer};",
+    "types": ["use rdkafka::config::ClientConfig;", "use rdkafka::Message;"]
+  },
+  "client_construction": {
+    "code": "let consumer: StreamConsumer = ClientConfig::new().set(\"bootstrap.servers\", brokers).set(\"group.id\", group).create()?; consumer.subscribe(&[topic])?;",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["brokers", "group", "topic"]
+  },
+  "primary_operations": [
+    {
+      "name": "consume_raw",
+      "signature": "() -> Result<Vec<u8>, rdkafka::error::KafkaError>",
+      "sdk_call": "let msg = self.consumer.recv().await?; Ok(msg.payload().unwrap_or(&[]).to_vec())",
+      "error_types": ["rdkafka::error::KafkaError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_GROUP_ID", "KAFKA_TOPIC"]},
+  "code_style_notes": [
+    "StreamConsumer.recv yields BorrowedMessage; .payload() returns &[u8]",
+    "manual offset commit required when enable.auto.commit=false"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/rdkafka/"]
+}

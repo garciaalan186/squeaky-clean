@@ -1,0 +1,58 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "sqlite",
+  "version_pin": "stdlib",
+  "language": "python",
+  "install": {"manager": "stdlib", "package": "sqlite3"},
+  "imports": {
+    "primary": "import sqlite3",
+    "types":   ["from sqlite3 import DatabaseError, IntegrityError"]
+  },
+  "client_construction": {
+    "code": "self._conn = sqlite3.connect(database)",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["database"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(entity_id: str, payload: bytes) -> None",
+      "sdk_call": "self._conn.execute('INSERT OR REPLACE INTO entities(id, payload) VALUES (?, ?)', (entity_id, payload)); self._conn.commit()",
+      "error_types": ["DatabaseError", "IntegrityError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(entity_id: str) -> bytes",
+      "sdk_call": "row = self._conn.execute('SELECT payload FROM entities WHERE id = ?', (entity_id,)).fetchone(); return bytes(row[0])",
+      "error_types": ["DatabaseError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete",
+      "signature": "(entity_id: str) -> None",
+      "sdk_call": "self._conn.execute('DELETE FROM entities WHERE id = ?', (entity_id,)); self._conn.commit()",
+      "error_types": ["DatabaseError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "sqlite3.Connection objects are NOT thread-safe by default; pass check_same_thread=False to share",
+    "always commit() after writes; sqlite3 opens an implicit transaction on the first execute",
+    "use ? as the parameter placeholder; never f-string user input into SQL"
+  ],
+  "allowed_doc_origins": [
+    "https://docs.python.org/3/library/sqlite3.html",
+    "https://www.sqlite.org/docs.html"
+  ]
+}

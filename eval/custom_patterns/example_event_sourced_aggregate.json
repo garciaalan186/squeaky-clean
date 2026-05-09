@@ -1,0 +1,9 @@
+{
+  "patterns": [
+    {
+      "name": "EventSourcedAggregate",
+      "icp_spec_name": "python/custom/EventSourcedAggregateICP"
+    }
+  ],
+  "extra_spec_roots": ["./eval/custom_patterns/specs/"]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "BeamOrderStreamProcessor",
+  "pattern": "Gateway",
+  "implements": "OrderStreamProcessor",
+  "fields": [],
+  "methods": [
+    "process(record: bytes) -> bytes"
+  ],
+  "depends": ["OrderStreamProcessor"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderStreamProcessor (Gateway, file=src.domain.streams.order_stream_processor): fields=[], methods=[\"process(record: bytes) -> bytes\"], invariants=[]",
+  "target_file": "src.infrastructure.streams.beam_order_stream_processor",
+  "tech_spec_path": "stream_processor/beam/apache-beam==2.55.json",
+  "expected_imports": [
+    "import apache_beam",
+    "from apache_beam import Pipeline, PTransform",
+    "from apache_beam.options.pipeline_options import PipelineOptions",
+    "from src.domain.streams.order_stream_processor import OrderStreamProcessor"
+  ],
+  "expected_error_types": ["RuntimeError"]
+}

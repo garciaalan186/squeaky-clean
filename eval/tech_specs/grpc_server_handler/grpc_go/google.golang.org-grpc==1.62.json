@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "grpc_go",
+  "version_pin": "google.golang.org-grpc==1.62.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "google.golang.org/grpc@v1.62.0"},
+  "imports": {
+    "primary": "\"google.golang.org/grpc\"",
+    "types": ["\"context\""]
+  },
+  "client_construction": {
+    "code": "server := grpc.NewServer()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Call",
+      "signature": "(ctx context.Context, req *Request) (*Response, error)",
+      "sdk_call": "out, err := h.useCase.Execute(req.Payload); if err != nil { return nil, err }; return &Response{Payload: out}, nil",
+      "error_types": ["*status.Status"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "Embed UnimplementedServiceServer in the handler struct for forward compatibility",
+    "Register via pb.RegisterServiceServer(server, handler)"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/google.golang.org/grpc"]
+}

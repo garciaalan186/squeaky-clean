@@ -1,0 +1,61 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "slf4j_logback",
+  "version_pin": "logback-classic==1.2",
+  "language": "java",
+  "install": {"manager": "maven", "package": "ch.qos.logback:logback-classic:1.2.13"},
+  "imports": {
+    "primary": "import org.slf4j.Logger;",
+    "types": [
+      "import org.slf4j.LoggerFactory;",
+      "import java.util.Map;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.logger = LoggerFactory.getLogger(clazz);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["clazz"]
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(String event, Map<String,Object> context)",
+      "sdk_call": "this.logger.info(\"{} {}\", event, context);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(String event, Map<String,Object> context)",
+      "sdk_call": "this.logger.warn(\"{} {}\", event, context);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(String event, Map<String,Object> context)",
+      "sdk_call": "this.logger.error(\"{} {}\", event, context);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["logback-mdc"],
+  "rate_limit_defaults": {"rps": 100000, "burst": 250000},
+  "code_style_notes": [
+    "SLF4J Logger is thread-safe; obtain via LoggerFactory.getLogger(SomeClass.class).",
+    "Use parameterized {} placeholders to avoid string concatenation when log level is disabled.",
+    "Configuration belongs to logback.xml, NOT to the adapter class."
+  ],
+  "allowed_doc_origins": [
+    "https://www.slf4j.org/manual.html",
+    "https://logback.qos.ch/manual/"
+  ]
+}

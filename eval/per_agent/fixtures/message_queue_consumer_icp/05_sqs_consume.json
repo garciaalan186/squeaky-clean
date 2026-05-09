@@ -1,0 +1,21 @@
+{
+  "name": "SqsOrderEventConsumer",
+  "pattern": "Gateway",
+  "implements": "OrderEventConsumer",
+  "fields": [],
+  "methods": [
+    "consume(queue_url: str) -> bytes | None"
+  ],
+  "depends": ["OrderEventConsumer"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderEventConsumer (Gateway, file=src.domain.events.order_event_consumer): fields=[], methods=[\"consume(queue_url: str) -> bytes | None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.sqs_order_event_consumer",
+  "tech_spec_path": "message_queue_consumer/sqs/boto3==1.34.json",
+  "expected_imports": [
+    "import boto3",
+    "from botocore.exceptions import ClientError, EndpointConnectionError",
+    "from src.domain.events.order_event_consumer import OrderEventConsumer"
+  ],
+  "expected_error_types": ["ClientError", "EndpointConnectionError"]
+}

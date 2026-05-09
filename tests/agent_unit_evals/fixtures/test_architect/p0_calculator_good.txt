@@ -1,0 +1,36 @@
+GHERKIN
+---
+Feature: Calculator
+  Scenario: add two operands
+    Given operands 2 and 3
+    When add is called
+    Then result is 5
+  Scenario: divide by zero raises
+    Given operands 1 and 0
+    When divide is called
+    Then an error is raised
+---
+
+TEST_SKELETONS
+---
+FILE tests/test_calculator.py
+CLASS Calculator
+```python
+import pytest
+from calculator import Calculator
+from operand import Operand
+from result import Result
+
+
+def test_add_two_operands() -> None:
+    a, b = Operand(2.0), Operand(3.0)
+    result = Calculator().add(a, b)
+    assert result.value == 5
+
+
+def test_divide_by_zero_raises() -> None:
+    a, b = Operand(1.0), Operand(0.0)
+    with pytest.raises((ValueError, ZeroDivisionError)):
+        Calculator().divide(a, b)
+```
+---

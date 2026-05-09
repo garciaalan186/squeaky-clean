@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "connect_ts",
+  "version_pin": "@connectrpc/connect==1.4.0",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@connectrpc/connect@^1.4.0"
+  },
+  "imports": {
+    "primary": "import { ConnectRouter } from '@connectrpc/connect';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "useCase"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "echo",
+      "signature": "(req: unknown): Promise<unknown>",
+      "sdk_call": "return await this._useCase.execute(req);",
+      "error_types": [
+        "ConnectError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "Connect SDK is TS-first"
+  ],
+  "allowed_doc_origins": [
+    "https://connectrpc.com/"
+  ]
+}

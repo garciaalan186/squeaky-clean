@@ -1,0 +1,67 @@
+{
+  "schema_version": "v1",
+  "category": "kv_cache",
+  "technology": "redis_node_ts",
+  "version_pin": "redis==4.6.13",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "redis@^4.6.0"
+  },
+  "imports": {
+    "primary": "import { createClient, RedisClientType } from 'redis';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = createClient({ url }); this._client.connect();",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": [
+      "url"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "set",
+      "signature": "(key: string, value: string): Promise<void>",
+      "sdk_call": "await this._client.set(key, value);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "get",
+      "signature": "(key: string): Promise<string | null>",
+      "sdk_call": "return await this._client.get(key);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "del",
+      "signature": "(key: string): Promise<void>",
+      "sdk_call": "await this._client.del(key);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "REDIS_URL"
+    ]
+  },
+  "code_style_notes": [
+    "redis@4 ships .d.ts; type Client via RedisClientType"
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/redis/node-redis"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "sqlite_modernc",
+  "version_pin": "modernc-sqlite==1.29.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "modernc.org/sqlite@v1.29.0"},
+  "imports": {
+    "primary": "\"database/sql\"",
+    "types": ["_ \"modernc.org/sqlite\""]
+  },
+  "client_construction": {
+    "code": "db, err := sql.Open(\"sqlite\", path); if err != nil { return nil, err }",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["path"]
+  },
+  "primary_operations": [
+    {
+      "name": "Save",
+      "signature": "(entity Entity) error",
+      "sdk_call": "_, err := r.db.Exec(\"INSERT INTO entities(id, name) VALUES(?, ?)\", entity.ID, entity.Name); return err",
+      "error_types": ["*sqlite.Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "FindById",
+      "signature": "(id string) (Entity, error)",
+      "sdk_call": "var e Entity; err := r.db.QueryRow(\"SELECT id, name FROM entities WHERE id=?\", id).Scan(&e.ID, &e.Name); return e, err",
+      "error_types": ["sql.ErrNoRows"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Delete",
+      "signature": "(id string) error",
+      "sdk_call": "_, err := r.db.Exec(\"DELETE FROM entities WHERE id=?\", id); return err",
+      "error_types": ["*sqlite.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "modernc/sqlite is pure-Go (no CGO required) — easier to cross-compile",
+    "use ? placeholders, not $N"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/modernc.org/sqlite"]
+}

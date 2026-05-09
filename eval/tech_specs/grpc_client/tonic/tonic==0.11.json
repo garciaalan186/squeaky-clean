@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "tonic",
+  "version_pin": "tonic==0.11.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "tonic==0.11"},
+  "imports": {
+    "primary": "use tonic::transport::Channel;",
+    "types": ["use tonic::Request;"]
+  },
+  "client_construction": {
+    "code": "let channel = Channel::from_shared(addr.to_string())?.connect().await?;",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["addr"]
+  },
+  "primary_operations": [
+    {
+      "name": "call",
+      "signature": "(req: Request<()>) -> Result<(), tonic::Status>",
+      "sdk_call": "let _ = req; Ok(())",
+      "error_types": ["tonic::Status", "tonic::transport::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "tonic-build at compile time generates <Service>Client<Channel>",
+    "Channel can be cloned across tasks; cheap (Arc-internal)"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/tonic/"]
+}

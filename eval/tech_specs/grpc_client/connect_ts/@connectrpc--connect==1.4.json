@@ -1,0 +1,47 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "connect_ts",
+  "version_pin": "@connectrpc/connect==1.4.0",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@connectrpc/connect@^1.4.0"
+  },
+  "imports": {
+    "primary": "import { createPromiseClient } from '@connectrpc/connect';",
+    "types": [
+      "import { createConnectTransport } from '@connectrpc/connect-node';"
+    ]
+  },
+  "client_construction": {
+    "code": "const transport = createConnectTransport({ baseUrl: address, httpVersion: '1.1' }); this._client = createPromiseClient(serviceDef, transport);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "address",
+      "serviceDef"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "echo",
+      "signature": "(message: Buffer): Promise<Buffer>",
+      "sdk_call": "const r = await this._client.echo({ payload: message }); return Buffer.from(r.payload);",
+      "error_types": [
+        "ConnectError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "Connect SDK is TS-first"
+  ],
+  "allowed_doc_origins": [
+    "https://connectrpc.com/"
+  ]
+}

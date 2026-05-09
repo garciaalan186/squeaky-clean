@@ -1,0 +1,54 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "undici_ts",
+  "version_pin": "undici==6.6.2",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "undici@^6.6.0"
+  },
+  "imports": {
+    "primary": "import { request } from 'undici';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._baseUrl = baseUrl;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "baseUrl"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(url: string): Promise<unknown>",
+      "sdk_call": "const r = await request(this._baseUrl + url); return await r.body.json();",
+      "error_types": [
+        "UndiciError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "post",
+      "signature": "(url: string, body: unknown): Promise<unknown>",
+      "sdk_call": "const r = await request(this._baseUrl + url, { method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' } }); return await r.body.json();",
+      "error_types": [
+        "UndiciError"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "undici is bundled into Node 18+"
+  ],
+  "allowed_doc_origins": [
+    "https://undici.nodejs.org/"
+  ]
+}

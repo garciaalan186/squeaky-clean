@@ -1,0 +1,55 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "spring_cloud_config",
+  "version_pin": "spring-cloud-starter-config==3.1",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.cloud:spring-cloud-starter-config:3.1.7"},
+  "imports": {
+    "primary": "import org.springframework.core.env.Environment;",
+    "types": [
+      "import org.springframework.core.env.ConfigurableEnvironment;",
+      "import org.springframework.core.env.MapPropertySource;",
+      "import java.util.HashMap;",
+      "import java.util.Map;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.environment = environment;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["environment"]
+  },
+  "primary_operations": [
+    {
+      "name": "getSecret",
+      "signature": "(String name)",
+      "sdk_call": "return this.environment.getProperty(name);",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "putSecret",
+      "signature": "(String name, String value)",
+      "sdk_call": "Map<String,Object> m = new HashMap<>(); m.put(name, value); ((ConfigurableEnvironment) this.environment).getPropertySources().addFirst(new MapPropertySource(\"runtime\", m));",
+      "error_types": ["RuntimeException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["SPRING_CLOUD_CONFIG_URI", "SPRING_CLOUD_CONFIG_USERNAME", "SPRING_CLOUD_CONFIG_PASSWORD"]
+  },
+  "observability_hooks": ["spring_actuator"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "Spring Cloud Config Server backs the property values via /{application}/{profile}.",
+    "Environment.getProperty resolves via the layered PropertySources chain.",
+    "Sensitive values should be encrypted via the {cipher} prefix in the config repository."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-cloud-config/docs/"
+  ]
+}

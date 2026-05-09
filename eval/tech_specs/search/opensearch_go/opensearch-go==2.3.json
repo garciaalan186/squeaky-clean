@@ -1,0 +1,42 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "opensearch_go",
+  "version_pin": "opensearch-go==2.3.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/opensearch-project/opensearch-go/v2@v2.3.0"},
+  "imports": {
+    "primary": "\"github.com/opensearch-project/opensearch-go/v2\"",
+    "types": ["\"bytes\"", "\"encoding/json\"", "\"strings\""]
+  },
+  "client_construction": {
+    "code": "c, err := opensearch.NewClient(opensearch.Config{Addresses: []string{addr}}); if err != nil { return nil, err }",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["addr", "index"]
+  },
+  "primary_operations": [
+    {
+      "name": "Index",
+      "signature": "(doc map[string]any) error",
+      "sdk_call": "var buf bytes.Buffer; if err := json.NewEncoder(&buf).Encode(doc); err != nil { return err }; res, err := s.client.Index(s.index, &buf); if err != nil { return err }; defer res.Body.Close(); return nil",
+      "error_types": ["*opensearch.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Query",
+      "signature": "(q string) ([]map[string]any, error)",
+      "sdk_call": "res, err := s.client.Search(s.client.Search.WithIndex(s.index), s.client.Search.WithBody(strings.NewReader(q))); if err != nil { return nil, err }; defer res.Body.Close(); var out []map[string]any; return out, json.NewDecoder(res.Body).Decode(&out)",
+      "error_types": ["*opensearch.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["OPENSEARCH_URL"]},
+  "code_style_notes": [
+    "opensearch-go is a fork of go-elasticsearch with similar response API",
+    "res.IsError() must be checked — non-2xx HTTP is NOT a Go error"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/github.com/opensearch-project/opensearch-go/v2"]
+}

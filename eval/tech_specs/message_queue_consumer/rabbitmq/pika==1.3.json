@@ -1,0 +1,59 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_consumer",
+  "technology": "rabbitmq",
+  "version_pin": "pika==1.3",
+  "language": "python",
+  "install": {"manager": "pip", "package": "pika>=1.3"},
+  "imports": {
+    "primary": "import pika",
+    "types":   ["from pika.exceptions import AMQPError, AMQPConnectionError, ChannelClosed"]
+  },
+  "client_construction": {
+    "code": "self._connection = pika.BlockingConnection(pika.URLParameters(url)); self._channel = self._connection.channel(); self._channel.queue_declare(queue=queue_name, durable=True)",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["url", "queue_name"]
+  },
+  "primary_operations": [
+    {
+      "name": "consume",
+      "signature": "(queue_name: str) -> bytes | None",
+      "sdk_call": "method, _props, body = self._channel.basic_get(queue=queue_name, auto_ack=False); return body if body is not None else None",
+      "error_types": ["AMQPError", "AMQPConnectionError", "ChannelClosed"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "poll",
+      "signature": "(queue_name: str) -> bytes | None",
+      "sdk_call": "method, _props, body = self._channel.basic_get(queue=queue_name, auto_ack=False); return body if body is not None else None",
+      "error_types": ["AMQPError", "ChannelClosed"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "sdk_call": "self._connection.close()",
+      "error_types": ["AMQPError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["RABBITMQ_URL"]
+  },
+  "observability_hooks": ["opentelemetry_pika_instrumentation"],
+  "rate_limit_defaults": {"rps": 10000, "burst": 20000},
+  "code_style_notes": [
+    "pika.BlockingConnection is NOT thread-safe; one connection per consumer thread",
+    "auto_ack=False requires explicit basic_ack(method.delivery_tag) for at-least-once delivery",
+    "use queue_declare(durable=True) when consuming from a durable queue created elsewhere"
+  ],
+  "allowed_doc_origins": [
+    "https://pika.readthedocs.io/en/stable/",
+    "https://www.rabbitmq.com/documentation.html"
+  ]
+}

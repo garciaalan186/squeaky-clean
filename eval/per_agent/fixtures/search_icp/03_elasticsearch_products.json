@@ -1,0 +1,22 @@
+{
+  "name": "ElasticsearchProductSearch",
+  "pattern": "Adapter",
+  "implements": "ProductSearchIndex",
+  "fields": [],
+  "methods": [
+    "index(doc_id: str, body: dict[str, Any]) -> None",
+    "search(query: dict[str, Any]) -> list[dict[str, Any]]"
+  ],
+  "depends": ["ProductSearchIndex"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "ProductSearchIndex (Gateway, file=src.domain.search.product_search_index): fields=[], methods=[\"index(doc_id: str, body: dict[str, Any]) -> None\", \"search(query: dict[str, Any]) -> list[dict[str, Any]]\"], invariants=[]",
+  "target_file": "src.infrastructure.search.elasticsearch_product_search",
+  "tech_spec_path": "search/elasticsearch/elasticsearch==8.13.json",
+  "expected_imports": [
+    "from elasticsearch import Elasticsearch",
+    "from elasticsearch.exceptions import ApiError, TransportError",
+    "from src.domain.search.product_search_index import ProductSearchIndex"
+  ],
+  "expected_error_types": ["ApiError", "TransportError"]
+}

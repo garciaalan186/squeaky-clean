@@ -1,0 +1,60 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "opensearch_ts",
+  "version_pin": "@opensearch-project/opensearch==2.6.0",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "@opensearch-project/opensearch@^2.6.0"
+  },
+  "imports": {
+    "primary": "import { Client } from '@opensearch-project/opensearch';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._client = new Client({ node }); this._index = indexName;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "node",
+      "indexName"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(doc: Record<string, unknown>): Promise<void>",
+      "sdk_call": "await this._client.index({ index: this._index, body: doc });",
+      "error_types": [
+        "ResponseError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "search",
+      "signature": "(query: Record<string, unknown>): Promise<unknown[]>",
+      "sdk_call": "const r = await this._client.search({ index: this._index, body: { query } }); return r.body.hits.hits;",
+      "error_types": [
+        "ResponseError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "static_keys",
+    "env_vars": [
+      "OPENSEARCH_NODE",
+      "OPENSEARCH_USERNAME",
+      "OPENSEARCH_PASSWORD"
+    ]
+  },
+  "code_style_notes": [
+    "OpenSearch client ships TS types"
+  ],
+  "allowed_doc_origins": [
+    "https://opensearch.org/docs/latest/clients/javascript/"
+  ]
+}

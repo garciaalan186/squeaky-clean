@@ -1,0 +1,21 @@
+{
+  "name": "EnvSecretsProvider",
+  "pattern": "Adapter",
+  "implements": "Secrets",
+  "fields": [],
+  "methods": [
+    "get_secret(name: str) -> str",
+    "put_secret(name: str, value: str) -> None"
+  ],
+  "depends": ["Secrets"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "Secrets (Gateway, file=src.domain.security.secrets): fields=[], methods=[\"get_secret(name: str) -> str\", \"put_secret(name: str, value: str) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.security.env_secrets_provider",
+  "tech_spec_path": "secrets_provider/env/stdlib.json",
+  "expected_imports": [
+    "import os",
+    "from src.domain.security.secrets import Secrets"
+  ],
+  "expected_error_types": ["KeyError", "OSError"]
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "fastify",
+  "version_pin": "fastify==4.26.2",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "fastify@^4.26.0"
+  },
+  "imports": {
+    "primary": "import Fastify from 'fastify';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "useCase"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(req, reply): Promise<void>",
+      "sdk_call": "const result = await this._useCase.execute(req.body ?? {}); reply.code(200).send(result);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "fastify handler signature is (request, reply)"
+  ],
+  "allowed_doc_origins": [
+    "https://fastify.dev/"
+  ]
+}

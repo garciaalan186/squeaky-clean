@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_producer",
+  "technology": "rdkafka",
+  "version_pin": "rdkafka==0.36.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "rdkafka==0.36"},
+  "imports": {
+    "primary": "use rdkafka::producer::{FutureProducer, FutureRecord};",
+    "types": ["use rdkafka::config::ClientConfig;"]
+  },
+  "client_construction": {
+    "code": "let producer: FutureProducer = ClientConfig::new().set(\"bootstrap.servers\", brokers).create()?;",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["brokers"]
+  },
+  "primary_operations": [
+    {
+      "name": "publish_event",
+      "signature": "(topic: &str, payload: &[u8]) -> Result<(), rdkafka::error::KafkaError>",
+      "sdk_call": "let rec: FutureRecord<'_, (), [u8]> = FutureRecord::to(topic).payload(payload); self.producer.send(rec, std::time::Duration::from_secs(5)).await.map(|_| ()).map_err(|(e, _)| e)",
+      "error_types": ["rdkafka::error::KafkaError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["KAFKA_BOOTSTRAP_SERVERS"]},
+  "code_style_notes": [
+    "rdkafka requires librdkafka system library; bundled feature pulls cmake build",
+    "FutureProducer is the tokio-friendly variant; ThreadedProducer for sync use"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/rdkafka/"]
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "starlette",
+  "version_pin": "starlette==0.36",
+  "language": "python",
+  "install": {"manager": "pip", "package": "starlette>=0.36"},
+  "imports": {
+    "primary": "from starlette.exceptions import HTTPException",
+    "types":   ["from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._use_case = use_case",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(payload: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = self._use_case.execute(payload); return {'status': 'ok', 'data': result}",
+      "error_types": ["HTTPException", "ValueError"],
+      "idempotency": "conditional",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["starlette_middleware"],
+  "rate_limit_defaults": {"rps": 1500, "burst": 3000},
+  "code_style_notes": [
+    "Starlette routes are async by default; the handler.handle() stays sync — call it via run_in_threadpool from the route.",
+    "Wrap the response in starlette.responses.JSONResponse in the wrapping route, not inside handle().",
+    "Use Mount routes to wire the handler under a path prefix without coupling handler to ASGI types."
+  ],
+  "allowed_doc_origins": [
+    "https://www.starlette.io/"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "tokio_postgres",
+  "version_pin": "tokio-postgres==0.7.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "tokio-postgres==0.7"},
+  "imports": {
+    "primary": "use tokio_postgres::{Client, NoTls};",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let (client, conn) = tokio_postgres::connect(database_url, NoTls).await?; tokio::spawn(async move { let _ = conn.await; });",
+    "is_async": true,
+    "thread_safe": false,
+    "dependencies": ["database_url"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(id: &str, total: i64) -> Result<(), tokio_postgres::Error>",
+      "sdk_call": "self.client.execute(\"INSERT INTO orders (id, total) VALUES ($1, $2)\", &[&id, &total]).await?; Ok(())",
+      "error_types": ["tokio_postgres::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(id: &str) -> Result<Option<i64>, tokio_postgres::Error>",
+      "sdk_call": "let row = self.client.query_opt(\"SELECT total FROM orders WHERE id=$1\", &[&id]).await?; Ok(row.map(|r| r.get::<_, i64>(0)))",
+      "error_types": ["tokio_postgres::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(id: &str) -> Result<(), tokio_postgres::Error>",
+      "sdk_call": "self.client.execute(\"DELETE FROM orders WHERE id=$1\", &[&id]).await?; Ok(())",
+      "error_types": ["tokio_postgres::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["DATABASE_URL"]},
+  "code_style_notes": [
+    "Connection future MUST be polled in a background task — without it, queries hang",
+    "NoTls is fine for tests; production should use rustls feature flag"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/tokio-postgres/"]
+}

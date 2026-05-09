@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "gin",
+  "version_pin": "gin==1.9.1",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/gin-gonic/gin@v1.9.1"},
+  "imports": {
+    "primary": "\"github.com/gin-gonic/gin\"",
+    "types": ["\"net/http\"", "\"io\""]
+  },
+  "client_construction": {
+    "code": "engine := gin.Default()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Handle",
+      "signature": "(w http.ResponseWriter, r *http.Request)",
+      "sdk_call": "body, err := io.ReadAll(r.Body); if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }; defer r.Body.Close(); result, err := h.useCase.Execute(body); if err != nil { http.Error(w, err.Error(), http.StatusInternalServerError); return }; w.Header().Set(\"Content-Type\", \"application/json\"); _, _ = w.Write(result)",
+      "error_types": ["*gin.Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "gin handlers natively use *gin.Context — wrap them via gin.WrapH for stdlib http.Handler compatibility",
+    "engine.Run(addr) starts an http.Server bound to addr"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/github.com/gin-gonic/gin"]
+}

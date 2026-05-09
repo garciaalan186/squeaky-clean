@@ -1,0 +1,23 @@
+{
+  "category": "search",
+  "candidates": [
+    {
+      "technology": "elasticsearch",
+      "version_pin": "elasticsearch==8.13",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 3, "cold": 3, "thru": 5, "eco": 5, "reg": 5, "lic": 4, "team": 5}
+    },
+    {
+      "technology": "opensearch",
+      "version_pin": "opensearch-py==2.4",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 4, "cold": 3, "thru": 5, "eco": 4, "reg": 5, "lic": 5, "team": 4}
+    },
+    {
+      "technology": "meilisearch",
+      "version_pin": "meilisearch==0.31",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 5, "cold": 5, "thru": 4, "eco": 3, "reg": 4, "lic": 5, "team": 3}
+    }
+  ]
+}

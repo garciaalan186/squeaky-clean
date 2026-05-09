@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "postgres_pq",
+  "version_pin": "lib_pq==1.10.9",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/lib/pq@v1.10.9"},
+  "imports": {
+    "primary": "\"database/sql\"",
+    "types": ["_ \"github.com/lib/pq\""]
+  },
+  "client_construction": {
+    "code": "db, err := sql.Open(\"postgres\", dsn); if err != nil { return nil, err }",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["dsn"]
+  },
+  "primary_operations": [
+    {
+      "name": "Save",
+      "signature": "(entity Entity) error",
+      "sdk_call": "_, err := r.db.Exec(\"INSERT INTO entities(id, name) VALUES($1, $2)\", entity.ID, entity.Name); return err",
+      "error_types": ["*pq.Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "FindById",
+      "signature": "(id string) (Entity, error)",
+      "sdk_call": "var e Entity; err := r.db.QueryRow(\"SELECT id, name FROM entities WHERE id=$1\", id).Scan(&e.ID, &e.Name); return e, err",
+      "error_types": ["sql.ErrNoRows", "*pq.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Delete",
+      "signature": "(id string) error",
+      "sdk_call": "_, err := r.db.Exec(\"DELETE FROM entities WHERE id=$1\", id); return err",
+      "error_types": ["*pq.Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["DATABASE_URL"]},
+  "code_style_notes": [
+    "import lib/pq with _ blank identifier to register the driver",
+    "sql.ErrNoRows is the standard 'no row matched' sentinel"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/database/sql", "https://pkg.go.dev/github.com/lib/pq"]
+}

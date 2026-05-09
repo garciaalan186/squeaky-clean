@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Generated meta-evaluation outputs (large, not source-of-truth)
+meta-evaluation-results/
+meta-evaluation_*/
+
+# Generated language-specific output dirs
+target/
+.test-deps/
+node_modules/
+package-lock.json
+yarn.lock
+go.sum
+
+# Run artifacts
+CHECKPOINT.json
+BUDGET_EXIT.txt
+HTTP_CONVENTION_VIOLATIONS.txt
+CROSS_MODULE_VIOLATIONS.txt
+LATENCY_PERCENTILES.md
+
+# Optimized DSPy artifacts (per-run; not source-of-truth)
+eval/per_agent/optimized/
+
+# Cache
+eval/tech_specs/.cache/
+
+# Twitter clone / event-pipeline historical builds (private)
+twitter-clone/
+event-pipeline/
+
+# Project planning docs (private)
+ROADMAP.md
+PROGRESS.md
+OPEN_SOURCE_PLAN.md

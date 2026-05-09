@@ -1,0 +1,65 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "s3",
+  "version_pin": "aws-sdk-java-v2==2.25",
+  "language": "java",
+  "install": {"manager": "maven", "package": "software.amazon.awssdk:s3:2.25.0"},
+  "imports": {
+    "primary": "import software.amazon.awssdk.services.s3.S3Client;",
+    "types": [
+      "import software.amazon.awssdk.services.s3.model.PutObjectRequest;",
+      "import software.amazon.awssdk.services.s3.model.GetObjectRequest;",
+      "import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;",
+      "import software.amazon.awssdk.core.sync.RequestBody;",
+      "import software.amazon.awssdk.services.s3.model.S3Exception;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.client = S3Client.create(); this.bucket = bucket;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION", "S3_BUCKET"]
+  },
+  "primary_operations": [
+    {
+      "name": "putBlob",
+      "signature": "(String key, byte[] body)",
+      "sdk_call": "this.client.putObject(PutObjectRequest.builder().bucket(this.bucket).key(key).build(), RequestBody.fromBytes(body));",
+      "error_types": ["S3Exception"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "getBlob",
+      "signature": "(String key)",
+      "sdk_call": "return this.client.getObjectAsBytes(GetObjectRequest.builder().bucket(this.bucket).key(key).build()).asByteArray();",
+      "error_types": ["S3Exception"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "deleteBlob",
+      "signature": "(String key)",
+      "sdk_call": "this.client.deleteObject(DeleteObjectRequest.builder().bucket(this.bucket).key(key).build());",
+      "error_types": ["S3Exception"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_DEFAULT_REGION"]
+  },
+  "observability_hooks": ["aws-xray-compatible"],
+  "rate_limit_defaults": {"rps": 3500, "burst": 5500},
+  "code_style_notes": [
+    "S3Client.create() resolves credentials via the default provider chain (env vars, IAM role, etc.).",
+    "S3Client is thread-safe; share one instance across requests.",
+    "Always close the response stream (try-with-resources) when streaming bodies."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/",
+    "https://sdk.amazonaws.com/java/api/latest/"
+  ]
+}

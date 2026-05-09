@@ -1,0 +1,11 @@
+{
+  "name": "Invoice",
+  "pattern": "Entity",
+  "fields": ["id: str", "line_items: int = 0", "total: float = 0.0"],
+  "methods": ["add_line_item(amount: float): None"],
+  "depends": [],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.billing.invoice"
+}

@@ -1,0 +1,23 @@
+{
+  "category": "grpc_client",
+  "candidates": [
+    {
+      "technology": "grpcio",
+      "version_pin": "grpcio==1.62",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 4, "cold": 3, "thru": 5, "eco": 5, "reg": 5, "lic": 5, "team": 4}
+    },
+    {
+      "technology": "betterproto",
+      "version_pin": "betterproto==2.0",
+      "stability": "beta",
+      "scores": {"ops": 3, "cost": 5, "cold": 4, "thru": 5, "eco": 3, "reg": 4, "lic": 5, "team": 3}
+    },
+    {
+      "technology": "grpcio_async",
+      "version_pin": "grpcio==1.62",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 4, "cold": 3, "thru": 5, "eco": 5, "reg": 5, "lic": 5, "team": 3}
+    }
+  ]
+}

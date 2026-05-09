@@ -1,0 +1,47 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_producer",
+  "technology": "spring_kafka",
+  "version_pin": "spring-kafka==3.1",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.kafka:spring-kafka:3.1.0"},
+  "imports": {
+    "primary": "import org.springframework.kafka.core.KafkaTemplate;",
+    "types": [
+      "import com.fasterxml.jackson.databind.ObjectMapper;",
+      "import java.util.concurrent.ExecutionException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.kafkaTemplate = kafkaTemplate; this.topic = topic; this.objectMapper = new ObjectMapper();",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["KAFKA_TEMPLATE", "KAFKA_TOPIC"]
+  },
+  "primary_operations": [
+    {
+      "name": "publishEvent",
+      "signature": "(String key, Object event)",
+      "sdk_call": "String json = this.objectMapper.writeValueAsString(event);\nthis.kafkaTemplate.send(this.topic, key, json).get();",
+      "error_types": ["ExecutionException", "InterruptedException", "com.fasterxml.jackson.core.JsonProcessingException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_SASL_USERNAME", "KAFKA_SASL_PASSWORD"]
+  },
+  "observability_hooks": ["spring_actuator", "micrometer_kafka_metrics"],
+  "rate_limit_defaults": {"rps": 50000, "burst": 100000},
+  "code_style_notes": [
+    "KafkaTemplate is auto-configured by Spring Boot via spring.kafka.* properties.",
+    "Call .get() on the future for synchronous send semantics; wrap ExecutionException + InterruptedException.",
+    "Use Jackson ObjectMapper.writeValueAsString to serialize to JSON before sending.",
+    "Class itself is plain — Spring wires the KafkaTemplate via @Bean configuration."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-kafka/reference/",
+    "https://kafka.apache.org/documentation/"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "meilisearch_rust",
+  "version_pin": "meilisearch-sdk==0.27.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "meilisearch-sdk==0.27"},
+  "imports": {
+    "primary": "use meilisearch_sdk::client::Client;",
+    "types": ["use serde_json::Value;"]
+  },
+  "client_construction": {
+    "code": "let client = Client::new(url, Some(api_key));",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["url", "api_key", "index"]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(doc_id: &str, body: Value) -> Result<(), meilisearch_sdk::errors::Error>",
+      "sdk_call": "let docs = vec![body]; self.client.index(&self.index).add_documents(&docs, Some(\"id\")).await?; Ok(())",
+      "error_types": ["meilisearch_sdk::errors::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "query",
+      "signature": "(q: &str) -> Result<Value, meilisearch_sdk::errors::Error>",
+      "sdk_call": "let res = self.client.index(&self.index).search().with_query(q).execute::<Value>().await?; Ok(serde_json::to_value(res.hits).unwrap_or_default())",
+      "error_types": ["meilisearch_sdk::errors::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["MEILISEARCH_URL", "MEILISEARCH_API_KEY"]},
+  "code_style_notes": [
+    "Client::new(url, Some(api_key)) — None for unauthenticated localhost",
+    "search().execute::<T>() returns SearchResults<T> with hits/limit/total_hits"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/meilisearch-sdk/"]
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "express_ts",
+  "version_pin": "express==4.19.2",
+  "language": "typescript",
+  "install": {
+    "manager": "npm",
+    "package": "express@^4.19.0"
+  },
+  "imports": {
+    "primary": "import type { Request, Response } from 'express';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": [
+      "useCase"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "handle",
+      "signature": "(req: Request, res: Response): Promise<void>",
+      "sdk_call": "const result = await this._useCase.execute(req.body ?? {}); res.status(200).json(result);",
+      "error_types": [
+        "Error"
+      ],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "express requires @types/express",
+    "use type-only imports for Request/Response"
+  ],
+  "allowed_doc_origins": [
+    "https://expressjs.com/"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "rest_server_handler",
+  "technology": "gorilla_mux",
+  "version_pin": "gorilla-mux==1.8.1",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/gorilla/mux@v1.8.1"},
+  "imports": {
+    "primary": "\"github.com/gorilla/mux\"",
+    "types": ["\"net/http\"", "\"encoding/json\"", "\"io\""]
+  },
+  "client_construction": {
+    "code": "router := mux.NewRouter()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Handle",
+      "signature": "(w http.ResponseWriter, r *http.Request)",
+      "sdk_call": "body, err := io.ReadAll(r.Body); if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }; defer r.Body.Close(); result, err := h.useCase.Execute(body); if err != nil { http.Error(w, err.Error(), http.StatusInternalServerError); return }; w.Header().Set(\"Content-Type\", \"application/json\"); _ = json.NewEncoder(w).Encode(result)",
+      "error_types": ["*json.SyntaxError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "gorilla/mux supports path-variables via mux.Vars(r)",
+    "register handlers via router.HandleFunc(path, handler.Handle)"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/github.com/gorilla/mux"]
+}

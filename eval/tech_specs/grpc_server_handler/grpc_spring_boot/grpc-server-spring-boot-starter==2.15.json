@@ -1,0 +1,44 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "grpc_spring_boot",
+  "version_pin": "grpc-server-spring-boot-starter==2.15",
+  "language": "java",
+  "install": {"manager": "maven", "package": "net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE"},
+  "imports": {
+    "primary": "import net.devh.boot.grpc.server.service.GrpcService;",
+    "types": [
+      "import io.grpc.stub.StreamObserver;",
+      "import io.grpc.StatusRuntimeException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "serve",
+      "signature": "(Object request, StreamObserver<Object> responseObserver)",
+      "sdk_call": "Object reply = this.useCase.execute(request); responseObserver.onNext(reply); responseObserver.onCompleted();",
+      "error_types": ["StatusRuntimeException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["spring_actuator", "micrometer"],
+  "rate_limit_defaults": {"rps": 15000, "burst": 30000},
+  "code_style_notes": [
+    "Annotate the class with @GrpcService for component scanning.",
+    "Subclass the generated <Service>ImplBase from your proto.",
+    "Spring Boot starts the gRPC server on grpc.server.port (default 9090)."
+  ],
+  "allowed_doc_origins": [
+    "https://yidongnan.github.io/grpc-spring-boot-starter/"
+  ]
+}

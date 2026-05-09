@@ -1,0 +1,57 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "stdlib",
+  "version_pin": "stdlib",
+  "language": "python",
+  "install": {"manager": "stdlib", "package": "logging"},
+  "imports": {
+    "primary": "import logging",
+    "types":   ["from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._logger = logging.getLogger(name)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["name"]
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.info(event, extra=context)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.warning(event, extra=context)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(event: str, context: dict[str, Any]) -> None",
+      "sdk_call": "self._logger.error(event, extra=context)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "logging.getLogger(name) is process-global and thread-safe.",
+    "Configure handlers/formatters once at application startup, not per logger.",
+    "extra= keys must not collide with reserved LogRecord attributes (msg, args, levelname, ...)."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.python.org/3/library/logging.html"
+  ]
+}

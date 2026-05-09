@@ -1,0 +1,23 @@
+{
+  "category": "blob_storage",
+  "candidates": [
+    {
+      "technology": "local_disk",
+      "version_pin": "stdlib",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 5, "thru": 1, "eco": 4, "reg": 5, "lic": 5, "team": 4}
+    },
+    {
+      "technology": "s3",
+      "version_pin": "boto3==1.34",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 4, "cold": 3, "thru": 4, "eco": 5, "reg": 5, "lic": 5, "team": 4}
+    },
+    {
+      "technology": "azure_blob",
+      "version_pin": "azure-storage-blob==12.19",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 4, "cold": 3, "thru": 4, "eco": 4, "reg": 5, "lic": 5, "team": 3}
+    }
+  ]
+}

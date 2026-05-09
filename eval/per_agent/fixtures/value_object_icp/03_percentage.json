@@ -1,0 +1,11 @@
+{
+  "name": "Percentage",
+  "pattern": "ValueObject",
+  "fields": ["value: float"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["value must be between 0 and 100"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.metrics.percentage"
+}

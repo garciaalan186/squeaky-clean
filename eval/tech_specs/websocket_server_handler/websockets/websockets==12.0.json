@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "websocket_server_handler",
+  "technology": "websockets",
+  "version_pin": "websockets==12.0",
+  "language": "python",
+  "install": {"manager": "pip", "package": "websockets>=12.0"},
+  "imports": {
+    "primary": "from websockets.exceptions import ConnectionClosed",
+    "types":   ["from typing import Any"]
+  },
+  "client_construction": {
+    "code": "self._use_case = use_case",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "on_message",
+      "signature": "(message: dict[str, Any]) -> dict[str, Any]",
+      "sdk_call": "result = self._use_case.execute(message); return {'event': 'reply', 'data': result}",
+      "error_types": ["ConnectionClosed", "ValueError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "accept_connection",
+      "signature": "(client_id: str) -> dict[str, Any]",
+      "sdk_call": "return {'event': 'connected', 'client_id': client_id}",
+      "error_types": ["ConnectionClosed"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["websocket_connection_logger"],
+  "rate_limit_defaults": {"rps": 500, "burst": 1000},
+  "code_style_notes": [
+    "The handler stays framework-free; user wires it inside an async websockets.serve() handler that awaits ws.recv() then handler.on_message(json.loads(...)).",
+    "Always serialise the returned dict via json.dumps in the wrapping handler before ws.send().",
+    "Catch ConnectionClosed at the wrapping coroutine boundary, not inside on_message()."
+  ],
+  "allowed_doc_origins": [
+    "https://websockets.readthedocs.io/"
+  ]
+}

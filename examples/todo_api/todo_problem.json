@@ -1,0 +1,22 @@
+{
+  "id": "EXAMPLE_TODO",
+  "tier": 1,
+  "slug": "todo_api",
+  "description": "Minimal Todo REST API with persistence. Three bounded contexts: Tasks (the Todo entity + value objects), TaskRepository (storage port), and TaskHandlers (HTTP entry points). The smallest end-to-end Squeaky Clean example.",
+  "required_bounded_contexts": ["Tasks", "TaskRepository", "TaskHandlers"],
+  "acceptance_criteria": [
+    "Given a title 'buy milk', When create_todo is called, Then result is a Todo",
+    "Given an empty title, When create_todo is called, Then an error is raised",
+    "Given a Todo, When mark_complete is called, Then the Todo is_complete is true",
+    "Given a TaskRepository, When find_all is called, Then result is a list of Todo",
+    "Given a Todo with id 'abc', When find_by_id is called with 'abc', Then result is the Todo",
+    "Given an unknown id, When find_by_id is called, Then an error is raised"
+  ],
+  "expected_module_count": [3, 4],
+  "expected_class_count": [8, 14],
+  "required_patterns": ["Entity", "ValueObject", "UseCase", "Repository", "Adapter"],
+  "target_language": "python",
+  "infrastructure_choices": [
+    {"category": "rest_server_handler", "technology": "flask", "version_pin": "Flask==3.0"}
+  ]
+}

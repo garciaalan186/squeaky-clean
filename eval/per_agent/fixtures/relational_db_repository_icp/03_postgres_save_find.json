@@ -1,0 +1,22 @@
+{
+  "name": "PostgresOrderRepositorySaveFind",
+  "pattern": "Repository",
+  "implements": "OrderRepositorySaveFind",
+  "fields": [],
+  "methods": [
+    "save(order_id: str, payload: bytes) -> None",
+    "find_by_id(order_id: str) -> bytes"
+  ],
+  "depends": ["OrderRepositorySaveFind"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositorySaveFind (Repository, file=src.domain.orders.order_repository_save_find): fields=[], methods=[\"save(order_id: str, payload: bytes) -> None\", \"find_by_id(order_id: str) -> bytes\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.postgres_order_repository_save_find",
+  "tech_spec_path": "relational_db/postgres/psycopg2==2.9.json",
+  "expected_imports": [
+    "import psycopg2",
+    "from psycopg2 import DatabaseError, IntegrityError, OperationalError",
+    "from src.domain.orders.order_repository_save_find import OrderRepositorySaveFind"
+  ],
+  "expected_error_types": ["DatabaseError", "OperationalError"]
+}

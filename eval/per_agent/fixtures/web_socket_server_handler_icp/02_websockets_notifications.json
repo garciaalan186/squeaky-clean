@@ -1,0 +1,20 @@
+{
+  "name": "WebsocketsNotificationHandler",
+  "pattern": "Adapter",
+  "implements": "NotificationHandler",
+  "fields": [],
+  "methods": [
+    "on_message(message: dict[str, Any]) -> dict[str, Any]"
+  ],
+  "depends": ["NotificationHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "NotificationHandler (UseCase, file=src.application.use_cases.push_notification): fields=[], methods=[\"execute(message: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.ws.websockets_notification_handler",
+  "tech_spec_path": "websocket_server_handler/websockets/websockets==12.0.json",
+  "expected_imports": [
+    "from websockets.exceptions import ConnectionClosed",
+    "from src.application.use_cases.push_notification import NotificationHandler"
+  ],
+  "expected_error_types": ["ConnectionClosed", "ValueError"]
+}

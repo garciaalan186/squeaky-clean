@@ -1,0 +1,11 @@
+{
+  "name": "Quantity",
+  "pattern": "ValueObject",
+  "fields": ["amount: int"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["amount must be positive"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.inventory.quantity"
+}

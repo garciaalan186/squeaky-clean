@@ -1,0 +1,43 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "grpc_java",
+  "version_pin": "grpc-netty-shaded==1.62",
+  "language": "java",
+  "install": {"manager": "maven", "package": "io.grpc:grpc-netty-shaded:1.62.2"},
+  "imports": {
+    "primary": "import io.grpc.stub.StreamObserver;",
+    "types": [
+      "import io.grpc.StatusRuntimeException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.useCase = useCase;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["use_case"]
+  },
+  "primary_operations": [
+    {
+      "name": "serve",
+      "signature": "(Object request, StreamObserver<Object> responseObserver)",
+      "sdk_call": "Object reply = this.useCase.execute(request); responseObserver.onNext(reply); responseObserver.onCompleted();",
+      "error_types": ["StatusRuntimeException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["grpc-census", "grpc-opentelemetry"],
+  "rate_limit_defaults": {"rps": 20000, "burst": 50000},
+  "code_style_notes": [
+    "Subclass the generated <Service>Grpc.<Service>ImplBase for the target proto service.",
+    "Each RPC method is overridden; delegate to the use-case port.",
+    "Always finalize with responseObserver.onCompleted(); on error call responseObserver.onError(e)."
+  ],
+  "allowed_doc_origins": [
+    "https://grpc.io/docs/languages/java/basics/"
+  ]
+}

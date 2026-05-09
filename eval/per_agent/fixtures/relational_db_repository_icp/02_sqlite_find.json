@@ -1,0 +1,21 @@
+{
+  "name": "SqliteOrderRepositoryFind",
+  "pattern": "Repository",
+  "implements": "OrderRepositoryFind",
+  "fields": [],
+  "methods": [
+    "find_by_id(order_id: str) -> bytes"
+  ],
+  "depends": ["OrderRepositoryFind"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositoryFind (Repository, file=src.domain.orders.order_repository_find): fields=[], methods=[\"find_by_id(order_id: str) -> bytes\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.sqlite_order_repository_find",
+  "tech_spec_path": "relational_db/sqlite/stdlib.json",
+  "expected_imports": [
+    "import sqlite3",
+    "from sqlite3 import DatabaseError, IntegrityError",
+    "from src.domain.orders.order_repository_find import OrderRepositoryFind"
+  ],
+  "expected_error_types": ["DatabaseError"]
+}

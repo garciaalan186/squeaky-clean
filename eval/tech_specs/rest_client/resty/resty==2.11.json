@@ -1,0 +1,41 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "resty",
+  "version_pin": "resty==2.11.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/go-resty/resty/v2@v2.11.0"},
+  "imports": {
+    "primary": "\"github.com/go-resty/resty/v2\"",
+    "types": []
+  },
+  "client_construction": {
+    "code": "client := resty.New()",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Get",
+      "signature": "(url string) ([]byte, error)",
+      "sdk_call": "resp, err := c.client.R().Get(url); if err != nil { return nil, err }; return resp.Body(), nil",
+      "error_types": ["*resty.ResponseError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Post",
+      "signature": "(url string, body []byte) ([]byte, error)",
+      "sdk_call": "resp, err := c.client.R().SetBody(body).Post(url); if err != nil { return nil, err }; return resp.Body(), nil",
+      "error_types": ["*resty.ResponseError"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "resty auto-buffers the response body — no defer Close() needed"
+  ],
+  "allowed_doc_origins": ["https://github.com/go-resty/resty"]
+}

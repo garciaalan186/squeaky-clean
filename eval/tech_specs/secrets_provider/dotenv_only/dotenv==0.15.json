@@ -1,0 +1,33 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "dotenv_only",
+  "version_pin": "dotenv==0.15.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "dotenv==0.15"},
+  "imports": {
+    "primary": "use std::env;",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let _ = dotenv::dotenv();",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "get_secret",
+      "signature": "(key: &str) -> Result<String, std::env::VarError>",
+      "sdk_call": "env::var(key)",
+      "error_types": ["std::env::VarError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "dotenv loads .env into the process env before env::var lookups"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/dotenv/"]
+}

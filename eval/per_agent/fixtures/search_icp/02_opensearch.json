@@ -1,0 +1,22 @@
+{
+  "name": "OpenSearchSearch",
+  "pattern": "Adapter",
+  "implements": "SearchIndex",
+  "fields": [],
+  "methods": [
+    "index(doc_id: str, body: dict[str, Any]) -> None",
+    "search(query: dict[str, Any]) -> list[dict[str, Any]]"
+  ],
+  "depends": ["SearchIndex"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SearchIndex (Gateway, file=src.domain.search.search_index): fields=[], methods=[\"index(doc_id: str, body: dict[str, Any]) -> None\", \"search(query: dict[str, Any]) -> list[dict[str, Any]]\"], invariants=[]",
+  "target_file": "src.infrastructure.search.opensearch_search",
+  "tech_spec_path": "search/opensearch/opensearch-py==2.4.json",
+  "expected_imports": [
+    "from opensearchpy import OpenSearch",
+    "from opensearchpy.exceptions import OpenSearchException, TransportError",
+    "from src.domain.search.search_index import SearchIndex"
+  ],
+  "expected_error_types": ["OpenSearchException", "TransportError"]
+}

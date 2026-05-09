@@ -1,0 +1,54 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "sqlite_node",
+  "version_pin": "better-sqlite3==9.4.3",
+  "language": "javascript",
+  "install": {
+    "manager": "npm",
+    "package": "better-sqlite3@^9.4.0"
+  },
+  "imports": {
+    "primary": "import Database from 'better-sqlite3';",
+    "types": []
+  },
+  "client_construction": {
+    "code": "this._db = new Database(dbPath);",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": [
+      "dbPath"
+    ]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(record: Record<string, unknown>): Promise<void>",
+      "sdk_call": "this._db.prepare('INSERT OR REPLACE INTO t(id, name) VALUES (?, ?)').run(record.id, record.name);",
+      "error_types": [
+        "SqliteError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "findById",
+      "signature": "(id: string): Promise<Record<string, unknown> | null>",
+      "sdk_call": "const row = this._db.prepare('SELECT * FROM t WHERE id = ?').get(id); return row ?? null;",
+      "error_types": [
+        "SqliteError"
+      ],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "code_style_notes": [
+    "better-sqlite3 is synchronous; wrap call sites if async needed"
+  ],
+  "allowed_doc_origins": [
+    "https://github.com/WiseLibs/better-sqlite3"
+  ]
+}

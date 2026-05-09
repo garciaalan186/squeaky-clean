@@ -1,0 +1,21 @@
+{
+  "name": "KafkaOrderEventPublisher",
+  "pattern": "Gateway",
+  "implements": "OrderEventPublisher",
+  "fields": [],
+  "methods": [
+    "publish(topic: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderEventPublisher"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderEventPublisher (Gateway, file=src.domain.events.order_event_publisher): fields=[], methods=[\"publish(topic: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.kafka_order_event_publisher",
+  "tech_spec_path": "message_queue_producer/kafka/confluent-kafka==2.5.json",
+  "expected_imports": [
+    "from confluent_kafka import Producer",
+    "from confluent_kafka.error import KafkaException, KafkaError",
+    "from src.domain.events.order_event_publisher import OrderEventPublisher"
+  ],
+  "expected_error_types": ["KafkaException", "KafkaError"]
+}

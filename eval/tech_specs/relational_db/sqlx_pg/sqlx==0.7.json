@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "sqlx_pg",
+  "version_pin": "sqlx==0.7.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "sqlx==0.7"},
+  "imports": {
+    "primary": "use sqlx::PgPool;",
+    "types": []
+  },
+  "client_construction": {
+    "code": "let pool = PgPool::connect(database_url).await?;",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["database_url"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(id: &str, total: i64) -> Result<(), sqlx::Error>",
+      "sdk_call": "sqlx::query(\"INSERT INTO orders (id, total) VALUES ($1, $2)\").bind(id).bind(total).execute(&self.pool).await?; Ok(())",
+      "error_types": ["sqlx::Error"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "find_by_id",
+      "signature": "(id: &str) -> Result<Option<i64>, sqlx::Error>",
+      "sdk_call": "let row: Option<(i64,)> = sqlx::query_as(\"SELECT total FROM orders WHERE id=$1\").bind(id).fetch_optional(&self.pool).await?; Ok(row.map(|r| r.0))",
+      "error_types": ["sqlx::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(id: &str) -> Result<(), sqlx::Error>",
+      "sdk_call": "sqlx::query(\"DELETE FROM orders WHERE id=$1\").bind(id).execute(&self.pool).await?; Ok(())",
+      "error_types": ["sqlx::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["DATABASE_URL"]},
+  "code_style_notes": [
+    "PgPool::connect requires the postgres feature flag",
+    "compile-time checked queries via sqlx::query!() macro require DATABASE_URL at build time"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/sqlx/"]
+}

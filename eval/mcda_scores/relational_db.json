@@ -1,0 +1,23 @@
+{
+  "category": "relational_db",
+  "candidates": [
+    {
+      "technology": "sqlite",
+      "version_pin": "stdlib",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 5, "thru": 2, "eco": 4, "reg": 5, "lic": 5, "team": 5}
+    },
+    {
+      "technology": "postgres",
+      "version_pin": "psycopg2==2.9",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 4, "cold": 3, "thru": 5, "eco": 5, "reg": 5, "lic": 5, "team": 5}
+    },
+    {
+      "technology": "mysql",
+      "version_pin": "PyMySQL==1.1",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 4, "cold": 3, "thru": 5, "eco": 5, "reg": 5, "lic": 5, "team": 4}
+    }
+  ]
+}

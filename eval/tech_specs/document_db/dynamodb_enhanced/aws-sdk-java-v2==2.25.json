@@ -1,0 +1,62 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "dynamodb_enhanced",
+  "version_pin": "aws-sdk-java-v2==2.25",
+  "language": "java",
+  "install": {"manager": "maven", "package": "software.amazon.awssdk:dynamodb-enhanced:2.25.0"},
+  "imports": {
+    "primary": "import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;",
+    "types": [
+      "import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;",
+      "import software.amazon.awssdk.enhanced.dynamodb.Key;",
+      "import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.client = client; this.table = client.table(tableName, schema);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["client", "table_name", "schema"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(String id, Object item)",
+      "sdk_call": "this.table.putItem(item);",
+      "error_types": ["DynamoDbException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "findById",
+      "signature": "(String id)",
+      "sdk_call": "return this.table.getItem(Key.builder().partitionValue(id).build());",
+      "error_types": ["DynamoDbException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "deleteById",
+      "signature": "(String id)",
+      "sdk_call": "this.table.deleteItem(Key.builder().partitionValue(id).build());",
+      "error_types": ["DynamoDbException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "iam_role",
+    "env_vars": ["AWS_REGION", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]
+  },
+  "observability_hooks": ["aws-xray-compatible"],
+  "rate_limit_defaults": {"rps": 4000, "burst": 8000},
+  "code_style_notes": [
+    "DynamoDbEnhancedClient wraps a DynamoDbClient; pass a TableSchema for typed access.",
+    "putItem is upsert by default; specify ConditionExpression for create-only semantics.",
+    "Always close the underlying DynamoDbClient on shutdown."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/dynamodb-enhanced-client.html"
+  ]
+}

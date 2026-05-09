@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "log4rs",
+  "version_pin": "log4rs==1.3.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "log4rs==1.3"},
+  "imports": {
+    "primary": "use log::{info, warn, error};",
+    "types": []
+  },
+  "client_construction": {
+    "code": "log4rs::init_file(\"log4rs.yaml\", Default::default()).ok();",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "info",
+      "signature": "(msg: &str)",
+      "sdk_call": "info!(\"{}\", msg);",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "warn",
+      "signature": "(msg: &str)",
+      "sdk_call": "warn!(\"{}\", msg);",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "error",
+      "signature": "(msg: &str)",
+      "sdk_call": "error!(\"{}\", msg);",
+      "error_types": ["std::io::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "log4rs reads YAML config at startup; default appenders log to stderr",
+    "log4rs::init_file returns Err when YAML missing — .ok() suppresses"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/log4rs/"]
+}

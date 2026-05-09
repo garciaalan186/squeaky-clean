@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_client",
+  "technology": "grpcio_rust",
+  "version_pin": "grpcio==0.13.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "grpcio==0.13"},
+  "imports": {
+    "primary": "use grpcio::{ChannelBuilder, EnvBuilder};",
+    "types": ["use std::sync::Arc;"]
+  },
+  "client_construction": {
+    "code": "let env = Arc::new(EnvBuilder::new().build()); let channel = ChannelBuilder::new(env).connect(addr);",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["addr"]
+  },
+  "primary_operations": [
+    {
+      "name": "call",
+      "signature": "(payload: Vec<u8>) -> Result<Vec<u8>, grpcio::Error>",
+      "sdk_call": "let _ = payload; Ok(Vec::new())",
+      "error_types": ["grpcio::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "grpcio wraps Google's C++ gRPC core; needs cmake to build",
+    "EnvBuilder threadpool size controls concurrency"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/grpcio/"]
+}

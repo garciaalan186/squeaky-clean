@@ -1,0 +1,51 @@
+{
+  "schema_version": "v1",
+  "category": "message_queue_producer",
+  "technology": "rabbitmq",
+  "version_pin": "pika==1.3",
+  "language": "python",
+  "install": {"manager": "pip", "package": "pika>=1.3"},
+  "imports": {
+    "primary": "import pika",
+    "types":   ["from pika.exceptions import AMQPError, AMQPConnectionError, ChannelClosed"]
+  },
+  "client_construction": {
+    "code": "self._connection = pika.BlockingConnection(pika.URLParameters(url)); self._channel = self._connection.channel()",
+    "is_async": false,
+    "thread_safe": false,
+    "dependencies": ["url"]
+  },
+  "primary_operations": [
+    {
+      "name": "publish",
+      "signature": "(routing_key: str, payload: bytes) -> None",
+      "sdk_call": "self._channel.basic_publish(exchange='', routing_key=routing_key, body=payload)",
+      "error_types": ["AMQPError", "AMQPConnectionError", "ChannelClosed"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "close",
+      "signature": "() -> None",
+      "sdk_call": "self._connection.close()",
+      "error_types": ["AMQPError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["RABBITMQ_URL"]
+  },
+  "observability_hooks": ["opentelemetry_pika_instrumentation"],
+  "rate_limit_defaults": {"rps": 10000, "burst": 20000},
+  "code_style_notes": [
+    "pika.BlockingConnection is NOT thread-safe; use one connection per thread",
+    "publish exchanges='' uses the default direct exchange routing by queue name",
+    "for confirms, call channel.confirm_delivery() before publish to detect broker NACKs"
+  ],
+  "allowed_doc_origins": [
+    "https://pika.readthedocs.io/en/stable/",
+    "https://www.rabbitmq.com/documentation.html"
+  ]
+}

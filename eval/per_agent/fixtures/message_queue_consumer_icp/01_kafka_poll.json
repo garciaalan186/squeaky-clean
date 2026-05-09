@@ -1,0 +1,22 @@
+{
+  "name": "KafkaOrderEventConsumerPoll",
+  "pattern": "Gateway",
+  "implements": "OrderEventConsumerPoll",
+  "fields": [],
+  "methods": [
+    "poll_one(timeout_seconds: float) -> bytes | None"
+  ],
+  "depends": ["OrderEventConsumerPoll"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderEventConsumerPoll (Gateway, file=src.domain.events.order_event_consumer_poll): fields=[], methods=[\"poll_one(timeout_seconds: float) -> bytes | None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.kafka_order_event_consumer_poll",
+  "tech_spec_path": "message_queue_consumer/kafka/confluent-kafka==2.5.json",
+  "expected_imports": [
+    "from confluent_kafka import Consumer, KafkaError",
+    "from confluent_kafka import Message",
+    "from confluent_kafka.error import KafkaException",
+    "from src.domain.events.order_event_consumer_poll import OrderEventConsumerPoll"
+  ],
+  "expected_error_types": ["KafkaException", "KafkaError"]
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "elasticsearch_rust",
+  "version_pin": "elasticsearch==8.5.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "elasticsearch==8.5"},
+  "imports": {
+    "primary": "use elasticsearch::Elasticsearch;",
+    "types": ["use elasticsearch::http::transport::Transport;", "use elasticsearch::IndexParts;", "use serde_json::Value;"]
+  },
+  "client_construction": {
+    "code": "let transport = Transport::single_node(url)?; let client = Elasticsearch::new(transport);",
+    "is_async": true,
+    "thread_safe": true,
+    "dependencies": ["url", "index"]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(doc_id: &str, body: Value) -> Result<(), elasticsearch::Error>",
+      "sdk_call": "self.client.index(IndexParts::IndexId(&self.index, doc_id)).body(body).send().await?; Ok(())",
+      "error_types": ["elasticsearch::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "query",
+      "signature": "(q: Value) -> Result<Value, elasticsearch::Error>",
+      "sdk_call": "let resp = self.client.search(elasticsearch::SearchParts::Index(&[&self.index])).body(q).send().await?; resp.json::<Value>().await",
+      "error_types": ["elasticsearch::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {"method": "static_keys", "env_vars": ["ELASTICSEARCH_URL"]},
+  "code_style_notes": [
+    "Transport::single_node parses URL and builds reqwest client internally",
+    "official elasticsearch crate is async-first, tokio runtime"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/elasticsearch/"]
+}

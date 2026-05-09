@@ -1,0 +1,11 @@
+{
+  "name": "Order",
+  "pattern": "Entity",
+  "fields": ["id: str", "status: str = \"pending\""],
+  "methods": ["mark_paid(): None", "ship(): None", "cancel(): None"],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["status starts as pending"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.commerce.order"
+}

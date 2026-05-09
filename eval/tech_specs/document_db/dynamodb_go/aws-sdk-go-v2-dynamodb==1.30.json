@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "document_db",
+  "technology": "dynamodb_go",
+  "version_pin": "aws-sdk-go-v2-dynamodb==1.30.0",
+  "language": "go",
+  "install": {"manager": "go", "package": "github.com/aws/aws-sdk-go-v2/service/dynamodb@v1.30.0"},
+  "imports": {
+    "primary": "\"github.com/aws/aws-sdk-go-v2/service/dynamodb\"",
+    "types": ["\"context\"", "\"github.com/aws/aws-sdk-go-v2/config\"", "\"github.com/aws/aws-sdk-go-v2/aws\"", "\"github.com/aws/aws-sdk-go-v2/service/dynamodb/types\""]
+  },
+  "client_construction": {
+    "code": "cfg, _ := config.LoadDefaultConfig(context.Background()); client := dynamodb.NewFromConfig(cfg)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["table"]
+  },
+  "primary_operations": [
+    {
+      "name": "Save",
+      "signature": "(entity Entity) error",
+      "sdk_call": "_, err := r.client.PutItem(context.Background(), &dynamodb.PutItemInput{TableName: aws.String(r.table), Item: map[string]types.AttributeValue{\"id\": &types.AttributeValueMemberS{Value: entity.ID}}}); return err",
+      "error_types": ["*types.ResourceNotFoundException", "*aws.RequestError"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "FindById",
+      "signature": "(id string) (Entity, error)",
+      "sdk_call": "out, err := r.client.GetItem(context.Background(), &dynamodb.GetItemInput{TableName: aws.String(r.table), Key: map[string]types.AttributeValue{\"id\": &types.AttributeValueMemberS{Value: id}}}); if err != nil { return Entity{}, err }; return Entity{ID: id}, nil",
+      "error_types": ["*types.ResourceNotFoundException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "Delete",
+      "signature": "(id string) error",
+      "sdk_call": "_, err := r.client.DeleteItem(context.Background(), &dynamodb.DeleteItemInput{TableName: aws.String(r.table), Key: map[string]types.AttributeValue{\"id\": &types.AttributeValueMemberS{Value: id}}}); return err",
+      "error_types": ["*types.ResourceNotFoundException"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "env_credentials", "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"]},
+  "code_style_notes": [
+    "AttributeValue is a tagged union — use the concrete type per attribute",
+    "GetItem on a missing key returns an empty Item, NOT an error"
+  ],
+  "allowed_doc_origins": ["https://aws.github.io/aws-sdk-go-v2/"]
+}

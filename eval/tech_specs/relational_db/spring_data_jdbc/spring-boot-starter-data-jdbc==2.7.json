@@ -1,0 +1,61 @@
+{
+  "schema_version": "v1",
+  "category": "relational_db",
+  "technology": "spring_data_jdbc",
+  "version_pin": "spring-boot-starter-data-jdbc==2.7",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.boot:spring-boot-starter-data-jdbc:2.7.18"},
+  "imports": {
+    "primary": "import org.springframework.jdbc.core.JdbcTemplate;",
+    "types": [
+      "import org.springframework.dao.DataAccessException;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.jdbcTemplate = jdbcTemplate;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["jdbc_template"]
+  },
+  "primary_operations": [
+    {
+      "name": "save",
+      "signature": "(String id, byte[] payload)",
+      "sdk_call": "this.jdbcTemplate.update(\"INSERT INTO t(id,payload) VALUES (?,?) ON CONFLICT(id) DO UPDATE SET payload = ?\", id, payload, payload);",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "findById",
+      "signature": "(String id)",
+      "sdk_call": "return this.jdbcTemplate.queryForObject(\"SELECT payload FROM t WHERE id = ?\", byte[].class, id);",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "deleteById",
+      "signature": "(String id)",
+      "sdk_call": "this.jdbcTemplate.update(\"DELETE FROM t WHERE id = ?\", id);",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["SPRING_DATASOURCE_URL", "SPRING_DATASOURCE_USERNAME", "SPRING_DATASOURCE_PASSWORD"]
+  },
+  "observability_hooks": ["spring_actuator", "micrometer"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "Spring Boot auto-configures JdbcTemplate from spring.datasource.* properties.",
+    "JdbcTemplate is thread-safe; share one instance via @Bean.",
+    "Use positional ? parameter substitution to avoid SQL injection."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-boot/",
+    "https://docs.spring.io/spring-data/jdbc/docs/"
+  ]
+}

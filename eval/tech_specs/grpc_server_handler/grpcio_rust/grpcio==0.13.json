@@ -1,0 +1,34 @@
+{
+  "schema_version": "v1",
+  "category": "grpc_server_handler",
+  "technology": "grpcio_rust",
+  "version_pin": "grpcio==0.13.0",
+  "language": "rust",
+  "install": {"manager": "cargo", "package": "grpcio==0.13"},
+  "imports": {
+    "primary": "use grpcio::{Environment, ServerBuilder};",
+    "types": ["use std::sync::Arc;"]
+  },
+  "client_construction": {
+    "code": "let env = Arc::new(Environment::new(1));",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "rpc",
+      "signature": "(payload: Vec<u8>) -> Result<Vec<u8>, grpcio::Error>",
+      "sdk_call": "let _ = payload; Ok(Vec::new())",
+      "error_types": ["grpcio::Error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "ServerBuilder::new(env).register_service(...).bind(host, port).build_and_start()? runs the server",
+    "grpcio uses C++ gRPC core under the hood"
+  ],
+  "allowed_doc_origins": ["https://docs.rs/grpcio/"]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "StarletteSearchHandler",
+  "pattern": "Adapter",
+  "implements": "SearchHandler",
+  "fields": [],
+  "methods": [
+    "handle(payload: dict[str, Any]) -> dict[str, Any]"
+  ],
+  "depends": ["SearchHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SearchHandler (UseCase, file=src.application.use_cases.run_search): fields=[], methods=[\"execute(payload: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.http.starlette_search_handler",
+  "tech_spec_path": "rest_server_handler/starlette/starlette==0.36.json",
+  "expected_imports": [
+    "from starlette.exceptions import HTTPException",
+    "from src.application.use_cases.run_search import SearchHandler"
+  ],
+  "expected_error_types": ["HTTPException", "ValueError"]
+}

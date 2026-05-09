@@ -1,0 +1,11 @@
+{
+  "name": "Item",
+  "pattern": "Entity",
+  "fields": ["sku: str", "count: int"],
+  "methods": [],
+  "depends": [],
+  "concretes": [],
+  "invariants": ["count must be >= 0"],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.inventory.item"
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "v1",
+  "category": "rest_client",
+  "technology": "spring_rest_client",
+  "version_pin": "spring-web==5.3",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework:spring-web:5.3.39"},
+  "imports": {
+    "primary": "import org.springframework.web.client.RestTemplate;",
+    "types": [
+      "import org.springframework.web.client.RestClientException;",
+      "import org.springframework.http.ResponseEntity;",
+      "import org.springframework.http.HttpEntity;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.restTemplate = new RestTemplate(); this.baseUrl = baseUrl;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["base_url"]
+  },
+  "primary_operations": [
+    {
+      "name": "get",
+      "signature": "(String url)",
+      "sdk_call": "ResponseEntity<String> resp = this.restTemplate.getForEntity(this.baseUrl + url, String.class); return resp.getBody();",
+      "error_types": ["RestClientException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "post",
+      "signature": "(String url, String body)",
+      "sdk_call": "ResponseEntity<String> resp = this.restTemplate.postForEntity(this.baseUrl + url, new HttpEntity<>(body), String.class); return resp.getBody();",
+      "error_types": ["RestClientException"],
+      "idempotency": "non_idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "put",
+      "signature": "(String url, String body)",
+      "sdk_call": "this.restTemplate.put(this.baseUrl + url, new HttpEntity<>(body));",
+      "error_types": ["RestClientException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "delete",
+      "signature": "(String url)",
+      "sdk_call": "this.restTemplate.delete(this.baseUrl + url);",
+      "error_types": ["RestClientException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": ["spring_actuator", "micrometer"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "RestTemplate is thread-safe but configure ClientHttpRequestFactory once via @Bean.",
+    "For Spring 6 prefer RestClient (fluent API).",
+    "Use HttpEntity to attach headers."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-framework/reference/integration/rest-clients.html"
+  ]
+}

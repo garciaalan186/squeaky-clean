@@ -1,0 +1,27 @@
+{
+  "name": "events.raw",
+  "transport": "kafka:events.raw",
+  "fields": [
+    {
+      "name": "id",
+      "type": "str",
+      "required": true
+    },
+    {
+      "name": "received_at",
+      "type": "str",
+      "required": true
+    },
+    {
+      "name": "headers",
+      "type": "dict[str, str]",
+      "required": true
+    },
+    {
+      "name": "payload",
+      "type": "str",
+      "required": true
+    }
+  ],
+  "producer_problem_id": "EVENT_PRODUCER_TS"
+}

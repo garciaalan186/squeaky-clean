@@ -1,0 +1,21 @@
+{
+  "name": "BetterprotoPaymentHandler",
+  "pattern": "Adapter",
+  "implements": "PaymentHandler",
+  "fields": [],
+  "methods": [
+    "serve(request: dict[str, Any]) -> dict[str, Any]"
+  ],
+  "depends": ["PaymentHandler"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "PaymentHandler (UseCase, file=src.application.use_cases.process_payment): fields=[], methods=[\"execute(request: dict[str, Any]) -> dict[str, Any]\"], invariants=[]",
+  "target_file": "src.infrastructure.rpc.betterproto_payment_handler",
+  "tech_spec_path": "grpc_server_handler/betterproto/betterproto==2.0.json",
+  "expected_imports": [
+    "from grpclib.server import Stream",
+    "from grpclib.exceptions import GRPCError",
+    "from src.application.use_cases.process_payment import PaymentHandler"
+  ],
+  "expected_error_types": ["GRPCError"]
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "v1",
+  "category": "observability_logger",
+  "technology": "slog",
+  "version_pin": "stdlib-go-1.21",
+  "language": "go",
+  "install": {"manager": "stdlib", "package": "stdlib"},
+  "imports": {
+    "primary": "\"log/slog\"",
+    "types": ["\"os\""]
+  },
+  "client_construction": {
+    "code": "logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": []
+  },
+  "primary_operations": [
+    {
+      "name": "Info",
+      "signature": "(msg string, fields ...any)",
+      "sdk_call": "l.logger.Info(msg, fields...)",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Warn",
+      "signature": "(msg string, fields ...any)",
+      "sdk_call": "l.logger.Warn(msg, fields...)",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "Error",
+      "signature": "(msg string, fields ...any)",
+      "sdk_call": "l.logger.Error(msg, fields...)",
+      "error_types": ["error"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {"method": "none"},
+  "code_style_notes": [
+    "log/slog requires Go 1.21+",
+    "Variadic args expect alternating key-value pairs (string, any, string, any, ...)"
+  ],
+  "allowed_doc_origins": ["https://pkg.go.dev/log/slog"]
+}

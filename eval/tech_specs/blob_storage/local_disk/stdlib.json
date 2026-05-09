@@ -1,0 +1,58 @@
+{
+  "schema_version": "v1",
+  "category": "blob_storage",
+  "technology": "local_disk",
+  "version_pin": "stdlib",
+  "language": "python",
+  "install": {"manager": "stdlib", "package": "pathlib"},
+  "imports": {
+    "primary": "from pathlib import Path",
+    "types": ["import shutil"]
+  },
+  "client_construction": {
+    "code": "self._root: Path = Path(root_dir); self._root.mkdir(parents=True, exist_ok=True)",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["root_dir"]
+  },
+  "primary_operations": [
+    {
+      "name": "put_blob",
+      "signature": "(key: str, body: bytes) -> None",
+      "sdk_call": "(self._root / key).write_bytes(body)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "get_blob",
+      "signature": "(key: str) -> bytes",
+      "sdk_call": "return (self._root / key).read_bytes()",
+      "error_types": ["FileNotFoundError", "OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "delete_blob",
+      "signature": "(key: str) -> None",
+      "sdk_call": "(self._root / key).unlink(missing_ok=True)",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "pathlib.Path operations are synchronous and thread-safe at OS level",
+    "use missing_ok=True for idempotent delete semantics",
+    "callers should ensure 'key' does not contain '..' path traversal"
+  ],
+  "allowed_doc_origins": [
+    "https://docs.python.org/3/library/pathlib.html",
+    "https://docs.python.org/3/library/shutil.html"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "RabbitMqPublisherCloser",
+  "pattern": "Gateway",
+  "implements": "PublisherCloser",
+  "fields": [],
+  "methods": [
+    "close() -> None"
+  ],
+  "depends": ["PublisherCloser"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "PublisherCloser (Gateway, file=src.domain.events.publisher_closer): fields=[], methods=[\"close() -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.messaging.rabbitmq_publisher_closer",
+  "tech_spec_path": "message_queue_producer/rabbitmq/pika==1.3.json",
+  "expected_imports": [
+    "import pika",
+    "from pika.exceptions import AMQPError, AMQPConnectionError, ChannelClosed",
+    "from src.domain.events.publisher_closer import PublisherCloser"
+  ],
+  "expected_error_types": ["AMQPError"]
+}

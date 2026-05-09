@@ -1,0 +1,23 @@
+{
+  "category": "rest_client",
+  "candidates": [
+    {
+      "technology": "httpx",
+      "version_pin": "httpx==0.27",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 4, "thru": 4, "eco": 5, "reg": 5, "lic": 5, "team": 4}
+    },
+    {
+      "technology": "requests",
+      "version_pin": "requests==2.31",
+      "stability": "ga",
+      "scores": {"ops": 5, "cost": 5, "cold": 4, "thru": 3, "eco": 5, "reg": 5, "lic": 5, "team": 5}
+    },
+    {
+      "technology": "aiohttp",
+      "version_pin": "aiohttp==3.9",
+      "stability": "ga",
+      "scores": {"ops": 4, "cost": 5, "cold": 3, "thru": 5, "eco": 4, "reg": 5, "lic": 5, "team": 3}
+    }
+  ]
+}

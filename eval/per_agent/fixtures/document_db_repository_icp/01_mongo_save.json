@@ -1,0 +1,21 @@
+{
+  "name": "MongoOrderRepositorySave",
+  "pattern": "Repository",
+  "implements": "OrderRepositorySave",
+  "fields": [],
+  "methods": [
+    "save(order_id: str, payload: bytes) -> None"
+  ],
+  "depends": ["OrderRepositorySave"],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "OrderRepositorySave (Repository, file=src.domain.orders.order_repository_save): fields=[], methods=[\"save(order_id: str, payload: bytes) -> None\"], invariants=[]",
+  "target_file": "src.infrastructure.persistence.mongo_order_repository_save",
+  "tech_spec_path": "document_db/mongodb/pymongo==4.6.json",
+  "expected_imports": [
+    "from pymongo import MongoClient",
+    "from pymongo.errors import PyMongoError, DuplicateKeyError",
+    "from src.domain.orders.order_repository_save import OrderRepositorySave"
+  ],
+  "expected_error_types": ["PyMongoError", "DuplicateKeyError"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Account",
+  "pattern": "Entity",
+  "fields": ["id: str", "balance: int"],
+  "methods": ["deposit(amount: int): None", "withdraw(amount: int): None"],
+  "depends": [],
+  "concretes": [],
+  "invariants": [],
+  "sibling_interfaces": "SIBLING_INTERFACES",
+  "target_file": "src.domain.banking.account"
+}

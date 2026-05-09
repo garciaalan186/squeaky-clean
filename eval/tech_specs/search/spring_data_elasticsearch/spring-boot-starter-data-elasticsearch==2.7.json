@@ -1,0 +1,67 @@
+{
+  "schema_version": "v1",
+  "category": "search",
+  "technology": "spring_data_elasticsearch",
+  "version_pin": "spring-boot-starter-data-elasticsearch==2.7",
+  "language": "java",
+  "install": {"manager": "maven", "package": "org.springframework.boot:spring-boot-starter-data-elasticsearch:2.7.18"},
+  "imports": {
+    "primary": "import org.springframework.data.elasticsearch.core.ElasticsearchOperations;",
+    "types": [
+      "import org.springframework.data.elasticsearch.core.SearchHits;",
+      "import org.springframework.data.elasticsearch.core.query.IndexQuery;",
+      "import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;",
+      "import org.springframework.data.elasticsearch.core.query.StringQuery;",
+      "import org.springframework.dao.DataAccessException;",
+      "import java.util.List;",
+      "import java.util.Map;",
+      "import java.util.stream.Collectors;"
+    ]
+  },
+  "client_construction": {
+    "code": "this.operations = operations;",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["operations"]
+  },
+  "primary_operations": [
+    {
+      "name": "index",
+      "signature": "(String docId, Map<String,Object> body)",
+      "sdk_call": "IndexQuery q = new IndexQueryBuilder().withId(docId).withObject(body).build(); this.operations.index(q, this.operations.getIndexCoordinatesFor(Map.class));",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "query",
+      "signature": "(Map<String,Object> query)",
+      "sdk_call": "SearchHits<Map> hits = this.operations.search(new StringQuery(query.toString()), Map.class); return hits.stream().map(h -> (Map<String,Object>) h.getContent()).collect(Collectors.toList());",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    },
+    {
+      "name": "search",
+      "signature": "(String query)",
+      "sdk_call": "SearchHits<Map> hits = this.operations.search(new StringQuery(query), Map.class); return hits.stream().map(h -> (Map<String,Object>) h.getContent()).collect(Collectors.toList());",
+      "error_types": ["DataAccessException"],
+      "idempotency": "idempotent",
+      "retry_policy": "exponential_backoff(max=3)"
+    }
+  ],
+  "auth": {
+    "method": "env_credentials",
+    "env_vars": ["SPRING_ELASTICSEARCH_URIS"]
+  },
+  "observability_hooks": ["spring_actuator"],
+  "rate_limit_defaults": {"rps": 5000, "burst": 10000},
+  "code_style_notes": [
+    "Spring Boot 2.7 ships RestHighLevelClient under the hood (deprecated by Elastic).",
+    "ElasticsearchOperations is thread-safe; share one instance via @Bean.",
+    "For Spring Boot 3+ migrate to the new ElasticsearchClient (co.elastic.clients)."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.spring.io/spring-data/elasticsearch/docs/"
+  ]
+}
