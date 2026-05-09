@@ -28,7 +28,7 @@ Small-parameter models frequently hallucinate, forcing engineers toward high-par
 
 Squeaky Clean (or Squeaky) capitalizes on the modularity and granularity of Clean Architecture, SOLID principles, and GoF + DDD patterns. By doing so, it maximizes parallelization and wall-clock velocity while minimizing both the "hallucination blast radius" and operational costs.
 
-The framework defines an **Architectural DSL** to orchestrate atomic, pattern-specialized agents that run efficiently on compact, low-parameter models. The **Squib** between tiers is a frozen, validated grammar (~200 chars per class, machine-checkable), ensuring the cheaper tier never has to guess what the more capable tier meant.
+The framework defines an Architectural DSL called **Squib** to orchestrate atomic, pattern-specialized agents that run efficiently on compact, low-parameter models. The Squib between tiers is a frozen, validated grammar (~200 chars per class, machine-checkable), ensuring the cheaper tier never has to guess what the more capable tier meant.
 
 ## Quick Start
 
