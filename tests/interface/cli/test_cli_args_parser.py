@@ -146,3 +146,23 @@ def test_legacy_tests_flag_is_parsed() -> None:
 def test_no_input_mode_is_rejected() -> None:
     with pytest.raises(SystemExit):
         CLIArgsParser().parse([])
+
+
+def test_recover_from_is_a_valid_standalone_input() -> None:
+    args = CLIArgsParser().parse(["--recover-from", "some/project"])
+    assert args.recover_from == "some/project"
+    assert args.problem_ids == ()
+
+
+def test_criteria_are_parsed_in_order() -> None:
+    args = CLIArgsParser().parse(
+        ["--recover-from", "p", "--criteria", "testability, simplicity ,performance"],
+    )
+    assert args.criteria == ("testability", "simplicity", "performance")
+
+
+def test_recover_out_flag_is_parsed() -> None:
+    args = CLIArgsParser().parse(
+        ["--recover-from", "p", "--recover-out", "out/x.squib"],
+    )
+    assert args.recover_out == "out/x.squib"

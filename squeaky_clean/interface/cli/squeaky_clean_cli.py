@@ -5,6 +5,9 @@ from dataclasses import replace
 from pathlib import Path
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.dtos.recovery.architectural_criterion import (
+    ALL_ARCHITECTURAL_CRITERIA,
+)
 from squeaky_clean.application.dtos.sweep_request import SweepRequest
 from squeaky_clean.application.use_cases.html_dashboard_writer import HtmlDashboardWriter
 from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
@@ -16,6 +19,7 @@ from squeaky_clean.application.use_cases.metrics_history_aggregator import (
 from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer import (
     ProblemSpecSynthesizer,
 )
+from squeaky_clean.application.use_cases.recovery.recovery_emitter import RecoveryEmitter
 from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
 from squeaky_clean.application.use_cases.recovery.squib_review_gate import (
     SquibReviewGate,
@@ -52,6 +56,8 @@ class SqueakyCleanCLI:
             router = RouterFactory().build(args.model_override)
             if args.resume_run_dir is not None:
                 return self._resume(router, args)
+            if args.recover_from is not None:
+                return self._recover_emit(args)
             if args.squib_file is not None:
                 return self._recover(router, args)
             if args.problem_file is not None:
@@ -97,6 +103,19 @@ class SqueakyCleanCLI:
         deps = DependencyBuilder().build(router, problem, rc)  # type: ignore[arg-type]
         result = RunEval(replace(deps, design_architecture=designer)).execute(problem)
         print(f"[squeaky] recovery regenerated: report at {result.report_path}")
+        return 0
+
+    def _recover_emit(self, args: CLIArgs) -> int:
+        out = Path(args.recover_out) if args.recover_out else Path("recovered.squib")
+        ranking = args.criteria or ALL_ARCHITECTURAL_CRITERIA
+        summary = RecoveryEmitter().emit(Path(args.recover_from), out, ranking)  # type: ignore[arg-type]
+        close = " (close call — review)" if summary.recommendation_close else ""
+        print(f"[squeaky] recovered {summary.classes} classes into "
+              f"{summary.modules} modules -> {summary.squib_path}")
+        print(f"[squeaky] {summary.proposals} framework-coupling refactor "
+              f"proposal(s) -> {summary.refactors_path}")
+        print(f"[squeaky] coupled-class recommendation: "
+              f"{summary.recommendation}{close}")
         return 0
 
     def _replicates(

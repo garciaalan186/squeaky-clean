@@ -42,3 +42,6 @@ class CLIArgs:
     emit_wiring: bool = True
     squib_file: str | None = None
     legacy_tests: str | None = None
+    recover_from: str | None = None
+    recover_out: str | None = None
+    criteria: tuple[str, ...] = ()

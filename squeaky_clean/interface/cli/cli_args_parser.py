@@ -22,10 +22,12 @@ class CLIArgsParser:
         ns = parser.parse_args(argv)
         ids = self._resolve_ids(ns)
         if (not ids and not ns.problem_file and not ns.rebuild_dashboard
-                and ns.resume_run_dir is None and ns.squib_file is None):
+                and ns.resume_run_dir is None and ns.squib_file is None
+                and ns.recover_from is None):
             parser.error(
                 "one of --problem, --problems, --sweep, --problem-file, "
-                "--squib-file, --rebuild-dashboard, or --resume required"
+                "--recover-from, --squib-file, --rebuild-dashboard, or "
+                "--resume required"
             )
         return CLIArgs(
             problem_ids=ids,
@@ -71,6 +73,15 @@ class CLIArgsParser:
             legacy_tests=(
                 str(ns.legacy_tests) if ns.legacy_tests is not None else None
             ),
+            recover_from=(
+                str(ns.recover_from) if ns.recover_from is not None else None
+            ),
+            recover_out=(
+                str(ns.recover_out) if ns.recover_out is not None else None
+            ),
+            criteria=tuple(
+                c.strip() for c in str(ns.criteria).split(",") if c.strip()
+            ) if ns.criteria is not None else (),
         )
 
     def _build(self) -> argparse.ArgumentParser:
@@ -198,6 +209,21 @@ class CLIArgsParser:
             "--legacy-tests", dest="legacy_tests", default=None,
             help="Directory of the brownfield project's tests; acceptance "
                  "criteria are derived from its test_* functions.",
+        )
+        parser.add_argument(
+            "--recover-from", dest="recover_from", default=None,
+            help="Ingest a Python project and emit a reviewable Squib + "
+                 "refactor sidecar (Architecture Recovery onboarding).",
+        )
+        parser.add_argument(
+            "--recover-out", dest="recover_out", default=None,
+            help="Where to write the recovered Squib (default: "
+                 "recovered.squib in the cwd).",
+        )
+        parser.add_argument(
+            "--criteria", dest="criteria", default=None,
+            help="Comma-separated architectural criteria, most-important "
+                 "first, driving the preserve-vs-split MCDA verdict.",
         )
         return parser
 
