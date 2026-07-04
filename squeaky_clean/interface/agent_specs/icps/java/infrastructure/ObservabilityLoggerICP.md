@@ -25,7 +25,7 @@ Exactly one Java file body inside a single ```java fenced block. The file MUST:
 6. Constructor accepts parameters from `client_construction.dependencies` (camelCased) and executes the EXACT `client_construction.code` snippet.
 7. Implement EVERY method named in the ClassSpec `methods:` block. Bodies execute the corresponding `sdk_call` snippet VERBATIM.
 8. Logger calls almost never throw; if `error_types` is empty or only references `RuntimeException`, the body MAY omit the try/catch. Otherwise wrap in `try { ... } catch (<ErrorType> e) { throw new RuntimeException("<op> failed", e); }`.
-9. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method.
+9. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method.
 
 ## Constraints
 0. **§Notation type-fidelity**: signatures and types MUST match the ClassSpec VERBATIM (modulo Java conventions: `Map<String,Object>` for context, `String` for event). NEVER widen or rename.

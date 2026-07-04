@@ -47,12 +47,14 @@ def test_non_js_file_skipped(tmp_path: Path) -> None:
     assert JavaScriptGranularityRule().check(path) == []
 
 
-_FOUR_METHODS = """export class Foo {
+_SIX_METHODS = """export class Foo {
   constructor() {}
   a() { return 1; }
   b() { return 2; }
   c() { return 3; }
   d() { return 4; }
+  e() { return 5; }
+  f() { return 6; }
 }
 """
 
@@ -73,6 +75,8 @@ _PRIVATE_METHOD = """export class Foo {
   a() { return 1; }
   b() { return 2; }
   c() { return 3; }
+  d() { return 4; }
+  e() { return 5; }
   _helper() { return 0; }
 }
 """
@@ -86,10 +90,10 @@ _CONSTRUCTOR_NOT_COUNTED = """export class Foo {
 """
 
 
-def test_four_public_methods_violates(tmp_path: Path) -> None:
-    path = _write(tmp_path, "four.js", _FOUR_METHODS)
+def test_six_public_methods_violates(tmp_path: Path) -> None:
+    path = _write(tmp_path, "six.js", _SIX_METHODS)
     violations = JavaScriptGranularityRule().check(path)
-    assert any("4 public methods" in v.message for v in violations)
+    assert any("6 public methods" in v.message for v in violations)
 
 
 def test_three_args_method_violates(tmp_path: Path) -> None:

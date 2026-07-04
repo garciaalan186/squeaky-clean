@@ -17,7 +17,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose, NO explan
 4. Provide a `New<Name>(...)` constructor that returns `(<Name>, error)` and validates every CONSTRUCTION invariant via `fmt.Errorf("<message>")`.
 5. Implement methods declared in `methods:` as receiver methods on `*<Name>` (entities may mutate). Methods that "raise" return `error` as the last value.
 6. Provide an `Equals(other *<Name>) bool` method that returns `e.ID == other.ID` (identity equality only).
-7. Respect hard rules: file <=80 lines, <=3 public methods (Equals counts only if declared in `methods:`), <=2 args per method (excluding receiver).
+7. Respect hard rules: file <=80 lines, <=5 public methods (Equals counts only if declared in `methods:`), <=2 args per method (excluding receiver).
 8. **Imports**: every sibling import is rendered from the SIBLING_INTERFACES `file=<dotted_path>` value translated to a Go module path (e.g. `file=src/domain/auth/user` → `import "src/domain/auth/user"`). Use it verbatim. NEVER invent or shorten the path. Use `import ( ... )` block syntax. Plus stdlib (`"fmt"`).
 
 ## Constraints

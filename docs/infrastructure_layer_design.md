@@ -62,7 +62,7 @@ What this design generates: adapters for *user projects* the framework produces 
 
 ### 1.3 Boundary with existing CLAUDE.md §Rules
 
-CLAUDE.md §Rules currently constrain *every* generated class to ≤80 lines, ≤3 public methods, ≤2 args/method, one class per file, layered import discipline. This design preserves all of those constraints. Concretely: every generated infrastructure adapter must still pass `granularity_rule.py` and `dependency_rule.py`. If an SDK's idiomatic usage requires more than 3 methods (e.g. a Kafka consumer with `subscribe`, `poll`, `commit`, `close`), the design forces a decomposition into multiple collaborating classes — the same way the framework already handles a Facade with multiple use cases.
+CLAUDE.md §Rules currently constrain *every* generated class to ≤80 lines, ≤5 public methods, ≤2 args/method, one class per file, layered import discipline. This design preserves all of those constraints. Concretely: every generated infrastructure adapter must still pass `granularity_rule.py` and `dependency_rule.py`. If an SDK's idiomatic usage requires more than 3 methods (e.g. a Kafka consumer with `subscribe`, `poll`, `commit`, `close`), the design forces a decomposition into multiple collaborating classes — the same way the framework already handles a Facade with multiple use cases.
 
 ### 1.4 Design tension surfaced upfront
 
@@ -82,7 +82,7 @@ The three-tier model in Section 2 is the proposed resolution: keep what's slow-c
 │  Examples: BlobStorageAdapterICP, MessageQueueProducerICP, KvCacheICP        │
 │  Lives in: squeaky_clean/interface/agent_specs/icps/<lang>/infrastructure/             │
 │  Consumes: ClassSpec + (resolved) TechSpec injected by bridge                │
-│  Produces: One adapter file (<=80 lines, <=3 methods, port-conformant)       │
+│  Produces: One adapter file (<=80 lines, <=5 methods, port-conformant)       │
 └──────────────────────────────────────────────────────────────────────────────┘
                             │ composed at runtime via
                             ▼
@@ -566,7 +566,7 @@ A common mistake would be to model these as additional `*ICP.md` files alongside
 - `squeaky_clean/application/use_cases/techspec_composer.py`
 - `squeaky_clean/application/use_cases/techspec_resolver.py`
 
-Each has a corresponding deps DTO and follows the existing use-case conventions (≤80 lines, ≤3 public methods).
+Each has a corresponding deps DTO and follows the existing use-case conventions (≤80 lines, ≤5 public methods).
 
 ### 5.4 The runtime flow, end-to-end
 
@@ -880,7 +880,7 @@ Tier C agents must produce code consistent with this. The Tier C spec template e
 
 ### 7.3 Granularity-rule conformance
 
-Each Tier C agent generates a single class with ≤3 methods and ≤2 args/method. SDKs whose idiomatic usage exceeds this are decomposed by Tier B before the Tier C call. Concretely:
+Each Tier C agent generates a single class with ≤5 methods and ≤2 args/method. SDKs whose idiomatic usage exceeds this are decomposed by Tier B before the Tier C call. Concretely:
 
 - A Kafka consumer needs `subscribe`, `poll`, `commit`, `close` — 4 methods. **Decomposition**: TechSpec composer recognizes the count and asks Tier B to split into a `KafkaSubscriber` (subscribe + close) and a `KafkaPoller` (poll + commit) — two collaborating classes. The application layer composes them.
 - A REST client with 5 endpoints needs 5 methods. **Decomposition**: each endpoint becomes its own Adapter class implementing a single-method port.
@@ -946,7 +946,7 @@ Each Tier C agent gets a fixture set under `eval/per_agent/fixtures/<tier_c_name
 | imports valid | 0.10 | every import resolves against TechSpec.imports + bundled stubs |
 | error semantics | 0.15 | declared error types from TechSpec are caught/re-raised consistently |
 | idempotency claim respected | 0.10 | declared idempotent ops don't carry retry-on-success guards |
-| granularity rules | 0.05 | ≤3 methods, ≤2 args/method, ≤80 lines |
+| granularity rules | 0.05 | ≤5 methods, ≤2 args/method, ≤80 lines |
 
 Fixture set: 5 fixtures per Tier C agent, parametrized over 2–3 technologies each. With 13 Tier C agents at first ship, that's 13 × 5 × ~2.5 = ~160 fixtures. Each fixture takes one ICP call to evaluate; full sweep ~$2–5. Run quarterly (or on every Tier C / TechSpec change touching the fixture's technology).
 

@@ -19,7 +19,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. Provide public getters for each field.
 7. Override `equals(Object)` and `hashCode()` comparing ONLY the `id` field (first field) with `@Override`.
 8. Implement every method in the ClassSpec as a public method. **COPY THE RETURN TYPE VERBATIM FROM THE SPEC.** If the spec says `getHistory(): Message[]`, write `public Message[] getHistory()` — NEVER `public Message getHistory()` (dropping `[]`) and NEVER `public List<Message> getHistory()` (wrong type). Dropping `[]` from a return type is the most common bug — check every method before emitting.
-9. Respect hard rules: file <=80 lines, 1 class, <=3 public methods, <=2 args per method. Getters, constructors, `equals`, and `hashCode` do NOT count.
+9. Respect hard rules: file <=80 lines, 1 class, <=5 public methods, <=2 args per method. Getters, constructors, `equals`, and `hashCode` do NOT count.
 10. **Standard library imports.** If any field, parameter, or return type uses `java.util` classes (List, ArrayList, Map, HashMap, Set, HashSet, Collections), generate the necessary import statements (e.g. `import java.util.List;`, `import java.util.ArrayList;`). Also import `java.util.Objects` if using `Objects.hash()` or `Objects.equals()`. **Sibling classes ARE in `com.example` so they need NO explicit import** (Java auto-imports same-package classes).
 
 ## Constraints

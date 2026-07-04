@@ -18,7 +18,7 @@ Exactly one Python file body inside a single ```python fenced block. NO prose, N
 5. Declare all state as typed fields (e.g. `value: int`).
 6. Implement every method in the ClassSpec as a regular method with type annotations.
 7. Be mypy --strict compatible: every parameter and return type annotated, no `Any`, no `type: ignore`.
-8. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method (excluding `self`).
+8. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method (excluding `self`).
 9. **Imports**: every sibling import is `from <dotted_path> import <ClassName>` where `<dotted_path>` is the EXACT value to the right of `file=` in the SIBLING_INTERFACES entry for that class (e.g. `file=src.domain.auth.user` → `from src.domain.auth.user import User`). Use it verbatim. NEVER invent, shorten, or modify the path. NEVER use relative imports (`from .`, `from ..`) or bare-stem imports (`from user import User`). Plus `from dataclasses import dataclass` and stdlib. No third-party imports.
 
 ## Constraints
@@ -28,7 +28,7 @@ Exactly one Python file body inside a single ```python fenced block. NO prose, N
    - `"non-negative"` / `">= 0"` → `if self.value < 0: raise ValueError(...)`
    - `"positive"` / `"> 0"` / `">= 1"` → `if self.value < 1: raise ValueError(...)` (or `<= 0` for floats)
    - `"between X and Y"` / `"in range [a, b]"` → check bounds
-   The `__post_init__` method does NOT count toward the ≤3 method limit. NEVER silently accept input that an invariant forbids.
+   The `__post_init__` method does NOT count toward the ≤5 method limit. NEVER silently accept input that an invariant forbids.
 3. Use `int` / `float` / `str` / `bool` / `tuple[...]` — avoid `list`/`dict` in frozen dataclasses since they are unhashable.
 3a. **Do not override `__eq__` / `__hash__` / `__repr__`.** `@dataclass(frozen=True)` already generates them correctly. Overriding them risks forward-reference NameErrors and breaks immutability guarantees.
 4. Method bodies must be real implementations, not `pass` or `NotImplementedError`.

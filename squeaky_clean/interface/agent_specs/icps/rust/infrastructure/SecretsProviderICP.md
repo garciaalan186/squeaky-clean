@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. `get_secret(key)` method pastes `sdk_call` VERBATIM.
 5. `aws-sdk-secretsmanager` is async (tokio) → `pub async fn`. `dotenv` is sync → `pub fn`.
 6. Methods return `Result<String, E>`. NEVER `panic!`.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: standard (`String`/`&str`, `Result<T,E>`).

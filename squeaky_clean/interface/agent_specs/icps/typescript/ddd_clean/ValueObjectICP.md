@@ -17,7 +17,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. NO 
 4. Declare `readonly` fields with full type annotations for every entry in `fields:`.
 5. Declare a `constructor(...)` with typed parameters for each field and assign `this.field = param`. At the end of the constructor call `Object.freeze(this)` to enforce immutability.
 6. Implement every method in the ClassSpec with full return type annotations. All parameters must be typed.
-7. Respect hard rules: file <=80 lines, exactly 1 exported class, <=3 public methods, <=2 args per method (excluding `this`).
+7. Respect hard rules: file <=80 lines, exactly 1 exported class, <=5 public methods, <=2 args per method (excluding `this`).
 8. **Imports**: use the `file=<stem>` value from SIBLING_INTERFACES for flat imports. Write `import { <ClassName> } from './<stem>.js';` (TypeScript with nodenext requires `.js` extension). Do NOT guess the file stem from the class name — always use the value shown in `file=<stem>`.
 
 ## Constraints

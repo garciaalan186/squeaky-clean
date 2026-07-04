@@ -10,7 +10,8 @@ from squeaky_clean.domain.value_objects.layer_type import LayerType
 def _module(name: str) -> ModuleSpec:
     cls = ClassSpec(
         name=f"{name}Class", pattern="SimpleClass",
-        fields=(), methods=(), depends=(), concretes=(), invariants=(),
+        fields=(), methods=("noop(): None",),
+        depends=(), concretes=(), invariants=(),
         implements=None,
     )
     return ModuleSpec(

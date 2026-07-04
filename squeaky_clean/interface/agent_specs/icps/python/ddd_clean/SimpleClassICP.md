@@ -17,7 +17,7 @@ Exactly one Python file body inside a single ```python fenced block. NO prose, N
 4. Use an `__init__` only if the class genuinely owns state. If stateless, omit `__init__`.
 5. Implement every method in the ClassSpec with type annotations.
 6. Be mypy --strict compatible: every parameter and return type annotated, no `Any`, no `type: ignore`.
-7. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method (excluding `self`).
+7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method (excluding `self`).
 8. **Imports**: every sibling import is `from <dotted_path> import <ClassName>` where `<dotted_path>` is the EXACT value to the right of `file=` in the SIBLING_INTERFACES entry for that class (e.g. `file=src.domain.auth.user` → `from src.domain.auth.user import User`). Use it verbatim. NEVER invent, shorten, or modify the path. NEVER use relative imports (`from .`, `from ..`) or bare-stem imports (`from user import User`). Plus stdlib. No third-party imports.
 
 ## Constraints

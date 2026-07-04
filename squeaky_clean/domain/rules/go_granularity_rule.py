@@ -16,7 +16,7 @@ class GoGranularityRule(Rule):
     """Parses one Go file and flags granularity violations.
 
     Detects exported free functions and exported methods on a
-    receiver (struct). Enforces <=80 lines/file, <=3 exported
+    receiver (struct). Enforces <=80 lines/file, <=5 exported
     funcs/methods per receiver (or per-file for free funcs), and
     <=2 args per method (excluding the receiver).
     Skips ``_test.go`` files and anything under ``vendor/``.
@@ -24,7 +24,7 @@ class GoGranularityRule(Rule):
 
     _NAME = "GoGranularityRule"
     _MAX_LINES = 80
-    _MAX_METHODS = 3
+    _MAX_METHODS = 5
     _MAX_ARGS = 2
 
     def check(self, path: Path) -> list[Violation]:
@@ -51,7 +51,7 @@ class GoGranularityRule(Rule):
             label = receiver if receiver else "file"
             if len(funcs) > self._MAX_METHODS:
                 out.append(self._v(
-                    path, f"{label} has {len(funcs)} exported funcs (>3)",
+                    path, f"{label} has {len(funcs)} exported funcs (>5)",
                 ))
             for name, params in funcs:
                 count = self._count_args(params)

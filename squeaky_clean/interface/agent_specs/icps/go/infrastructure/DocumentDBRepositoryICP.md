@@ -17,7 +17,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose. The file 
 4. Constructor `New<Name>(<deps>) (*<Name>, error)` executes EXACT `client_construction.code`.
 5. Implement EVERY method in `methods:`. Typical ops: `Save`, `FindById`, `Delete`.
 6. Methods returning a doc return `(<Entity>, error)`; void ops return `error`.
-7. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method.
+7. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method.
 
 ## Constraints
 0. **§Notation → Go type fidelity**: `dict[K,V]`→`map[K]V`; `list`/`Type[]`→`[]Type`; `set`→`map[Type]struct{}`; `bytes`→`[]byte`; `str`→`string`; `int`→`int`; `float`→`float64`; `bool`→`bool`; `None`→no return.

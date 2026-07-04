@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. `process(ctx)`-shaped method pastes `sdk_call` VERBATIM.
 5. `rdkafka` async → `pub async fn`. Sync `kafka` → `pub fn`.
 6. Methods return `Result<T, E>`. NEVER `panic!`.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: standard mapping (`Vec`, `HashMap`, `String`/`&str`, `Vec<u8>`/`&[u8]`, `i64`, `Result<T,E>`).

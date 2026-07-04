@@ -24,8 +24,14 @@ CLASSES {
     methods: [compute(op: Operation): Number]
     depends: [Operation, Number]
   }
-  Operation -> ValueObject {}
-  Number -> ValueObject {}
+  Operation -> ValueObject {
+    fields: [name: str]
+    invariants: ["name must be non-empty"]
+  }
+  Number -> ValueObject {
+    fields: [value: float]
+    invariants: ["value must be finite"]
+  }
 }
 INVARIANTS ["Division by zero is an error"]
 """

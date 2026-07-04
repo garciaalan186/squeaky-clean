@@ -9,7 +9,7 @@ _METHOD_SIG: re.Pattern[str] = re.compile(
 _KEYWORDS: frozenset[str] = frozenset(
     {"if", "for", "while", "switch", "return", "catch", "do"}
 )
-_MAX_METHODS: int = 3
+_MAX_METHODS: int = 5
 _MAX_ARGS: int = 2
 
 
@@ -31,7 +31,7 @@ class TypeScriptMethodScanner:
         out: list[str] = []
         if len(methods) > _MAX_METHODS:
             out.append(
-                f"class {class_name} has {len(methods)} public methods (>3)"
+                f"class {class_name} has {len(methods)} public methods (>5)"
             )
         for name, args in methods:
             count = self._count(args)

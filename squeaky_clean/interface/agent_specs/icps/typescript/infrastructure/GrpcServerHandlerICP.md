@@ -16,7 +16,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. The
 3. One exported class matching ClassSpec `name`.
 4. Constructor with TYPED `useCase` parameter running `client_construction.code` VERBATIM.
 5. Implement RPC handlers using `(call, callback)` signature. Each body pastes matching `sdk_call` VERBATIM.
-6. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method.
+6. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method.
 
 ## Constraints
 0. **§Notation -> TypeScript type fidelity**:

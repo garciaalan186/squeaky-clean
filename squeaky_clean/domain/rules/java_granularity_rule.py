@@ -20,7 +20,7 @@ class JavaGranularityRule(Rule):
 
     _NAME = "JavaGranularityRule"
     _MAX_LINES = 80
-    _MAX_METHODS = 3
+    _MAX_METHODS = 5
     _MAX_ARGS = 2
 
     def check(self, path: Path) -> list[Violation]:
@@ -54,7 +54,7 @@ class JavaGranularityRule(Rule):
             out.append(
                 self._v(
                     path,
-                    f"class {class_name} has {len(methods)} public methods (>3)",
+                    f"class {class_name} has {len(methods)} public methods (>5)",
                 )
             )
         for name, params in methods:

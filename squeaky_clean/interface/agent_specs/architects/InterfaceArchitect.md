@@ -18,7 +18,7 @@ Either:
 1. Interface is not imported by any other layer. No sibling module may declare `DEPENDS [Interface::...]`.
 2. Interface modules may depend on Domain, Application, and Infrastructure modules.
 3. Only these patterns may appear in an Interface module: Presenter, Facade, Adapter, SimpleClass.
-4. Each class has ≤3 methods and each method has ≤2 arguments.
+4. Each class has ≤5 methods and each method has ≤2 arguments.
 5. All `depends` inside a class must reference another class declared in the same module.
 
 ## Failure Modes

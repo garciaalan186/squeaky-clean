@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. The handler is `pub async fn handle(...)` accepting the WS stream.
 5. `tokio-tungstenite` and `axum-ws` are tokio-async — use `pub async fn`.
 6. Methods return `Result<T, E>`. NEVER `panic!`. Close socket on error.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: standard (`Vec`, `HashMap`, `String`/`&str`, `Vec<u8>`/`&[u8]`, `Result<T,E>`).
