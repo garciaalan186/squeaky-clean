@@ -8,6 +8,7 @@ from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
 from squeaky_clean.application.use_cases.recovery.import_graph_resolver import (
     ImportGraphResolver,
 )
+from squeaky_clean.application.use_cases.recovery.ingest_scope import IngestScope
 from squeaky_clean.application.use_cases.recovery.python_class_extractor import (
     PythonClassExtractor,
 )
@@ -18,21 +19,25 @@ class PythonClassCatalogExtractor:
 
     Every ``*.py`` file under the root is parsed; its top-level classes
     become ClassRecords keyed by an FQN derived from the file's path
-    relative to the root (``__init__`` segments dropped). Files that fail
-    to parse are skipped deterministically. The class-level import graph
-    is resolved against the catalogued FQNs. No LLM runs in this stage —
-    the same tree yields the same catalog on every run.
+    relative to the root (``__init__`` segments dropped). Test code and
+    vendored/build directories are excluded by IngestScope, so the catalog
+    reflects the project's own production code. Files that fail to parse
+    are skipped deterministically. The class-level import graph is resolved
+    against the catalogued FQNs. No LLM runs — the same tree yields the same
+    catalog on every run.
     """
 
     def __init__(self) -> None:
         self._extractor: PythonClassExtractor = PythonClassExtractor()
         self._resolver: ImportGraphResolver = ImportGraphResolver()
+        self._scope: IngestScope = IngestScope()
 
     def extract(self, root: Path) -> ClassCatalog:
         """Return the ClassCatalog for every class under ``root``."""
         records: list[ClassRecord] = []
         for path in sorted(root.rglob("*.py")):
-            records.extend(self._records_for(path, root))
+            if self._scope.includes(path, root):
+                records.extend(self._records_for(path, root))
         frozen = tuple(records)
         return ClassCatalog(classes=frozen, import_graph=self._resolver.resolve(frozen))
 
