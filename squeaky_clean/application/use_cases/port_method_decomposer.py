@@ -1,10 +1,10 @@
-"""PortMethodDecomposer: split >3-method Tier C ClassSpecs into Facade+siblings.
+"""PortMethodDecomposer: split >5-method Tier C ClassSpecs into Facade+siblings.
 
 Pure mechanical transformation applied BEFORE pattern assignment, so the
-EM only sees ≤3-method classes. Tier C / infrastructure routing only.
+EM only sees ≤5-method classes. Tier C / infrastructure routing only.
 
-Naming: focal `FooConsumer` with methods `[a, b, c, d]` becomes
-`FooConsumerAB` + `FooConsumerCD` collaborators plus a `FooConsumer`
+Naming: focal `FooConsumer` with methods `[a, b, c, d, e, f]` becomes
+`FooConsumerABC` + `FooConsumerDEF` collaborators plus a `FooConsumer`
 Facade. Suffixes are concatenated UpperCamel initials of the methods.
 """
 
@@ -27,13 +27,13 @@ def _suffix(methods: tuple[str, ...]) -> str:
 
 def _split_groups(methods: tuple[str, ...]) -> tuple[tuple[str, ...], ...]:
     n = len(methods)
-    if n <= 3:
+    if n <= 5:
         return (methods,)
-    if n == 4:
-        return (methods[:2], methods[2:])
-    if n in (5, 6):
+    if n == 6:
         return (methods[:3], methods[3:])
-    return (methods[:3], methods[3:6], methods[6:])
+    if n in (7, 8):
+        return (methods[:4], methods[4:])
+    return (methods[:4], methods[4:8], methods[8:])
 
 
 def _collaborator(focal: ClassSpec, group: tuple[str, ...]) -> ClassSpec:
@@ -45,8 +45,8 @@ def _collaborator(focal: ClassSpec, group: tuple[str, ...]) -> ClassSpec:
 
 
 def decompose_class(focal: ClassSpec) -> tuple[ClassSpec, ...]:
-    """Return (focal,) when ≤3 methods; otherwise (collaborators..., facade)."""
-    if len(focal.methods) <= 3:
+    """Return (focal,) when ≤5 methods; otherwise (collaborators..., facade)."""
+    if len(focal.methods) <= 5:
         return (focal,)
     sibs = tuple(_collaborator(focal, g) for g in _split_groups(focal.methods))
     facade = ClassSpec(
@@ -65,7 +65,7 @@ def decompose_module_for_tier_c(
         return module
     new_classes: list[ClassSpec] = []
     for c in module.classes:
-        if c.name in tier_c_class_names and len(c.methods) > 3:
+        if c.name in tier_c_class_names and len(c.methods) > 5:
             new_classes.extend(decompose_class(c))
         else:
             new_classes.append(c)

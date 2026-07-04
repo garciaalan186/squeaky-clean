@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. `index`/`query` methods paste `sdk_call` VERBATIM.
 5. Both `elasticsearch` and `meilisearch-sdk` are tokio-async → `pub async fn`.
 6. Methods return `Result<T, E>`. NEVER `panic!`.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: standard (`Vec`, `HashMap`, `String`/`&str`, `Vec<u8>`/`&[u8]`, `Result<T,E>`).

@@ -1,4 +1,10 @@
-"""SecurityTestAssembler: combine Security ICP outputs into TestSkeletons."""
+"""SecurityTestAssembler: emit ONE TestSkeleton per SecurityConcern.
+
+Each concern lands in its own file `test_<class>_security_<concern_slug>.py`
+so per-file granularity rules (≤80 lines) hold even when a single class has
+multiple concerns. Earlier behaviour concatenated all fragments per class
+into one file, which routinely blew the 80-line cap.
+"""
 
 import re
 
@@ -15,10 +21,11 @@ _CODE_FENCE = re.compile(
     r"```[A-Za-z0-9_+-]*\s*\n(?P<code>.*?)```",
     re.DOTALL,
 )
+_SLUG_NON_ALNUM = re.compile(r"[^a-z0-9]+")
 
 
 class SecurityTestAssembler:
-    """Assembles Security ICP responses into per-class TestSkeletons."""
+    """Assembles Security ICP responses into per-concern TestSkeletons."""
 
     def __init__(self) -> None:
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
@@ -31,23 +38,24 @@ class SecurityTestAssembler:
         module: ModuleSpec | None = None,
         toolkit: LanguageToolkit | None = None,
     ) -> TestArchitecture:
-        """Group ICP responses by target class, return TestArchitecture."""
-        grouped: dict[str, list[str]] = {}
+        """Emit one TestSkeleton per (target_class, concern) pair."""
+        prefix = self._test_dir(module, toolkit)
+        skeletons: list[TestSkeleton] = []
+        slug_seen: dict[tuple[str, str], int] = {}
         idx = 0
         for concern in concerns:
             if concern.target_class not in class_map:
                 continue
-            code = self._extract_code(responses[idx].content)
-            grouped.setdefault(concern.target_class, []).append(code)
+            code = self._extract_code(responses[idx].content) + "\n"
             idx += 1
-        skeletons: list[TestSkeleton] = []
-        prefix = self._test_dir(module, toolkit)
-        for class_name, fragments in grouped.items():
-            snake = self._snake.convert(class_name)
-            path = f"{prefix}/test_{snake}_security.py"
-            combined = "\n\n".join(fragments) + "\n"
+            class_snake = self._snake.convert(concern.target_class)
+            base = self._slug(concern.category)
+            key = (class_snake, base)
+            slug_seen[key] = slug_seen.get(key, 0) + 1
+            slug = base if slug_seen[key] == 1 else f"{base}_{slug_seen[key]}"
+            path = f"{prefix}/test_{class_snake}_security_{slug}.py"
             skeletons.append(TestSkeleton(
-                class_name=class_name, file_path=path, code=combined,
+                class_name=concern.target_class, file_path=path, code=code,
             ))
         return TestArchitecture(
             gherkin_scenarios=(), test_skeletons=tuple(skeletons),
@@ -58,7 +66,6 @@ class SecurityTestAssembler:
         module: ModuleSpec | None,
         toolkit: LanguageToolkit | None,
     ) -> str:
-        """Return the test directory prefix (layered for Python, else flat)."""
         if (
             module is None
             or toolkit is None
@@ -70,8 +77,11 @@ class SecurityTestAssembler:
         return f"tests/{layer}/{mod_slug}"
 
     def _extract_code(self, raw: str) -> str:
-        """Extract code from the first fenced block, or return raw."""
         match = _CODE_FENCE.search(raw)
         if match is None:
             return raw.strip()
         return match.group("code").strip()
+
+    def _slug(self, value: str) -> str:
+        s = _SLUG_NON_ALNUM.sub("_", value.strip().lower()).strip("_")
+        return s or "concern"

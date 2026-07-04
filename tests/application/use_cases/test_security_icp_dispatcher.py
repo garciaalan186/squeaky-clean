@@ -60,8 +60,13 @@ def test_dispatch_calls_llm_per_concern() -> None:
     )
     result = dispatcher.dispatch(ctx)
     assert gw.call_count == 2
-    assert len(result.test_skeletons) == 1
-    assert result.test_skeletons[0].class_name == "Calculator"
+    # One skeleton per concern (post-2026-05-10 — keeps each file ≤80 lines)
+    assert len(result.test_skeletons) == 2
+    assert all(s.class_name == "Calculator" for s in result.test_skeletons)
+    paths = {s.file_path for s in result.test_skeletons}
+    assert len(paths) == 2  # category slug differentiates the two
+    assert any("input_validation" in p for p in paths)
+    assert any("boundary" in p for p in paths)
 
 
 def test_dispatch_empty_concerns_returns_empty() -> None:

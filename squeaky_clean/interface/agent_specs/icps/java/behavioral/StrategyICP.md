@@ -15,7 +15,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 2. **The very first non-comment line MUST be `package com.example;`** — every Java file in this project lives in the `com.example` package; default package is forbidden.
 3. For the abstract interface: declare one `public interface <Name>` with method signatures (no bodies). Java has real interfaces.
 4. For a concrete: declare one `public class <Name> implements <InterfaceName>` with real method bodies and `@Override` on each interface method.
-5. Respect hard rules: file <=80 lines, 1 type per file, <=3 public methods, <=2 args per method. Constructors do NOT count.
+5. Respect hard rules: file <=80 lines, 1 type per file, <=5 public methods, <=2 args per method. Constructors do NOT count.
 6. **Standard library imports.** If any field, parameter, or return type uses `java.util` classes (List, ArrayList, Map, HashMap, Set, HashSet, Collections), generate the necessary import statements (e.g. `import java.util.List;`, `import java.util.ArrayList;`). Also import `java.util.Objects` if using `Objects.hash()` or `Objects.equals()`. **Sibling classes ARE in `com.example` so they need NO explicit import.**
 
 ## Constraints

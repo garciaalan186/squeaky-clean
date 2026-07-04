@@ -17,7 +17,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. NO 
 4. Declare typed fields for every entry in `fields:`.
 5. Declare a `constructor(...)` only if the class genuinely owns state (from `fields:` or via collaborator injection). If stateless, omit the constructor entirely.
 6. Implement every method with full type annotations on parameters and return values.
-7. Respect hard rules: file <=80 lines, exactly 1 exported class, <=3 public methods, <=2 args per method (excluding `this`).
+7. Respect hard rules: file <=80 lines, exactly 1 exported class, <=5 public methods, <=2 args per method (excluding `this`).
 8. **Imports**: use the `file=<stem>` value from SIBLING_INTERFACES. Write `import { <ClassName> } from './<stem>.js';` (`.js` extension required by nodenext).
 
 ## Constraints

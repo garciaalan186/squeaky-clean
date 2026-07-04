@@ -15,7 +15,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. NO 
 2. Use ES module syntax: `export abstract class <Name>` or `export class <Name>`.
 3. For the abstract interface: declare an `export abstract class` with each method marked `abstract` with full type signatures but no body.
 4. For a concrete: declare `export class <Name> extends <Interface>` with real method bodies and full type annotations.
-5. Respect hard rules: file <=80 lines, exactly 1 exported class, <=3 public methods, <=2 args per method (excluding `this`).
+5. Respect hard rules: file <=80 lines, exactly 1 exported class, <=5 public methods, <=2 args per method (excluding `this`).
 6. **Imports**: use the `file=<stem>` value from SIBLING_INTERFACES. Write `import { <ClassName> } from './<stem>.js';` (`.js` extension required by nodenext).
 
 ## Constraints

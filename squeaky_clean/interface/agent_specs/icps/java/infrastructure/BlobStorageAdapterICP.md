@@ -25,7 +25,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. Constructor must accept the parameters from `client_construction.dependencies` (camelCased) and execute the EXACT `client_construction.code` snippet (split `;`-joined statements onto separate lines). If the construction snippet itself can throw `IOException` (e.g., `Files.createDirectories`), the constructor MUST `throws IOException` OR wrap the call in a try/catch that re-raises as `RuntimeException`.
 7. Implement EVERY method named in the ClassSpec `methods:` block. For each method whose name matches an entry in `primary_operations[i].name`, the body MUST execute the corresponding `sdk_call` snippet VERBATIM. The method signature MUST match the spec — typical signatures are `public void putBlob(String key, byte[] body)`, `public byte[] getBlob(String key)`, `public void deleteBlob(String key)`.
 8. Each operation body MUST wrap the `sdk_call` in `try { ... } catch (IOException e) { throw new RuntimeException("<op> failed for key " + key, e); }`. Re-raise — do NOT swallow.
-9. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method (excluding `this`).
+9. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method (excluding `this`).
 
 ## Constraints
 1. Emit ONLY the fenced java block.

@@ -16,7 +16,7 @@ Exactly one JavaScript file body inside a single ```javascript fenced block. NO 
 3. Declare exactly ONE class whose name matches the ClassSpec name, exported via `export class`.
 4. Declare a `constructor(...)` only if the class genuinely owns state (from `fields:` or via collaborator injection). If stateless, omit the constructor entirely.
 5. Implement every method in the ClassSpec as a regular method on the class. No TypeScript annotations.
-6. Respect hard rules: file <=80 lines, exactly 1 exported class, <=3 public methods, <=2 args per method (excluding `this`).
+6. Respect hard rules: file <=80 lines, exactly 1 exported class, <=5 public methods, <=2 args per method (excluding `this`).
 7. **Imports**: use the `file=<stem>` value from SIBLING_INTERFACES for flat imports. Write `import { <ClassName> } from './<stem>.js';` (JavaScript). Do NOT guess the file stem from the class name — always use the value shown in `file=<stem>`. Always relative with explicit `.js`. Never `require`.
 
 ## Constraints

@@ -17,7 +17,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. The
 4. Constructor with TYPED parameters from `client_construction.dependencies` running `client_construction.code` VERBATIM.
 5. Implement HTTP methods (`get`, `post`, ...) with full type annotations. Each body pastes matching `sdk_call` VERBATIM.
 6. All HTTP methods are `async` returning `Promise<unknown>` (or per the TechSpec).
-7. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method.
+7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method.
 
 ## Constraints
 0. **§Notation -> TypeScript type fidelity**:

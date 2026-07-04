@@ -31,7 +31,7 @@ DEPENDS [Catalog::Product]
 CLASSES {
   Cart -> SimpleClass {
     fields:     []
-    methods:    []
+    methods:    [add_item(p: Product): None]
     depends:    []
     invariants: []
   }

@@ -17,7 +17,7 @@ Exactly one JavaScript file body inside a single ```javascript fenced block. The
 4. Constructor accepts `client_construction.dependencies` (e.g. `address`) and runs `client_construction.code` VERBATIM.
 5. Implement gRPC call methods. Each body pastes matching `sdk_call` VERBATIM.
 6. All RPC calls are `async` (wrap callback APIs with `new Promise` per the TechSpec).
-7. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method.
+7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method.
 
 ## Constraints
 0. **§Notation -> JavaScript type fidelity**:

@@ -18,7 +18,7 @@ Exactly one JavaScript file body inside a single ```javascript fenced block. NO 
 5. Use the `fields:` declaration verbatim. Do NOT synthesize an extra `id` field if `fields:` does not declare one. The first field is assumed to be the identity key (entities must declare an `id:` field first by convention).
 6. Implement every method in the ClassSpec as a regular method. No TypeScript annotations.
 7. Implement an `equals(other)` method that returns `other instanceof <Name> && this.id === other.id`. Do NOT try to override `===` — that is impossible in JavaScript. Identity equality is structural via `equals`.
-8. Respect hard rules: file <=80 lines, exactly 1 exported class, <=3 public methods, <=2 args per method (excluding `this`). The `equals` method counts toward the 3-method budget only if it was declared in `methods:`.
+8. Respect hard rules: file <=80 lines, exactly 1 exported class, <=5 public methods, <=2 args per method (excluding `this`). The `equals` method counts toward the 5-method budget only if it was declared in `methods:`.
 9. **Imports**: use the `file=<stem>` value from SIBLING_INTERFACES for flat imports. Write `import { <ClassName> } from './<stem>.js';` (JavaScript). Do NOT guess the file stem from the class name — always use the value shown in `file=<stem>`. Always relative with explicit `.js`.
 
 ## Constraints

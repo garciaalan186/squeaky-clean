@@ -16,7 +16,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose, NO explan
 3. Use the `fields:` declaration verbatim. Use exported (PascalCase) field names matching the spec.
 4. Implement every method from the spec as a method on the struct (`func (x *Name) Method(...) ReturnType`).
 5. Use Go's idiomatic error handling: methods that "raise" return `error` as the last value.
-6. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method (not counting receiver).
+6. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method (not counting receiver).
 
 ## Constraints
 1. Emit ONLY the fenced Go block.

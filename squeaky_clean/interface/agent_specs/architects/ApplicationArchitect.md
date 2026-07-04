@@ -17,7 +17,7 @@ Either:
 ## Constraints
 1. Application may only `DEPENDS` on Domain modules or sibling Application modules — never Infrastructure or Interface.
 2. Only these patterns may appear in an Application module: UseCase, DTOMapper, Facade, Command, Presenter, SimpleClass.
-3. Each class has ≤3 methods and each method has ≤2 arguments.
+3. Each class has ≤5 methods and each method has ≤2 arguments.
 4. Every Use Case class exposes exactly one public method named `execute`.
 5. All `depends` inside a class must reference another class declared in the same module.
 

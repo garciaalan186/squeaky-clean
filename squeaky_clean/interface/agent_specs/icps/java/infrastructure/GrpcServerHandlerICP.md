@@ -25,7 +25,7 @@ Exactly one Java file body inside a single ```java fenced block. The file MUST:
 6. Constructor accepts the parameters from `client_construction.dependencies` (camelCased) and executes the EXACT `client_construction.code` snippet.
 7. Implement EVERY method named in the ClassSpec `methods:` block. Each method overrides a generated stub method. Body MUST execute the `sdk_call` snippet VERBATIM. **CRITICAL — sibling method-name fidelity**: when the body calls into the injected use-case port, the method name MUST be the FIRST method name from the SIBLING_INTERFACES entry whose name matches `depends:`/`implements:`. NEVER invent `execute(...)` if the sibling spec declares a different method name.
 8. Each operation body MUST end with `responseObserver.onNext(...)` followed by `responseObserver.onCompleted();` per the `sdk_call` snippet. Wrap in `try { ... } catch (StatusRuntimeException e) { responseObserver.onError(e); }`.
-9. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method.
+9. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method.
 
 ## Constraints
 0. **§Notation type-fidelity**: signatures and types MUST match the ClassSpec VERBATIM (modulo Java conventions). NEVER widen or rename.

@@ -14,7 +14,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose, NO explan
 1. Start with `package main` (single-package, flat layout).
 2. For the abstract Strategy: declare `type <Name> interface { ... }` with each `methods:` entry as an interface method signature. Methods that raise return `error` as the last value.
 3. For a concrete Strategy: declare `type <Name> struct { ... }` (use the `fields:` declaration verbatim, exported field names) plus method implementations on `*<Name>` or `<Name>` providing real bodies. The concrete may satisfy the abstract interface implicitly (Go has structural typing — no `implements` keyword needed).
-4. Respect hard rules: file <=80 lines, exactly 1 declared type, <=3 public methods, <=2 args per method (excluding receiver).
+4. Respect hard rules: file <=80 lines, exactly 1 declared type, <=5 public methods, <=2 args per method (excluding receiver).
 5. **Imports**: every sibling import is rendered from the SIBLING_INTERFACES `file=<dotted_path>` value translated to a Go module path (e.g. `file=src/domain/payment/processor` → `import "src/domain/payment/processor"`). Use `import ( ... )` block syntax. Plus stdlib (`"fmt"`) when needed.
 
 ## Constraints

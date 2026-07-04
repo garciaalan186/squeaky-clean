@@ -16,7 +16,7 @@ impl Calc {
 
 _LONG = "\n".join([f"// line {i}" for i in range(90)])
 
-_FOUR_FNS = """\
+_SIX_FNS = """\
 pub struct Calc;
 
 impl Calc {
@@ -24,6 +24,8 @@ impl Calc {
     pub fn b(&self) -> i32 { 2 }
     pub fn c(&self) -> i32 { 3 }
     pub fn d(&self) -> i32 { 4 }
+    pub fn e(&self) -> i32 { 5 }
+    pub fn f(&self) -> i32 { 6 }
 }
 """
 
@@ -49,8 +51,8 @@ def test_long_rust_file_violates(tmp_path: Path) -> None:
     assert any("lines" in v.message for v in violations)
 
 
-def test_four_pub_fns_violates(tmp_path: Path) -> None:
-    path = _write(tmp_path, "calc.rs", _FOUR_FNS)
+def test_six_pub_fns_violates(tmp_path: Path) -> None:
+    path = _write(tmp_path, "calc.rs", _SIX_FNS)
     violations = RustGranularityRule().check(path)
     assert any("pub fns" in v.message for v in violations)
 

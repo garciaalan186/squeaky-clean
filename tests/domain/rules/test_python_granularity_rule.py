@@ -11,11 +11,13 @@ _CLEAN = """class Foo:
 
 _LONG = "\n".join([f"# line {i}" for i in range(90)])
 
-_FOUR_METHODS = """class Foo:
+_SIX_METHODS = """class Foo:
     def a(self) -> int: return 1
     def b(self) -> int: return 1
     def c(self) -> int: return 1
     def d(self) -> int: return 1
+    def e(self) -> int: return 1
+    def f(self) -> int: return 1
 """
 
 _THREE_ARGS = """class Foo:
@@ -48,8 +50,8 @@ def test_long_file_violates(tmp_path: Path) -> None:
     assert any("lines" in v.message for v in violations)
 
 
-def test_four_methods_violates(tmp_path: Path) -> None:
-    path = _write(tmp_path, "four.py", _FOUR_METHODS)
+def test_six_methods_violates(tmp_path: Path) -> None:
+    path = _write(tmp_path, "six.py", _SIX_METHODS)
     violations = PythonGranularityRule().check(path)
     assert any("public methods" in v.message for v in violations)
 

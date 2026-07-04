@@ -17,7 +17,7 @@ Exactly one JavaScript file body inside a single ```javascript fenced block. NO 
 4. Constructor `constructor(<client_construction.dependencies>)` runs the EXACT `client_construction.code` snippet.
 5. Implement EVERY method in ClassSpec `methods:`. For each whose name matches `primary_operations[i].name`, the body executes that `sdk_call` snippet VERBATIM.
 6. Async methods use `async` keyword and return `Promise<T>`. I/O operations are async by default.
-7. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method.
+7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method.
 
 ## Constraints
 0. **§Notation -> JavaScript type fidelity** (always apply):

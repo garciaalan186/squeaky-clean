@@ -17,7 +17,7 @@ Exactly one Rust file body inside a single ```rust fenced block. NO prose. The f
 4. Implement EVERY method named in ClassSpec `methods:` inside `impl <Name> { ... }`. For each whose name matches `primary_operations[i].name`, the body executes that `sdk_call` snippet VERBATIM.
 5. Async SDKs (aws-sdk-s3, redis, tokio-postgres, rdkafka, tonic) use `pub async fn`; sync SDKs (`std::fs`) use plain `pub fn`.
 6. Every fallible method returns `Result<T, E>` (idiomatic Rust). NEVER `panic!` for recoverable errors. Use `?` for error propagation.
-7. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method (excluding `&self`).
+7. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method (excluding `&self`).
 
 ## Constraints
 0. **§Notation → Rust type fidelity** (always apply):

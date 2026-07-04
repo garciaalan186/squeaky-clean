@@ -19,7 +19,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. NO 
 6. Use the `fields:` declaration verbatim. Do NOT synthesize an extra `id` field if `fields:` does not declare one. The first field is assumed to be the identity key.
 7. Implement every method with full type annotations on parameters and return values.
 8. Implement an `equals(other: <Name>): boolean` method that returns `other instanceof <Name> && this.id === other.id`.
-9. Respect hard rules: file <=80 lines, exactly 1 exported class, <=3 public methods, <=2 args per method. The `equals` method counts toward the 3-method budget only if declared in `methods:`.
+9. Respect hard rules: file <=80 lines, exactly 1 exported class, <=5 public methods, <=2 args per method. The `equals` method counts toward the 5-method budget only if declared in `methods:`.
 10. **Imports**: use the `file=<stem>` value from SIBLING_INTERFACES. Write `import { <ClassName> } from './<stem>.js';` (`.js` extension required by nodenext).
 
 ## Constraints

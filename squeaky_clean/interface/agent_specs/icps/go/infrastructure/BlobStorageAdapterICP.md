@@ -17,7 +17,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose, NO markdo
 4. Constructor `New<Name>(<deps>) (*<Name>, error)` executes the EXACT `client_construction.code` snippet (split `;`-joined statements). If construction may fail, return `(nil, err)` on error.
 5. Implement EVERY method named in ClassSpec `methods:`. For each whose name matches `primary_operations[i].name`, the body executes that `sdk_call` snippet VERBATIM.
 6. Every fallible method returns `(T, error)` (idiomatic Go); void operations return `error` only. NEVER `panic` for recoverable errors.
-7. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method (excluding receiver).
+7. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method (excluding receiver).
 
 ## Constraints
 0. **§Notation → Go type fidelity** (always apply):
