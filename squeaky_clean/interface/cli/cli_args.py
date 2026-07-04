@@ -45,3 +45,4 @@ class CLIArgs:
     recover_from: str | None = None
     recover_out: str | None = None
     criteria: tuple[str, ...] = ()
+    triage: str | None = None

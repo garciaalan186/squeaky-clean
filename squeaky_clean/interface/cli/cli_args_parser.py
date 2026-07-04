@@ -23,11 +23,11 @@ class CLIArgsParser:
         ids = self._resolve_ids(ns)
         if (not ids and not ns.problem_file and not ns.rebuild_dashboard
                 and ns.resume_run_dir is None and ns.squib_file is None
-                and ns.recover_from is None):
+                and ns.recover_from is None and ns.triage is None):
             parser.error(
                 "one of --problem, --problems, --sweep, --problem-file, "
-                "--recover-from, --squib-file, --rebuild-dashboard, or "
-                "--resume required"
+                "--recover-from, --triage, --squib-file, --rebuild-dashboard, "
+                "or --resume required"
             )
         return CLIArgs(
             problem_ids=ids,
@@ -82,6 +82,7 @@ class CLIArgsParser:
             criteria=tuple(
                 c.strip() for c in str(ns.criteria).split(",") if c.strip()
             ) if ns.criteria is not None else (),
+            triage=(str(ns.triage) if ns.triage is not None else None),
         )
 
     def _build(self) -> argparse.ArgumentParser:
@@ -224,6 +225,11 @@ class CLIArgsParser:
             "--criteria", dest="criteria", default=None,
             help="Comma-separated architectural criteria, most-important "
                  "first, driving the preserve-vs-split MCDA verdict.",
+        )
+        parser.add_argument(
+            "--triage", dest="triage", default=None,
+            help="Interactively review a violations.json (opt-out per "
+                 "category) and write refactor_plan.json.",
         )
         return parser
 

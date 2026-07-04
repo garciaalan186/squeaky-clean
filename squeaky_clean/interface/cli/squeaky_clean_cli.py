@@ -16,16 +16,25 @@ from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
 from squeaky_clean.application.use_cases.metrics_history_aggregator import (
     MetricsHistoryAggregator,
 )
+from squeaky_clean.application.use_cases.recovery.interactive_triage import (
+    InteractiveTriage,
+)
 from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer import (
     ProblemSpecSynthesizer,
 )
 from squeaky_clean.application.use_cases.recovery.recovery_emitter import RecoveryEmitter
+from squeaky_clean.application.use_cases.recovery.refactor_plan_serializer import (
+    RefactorPlanSerializer,
+)
 from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
 from squeaky_clean.application.use_cases.recovery.squib_review_gate import (
     SquibReviewGate,
 )
 from squeaky_clean.application.use_cases.recovery.supplied_architecture_designer import (
     SuppliedArchitectureDesigner,
+)
+from squeaky_clean.application.use_cases.recovery.violation_report_deserializer import (
+    ViolationReportDeserializer,
 )
 from squeaky_clean.application.use_cases.replicate_runner import ReplicateRunner
 from squeaky_clean.application.use_cases.resume_dispatch import ResumeDispatch
@@ -53,6 +62,8 @@ class SqueakyCleanCLI:
         try:
             if args.rebuild_dashboard:
                 return self._rebuild_dashboard()
+            if args.triage is not None:
+                return self._triage(args)
             router = RouterFactory().build(args.model_override)
             if args.resume_run_dir is not None:
                 return self._resume(router, args)
@@ -118,6 +129,24 @@ class SqueakyCleanCLI:
         print(f"[squeaky] coupled-class recommendation: "
               f"{summary.recommendation}{close}")
         return 0
+
+    def _triage(self, args: CLIArgs) -> int:
+        path = Path(str(args.triage))
+        report = ViolationReportDeserializer().deserialize(path.read_text())
+        plan = InteractiveTriage().run(report, self._console_ask)
+        out = path.with_name("refactor_plan.json")
+        out.write_text(RefactorPlanSerializer().serialize(plan))
+        print(f"[squeaky] triage complete: {len(plan.fix)} to fix, "
+              f"{len(plan.ignore)} ignored -> {out}")
+        return 0
+
+    def _console_ask(self, category: str, count: int) -> bool:
+        prompt = f"[squeaky] address all {count} {category} violation(s)? [Y/n] "
+        try:
+            answer = input(prompt).strip().lower()
+        except EOFError:
+            return True
+        return answer not in ("n", "no")
 
     def _replicates(
         self, router: object, problem: ProblemSpec, args: CLIArgs,

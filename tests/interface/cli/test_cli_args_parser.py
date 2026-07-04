@@ -166,3 +166,9 @@ def test_recover_out_flag_is_parsed() -> None:
         ["--recover-from", "p", "--recover-out", "out/x.squib"],
     )
     assert args.recover_out == "out/x.squib"
+
+
+def test_triage_is_a_valid_standalone_input() -> None:
+    args = CLIArgsParser().parse(["--triage", "out/violations.json"])
+    assert args.triage == "out/violations.json"
+    assert args.problem_ids == ()
