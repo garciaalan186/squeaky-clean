@@ -26,7 +26,7 @@ Exactly one Java file body inside a single ```java fenced block. The file MUST:
 7. Implement EVERY method named in the ClassSpec `methods:` block. Bodies execute the corresponding `sdk_call` snippet VERBATIM. **CRITICAL — sibling method-name fidelity**: the use-case method name MUST match the SIBLING_INTERFACES entry — never invent `execute`.
 8. Each operation body MUST wrap the `sdk_call` in `try { ... } catch (Exception e) { throw new RuntimeException("<op> failed", e); }`.
 9. The WebSocketHandler interface declares helper methods (`supportsPartialMessages`, `handleTransportError`) that this ICP MUST NOT emit unless listed in the ClassSpec. Spring infers default behavior.
-10. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method.
+10. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method.
 
 ## Constraints
 0. **§Notation type-fidelity**: signatures and types MUST match the ClassSpec VERBATIM (modulo Java conventions: `WebSocketSession` for Spring, `Session` for Jakarta). NEVER widen or rename.

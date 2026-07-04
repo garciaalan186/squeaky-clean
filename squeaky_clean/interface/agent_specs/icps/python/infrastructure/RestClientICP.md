@@ -25,7 +25,7 @@ Exactly one Python file body inside a single ```python fenced block. NO prose, N
 6. Implement EVERY method named in the ClassSpec `methods:` block. For each method whose name matches an entry in `primary_operations[i].name`, the body MUST execute the corresponding `sdk_call` snippet VERBATIM.
 7. Each operation body MUST wrap the `sdk_call` in a `try:` / `except (<error_types>) as exc:` / `raise` block.
 8. Be mypy --strict compatible: every parameter and return type annotated, no `Any`, no `type: ignore`.
-9. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method (excluding `self`).
+9. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method (excluding `self`).
 
 ### Constraints
 1. Emit ONLY the fenced python block.

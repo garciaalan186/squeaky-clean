@@ -50,7 +50,7 @@ class EntityICPSignature(dspy.Signature):
        Lifecycle invariants ("X starts as Y") become field defaults — do
        NOT raise. Method-level invariants raise inside the method.
     9. mypy --strict compliant: no `Any`, no `type: ignore`.
-    10. File <=80 lines, <=3 public methods, <=2 args per method.
+    10. File <=80 lines, <=5 public methods, <=2 args per method.
     11. Imports for siblings come from `sibling_interfaces` (use
         `from <file> import <ClassName>` verbatim).
     """

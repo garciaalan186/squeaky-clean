@@ -16,7 +16,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose. The file 
 3. Declare exactly ONE struct matching the ClassSpec `name`.
 4. Constructor `New<Name>(<deps>) (*<Name>, error)` builds the underlying logger via `client_construction.code`.
 5. Implement EVERY method in `methods:`. Typical ops: `Info(msg string, fields ...any)`, `Warn(...)`, `Error(...)`. No return value (logging is fire-and-forget).
-6. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method (variadic `...any` counts as one arg).
+6. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method (variadic `...any` counts as one arg).
 
 ## Constraints
 0. **§Notation → Go type fidelity**: `dict[K,V]`→`map[K]V`; `list`/`Type[]`→`[]Type`; `set`→`map[Type]struct{}`; `bytes`→`[]byte`; `str`→`string`; `int`→`int`; `float`→`float64`; `bool`→`bool`; `None`→no return.

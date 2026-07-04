@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. `info`/`warn`/`error` methods paste the matching macro call (`tracing::info!(...)`) VERBATIM from `sdk_call`.
 5. `tracing` and `log4rs` are sync — use `pub fn`.
 6. Methods return `()` (logging is fire-and-forget) or `Result<(), E>`. NEVER `panic!`.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: standard (`String`/`&str`, `i64`, `Result<T,E>`).

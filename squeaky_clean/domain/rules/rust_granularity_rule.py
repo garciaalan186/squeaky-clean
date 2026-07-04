@@ -18,14 +18,14 @@ class RustGranularityRule(Rule):
     """Parses one Rust file and flags granularity violations.
 
     Detects ``pub fn`` declarations both as free functions and inside
-    ``impl`` blocks. Enforces <=80 lines/file, <=3 pub fns per impl
+    ``impl`` blocks. Enforces <=80 lines/file, <=5 pub fns per impl
     block, and <=2 args per method (excluding ``self`` receivers).
     Skips ``target/`` and ``tests/`` directories.
     """
 
     _NAME = "RustGranularityRule"
     _MAX_LINES = 80
-    _MAX_METHODS = 3
+    _MAX_METHODS = 5
     _MAX_ARGS = 2
     _SELF_TOKENS: tuple[str, ...] = ("&self", "&mut self", "self")
 
@@ -55,7 +55,7 @@ class RustGranularityRule(Rule):
             if count > self._MAX_ARGS:
                 out.append(self._v(path, f"{name} has {count} args (>2)"))
         if fn_count > self._MAX_METHODS:
-            out.append(self._v(path, f"file has {fn_count} pub fns (>3)"))
+            out.append(self._v(path, f"file has {fn_count} pub fns (>5)"))
         return out
 
     def _count_args(self, params: str) -> int:

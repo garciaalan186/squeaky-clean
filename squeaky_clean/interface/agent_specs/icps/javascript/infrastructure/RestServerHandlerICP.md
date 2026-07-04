@@ -17,7 +17,7 @@ Exactly one JavaScript file body inside a single ```javascript fenced block. The
 4. Constructor accepts the inbound use-case dependency (e.g. `useCase`) and runs `client_construction.code` VERBATIM.
 5. Implement `handle(req, res)` (Express signature) or `handle(req, reply)` (Fastify) per the TechSpec. Body pastes matching `sdk_call` VERBATIM.
 6. Handler functions are `async` so use-case promises can be awaited.
-7. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method (`req` + `res` count as 2).
+7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method (`req` + `res` count as 2).
 
 ## Constraints
 0. **§Notation -> JavaScript type fidelity**:

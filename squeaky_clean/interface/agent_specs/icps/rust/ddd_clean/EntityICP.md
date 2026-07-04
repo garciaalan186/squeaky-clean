@@ -16,7 +16,7 @@ Exactly one Rust file body inside a single ```rust fenced block. NO prose, NO ex
 3. Provide `pub fn new(...) -> Result<Self, String>` validating every CONSTRUCTION invariant via `Err("<message>".into())`.
 4. Implement methods declared in `methods:` inside `impl <Name> { ... }`. Methods that mutate use `&mut self`; methods that "raise" return `Result<T, String>` and use `Err("<message>".into())` on violation.
 5. Implement `pub fn equals(&self, other: &Self) -> bool { self.id == other.id }`. Do NOT `#[derive(PartialEq)]` — entity equality is identity-based, not by-field.
-6. Respect hard rules: file <=80 lines, <=3 public methods (`equals` counts only if declared in `methods:`), <=2 args per method (excluding `&self`/`&mut self`).
+6. Respect hard rules: file <=80 lines, <=5 public methods (`equals` counts only if declared in `methods:`), <=2 args per method (excluding `&self`/`&mut self`).
 7. **Imports**: every sibling import is `use <dotted_path>::<ClassName>;` where `<dotted_path>` is the EXACT value from SIBLING_INTERFACES `file=<...>` translated to Rust module path syntax (`::` instead of `/` or `.`). NEVER invent or shorten. Plus `std` only.
 
 ## Constraints

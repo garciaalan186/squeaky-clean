@@ -13,7 +13,7 @@ A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends
 Exactly one Rust file body inside a single ```rust fenced block. NO prose, NO explanation, NO extra fences. The file MUST:
 1. For the abstract Strategy: declare `pub trait <Name> { ... }` with each `methods:` entry as a trait method signature. Methods that raise return `Result<T, String>`. Trait methods have NO bodies (use `;`).
 2. For a concrete Strategy: declare `pub struct <Name> { ... }` (use the `fields:` declaration verbatim, snake_case field names) plus `impl <Name> { ... }` providing real method bodies. If `implements:` names a sibling trait, also emit `impl <TraitName> for <Name> { ... }` delegating to the inherent methods.
-3. Respect hard rules: file <=80 lines, exactly 1 declared item (one trait OR one struct + its impls), <=3 public methods, <=2 args per method (excluding `&self`).
+3. Respect hard rules: file <=80 lines, exactly 1 declared item (one trait OR one struct + its impls), <=5 public methods, <=2 args per method (excluding `&self`).
 4. **Imports**: every sibling import is `use <dotted_path>::<ClassName>;` where `<dotted_path>` is the EXACT SIBLING_INTERFACES `file=<...>` translated to Rust module path syntax (`::`). Plus `std` only.
 
 ## Constraints

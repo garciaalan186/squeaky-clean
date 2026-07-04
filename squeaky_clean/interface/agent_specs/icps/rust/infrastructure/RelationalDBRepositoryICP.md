@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. Methods matching `primary_operations[i].name` paste `sdk_call` VERBATIM.
 5. Both `sqlx` and `tokio-postgres` are async — use `pub async fn`.
 6. Methods return `Result<T, sqlx::Error>` or `Result<T, tokio_postgres::Error>`. NEVER `panic!`.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: `dict[K,V]`→`HashMap<K,V>`; `list`→`Vec`; `bytes`→`Vec<u8>`/`&[u8]`; `str`→`String`/`&str`; `int`→`i64`; `bool`→`bool`; `None`→`()`; errors→`Result<T,E>`.

@@ -12,7 +12,7 @@ Thanks for considering a contribution. Squeaky Clean is open-source under Apache
 
 ```bash
 # Clone
-git clone https://github.com/your-org/squeaky-clean.git
+git clone https://github.com/garciaalan186/squeaky-clean.git
 cd squeaky-clean
 
 # Install + dev deps
@@ -22,10 +22,10 @@ pip install -e ".[dev]"
 pytest tests/ -q
 
 # Type-check
-mypy --strict src tests
+mypy --strict squeaky_clean tests
 
 # Linter
-ruff check src tests
+ruff check squeaky_clean tests
 ```
 
 ## What good PRs look like
@@ -43,7 +43,7 @@ ruff check src tests
 - **Tier C TechSpec snapshots.** The bundled catalog covers the top 2-3 technologies per category. Adding more (e.g. Cassandra under document_db, Pulsar under message_queue) is mostly mechanical.
 - **Per-language code-emit tightening.** When tests_pass for a given language is below 0.50, look at `eval/per_agent/REPORT.md` + the failing pytest output. Tightening the language's ICP spec is often a one-line change.
 - **MCDA scoring entries.** `eval/mcda_scores/<category>.json` files have ~3 candidates each. PRs welcome to add Cloud Run / Cloud Functions / Vercel / etc. with realistic 1-5 scores per criterion.
-- **Convention registry.** `src/application/use_cases/convention_to_invariant.py` has ~9 entries. Common social/e-commerce/auth/IoT/healthcare conventions are good additions.
+- **Convention registry.** `squeaky_clean/application/use_cases/convention_to_invariant.py` has ~9 entries. Common social/e-commerce/auth/IoT/healthcare conventions are good additions.
 
 ## What we won't merge
 
@@ -54,7 +54,7 @@ ruff check src tests
 
 ## RFCs
 
-Significant design changes (anything that touches §Notation grammar, the agent hierarchy, or the validators) start as RFCs in `docs/rfcs/`. Open an issue first and link to your RFC PR.
+Significant design changes (anything that touches the Squib grammar, the agent hierarchy, or the validators) start with a GitHub issue describing the proposal. If maintainers agree it warrants a written design, the RFC lands as a markdown file under `docs/` (modeled on `docs/infrastructure_layer_design.md`).
 
 The 12 open design questions in `docs/infrastructure_layer_design.md` §10 are the seed material for early RFCs.
 

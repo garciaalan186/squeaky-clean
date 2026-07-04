@@ -17,7 +17,7 @@ Exactly one Rust file inside ```rust block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. Method matching `publish_event`/`publish` pastes `sdk_call` VERBATIM.
 5. `rdkafka` is tokio-async — use `pub async fn`. Sync `kafka` crate uses `pub fn`.
 6. Methods return `Result<T, E>` (e.g. `Result<(), rdkafka::error::KafkaError>`). NEVER `panic!`.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**: `dict[K,V]`→`HashMap<K,V>`; `list`→`Vec`; `bytes`→`Vec<u8>`/`&[u8]`; `str`→`String`/`&str`; errors→`Result<T,E>`.

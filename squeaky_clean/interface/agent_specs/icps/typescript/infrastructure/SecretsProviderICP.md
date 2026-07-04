@@ -17,7 +17,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. The
 4. Constructor with TYPED parameters running `client_construction.code` VERBATIM.
 5. Implement `getSecret(name)` with full type annotations. Body pastes matching `sdk_call` VERBATIM.
 6. `getSecret` is `async` (network call) unless TechSpec marks `is_async: false`.
-7. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method.
+7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method.
 
 ## Constraints
 0. **§Notation -> TypeScript type fidelity**:

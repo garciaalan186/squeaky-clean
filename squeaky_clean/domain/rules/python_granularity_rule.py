@@ -10,14 +10,14 @@ from squeaky_clean.domain.interfaces.rule import Rule
 class PythonGranularityRule(Rule):
     """Parses one Python file and flags granularity violations.
 
-    Enforces Hard Rules 1-3 and 8: 1 class/file, <=3 public methods,
+    Enforces Hard Rules 1-3 and 8: 1 class/file, <=5 public methods,
     <=2 args per method (excluding self), and <=80 lines per file.
     Non-Python files are skipped (return empty list).
     """
 
     _NAME = "PythonGranularityRule"
     _MAX_LINES = 80
-    _MAX_METHODS = 3
+    _MAX_METHODS = 5
     _MAX_ARGS = 2
 
     def check(self, path: Path) -> list[Violation]:
@@ -53,7 +53,7 @@ class PythonGranularityRule(Rule):
         ]
         if len(methods) > self._MAX_METHODS:
             out.append(
-                self._v(path, f"{cls.name} has {len(methods)} public methods (>3)")
+                self._v(path, f"{cls.name} has {len(methods)} public methods (>5)")
             )
         for method in methods:
             arg_count = len(method.args.args) - 1

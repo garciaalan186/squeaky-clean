@@ -25,7 +25,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. Constructor `public <Name>(KafkaTemplate<String, String> kafkaTemplate, String topic)` must execute the EXACT `client_construction.code` snippet (split `;`-joined statements onto separate lines).
 7. Implement EVERY method named in the ClassSpec `methods:` block. For each method whose name matches an entry in `primary_operations[i].name`, paste the `sdk_call` snippet VERBATIM (preserve `\n`-delimited statements as separate lines).
 8. Each operation body MUST wrap the `sdk_call` in `try { ... } catch (ExecutionException | InterruptedException | com.fasterxml.jackson.core.JsonProcessingException e) { throw new RuntimeException("publish failed", e); }`. Catching `InterruptedException` MUST also call `Thread.currentThread().interrupt();` before re-raising.
-9. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method (excluding `this`).
+9. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method (excluding `this`).
 
 ## Constraints
 1. Emit ONLY the fenced java block.

@@ -25,7 +25,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. Constructor `public <Name>(<UseCasePortType> useCase)` must execute the EXACT `client_construction.code` snippet (split `;`-joined statements onto separate lines).
 7. Implement EVERY method named in the ClassSpec `methods:` block. The method whose name matches `primary_operations[i].name` (typically `consume`) MUST be annotated `@KafkaListener(topics = "<topic>", groupId = "<group>")`. The `<topic>` and `<group>` come from the ClassSpec's owning context — default to `topics = "events.raw", groupId = "default-group"` when no other signal is present (the operator overrides via `spring.kafka.*` properties at runtime).
 8. Body MUST execute the `sdk_call` snippet VERBATIM, wrapped in `try { ... } catch (IOException e) { throw new RuntimeException("consume failed", e); }`.
-9. Respect hard rules: file ≤80 lines, ≤3 public methods (the `@KafkaListener` method counts as one), ≤2 args per method (excluding `this`).
+9. Respect hard rules: file ≤80 lines, ≤5 public methods (the `@KafkaListener` method counts as one), ≤2 args per method (excluding `this`).
 
 ## Constraints
 1. Emit ONLY the fenced java block.

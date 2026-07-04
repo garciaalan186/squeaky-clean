@@ -1,0 +1,79 @@
+{
+  "id": "EVENT_PRODUCER",
+  "tier": 5,
+  "slug": "ep_producer",
+  "description": "REST endpoint that receives arbitrary event payloads via HTTP POST and forwards them \u2014 together with the inbound HTTP headers \u2014 to a Kafka topic 'events.raw' as the single source of truth for downstream consumers. The published Kafka payload is JSON with EXACT field names: id (str), received_at (str ISO 8601), headers (dict[str, str]), payload (str, raw HTTP body decoded UTF-8).",
+  "required_bounded_contexts": [
+    "Ingest",
+    "Forwarding"
+  ],
+  "acceptance_criteria": [
+    "Given a POST to /events with body 'hello' and header 'X-Source: cli', When ingest_event is called, Then result is an IngestedEvent",
+    "Given an empty body, When ingest_event is called, Then an error is raised",
+    "Given a body larger than 1 MB, When ingest_event is called, Then an error is raised",
+    "Given an IngestedEvent, When publish_event is called, Then the event is sent to topic 'events.raw' with JSON payload containing keys id, received_at, headers, payload",
+    "Given Kafka is unreachable, When publish_event is called, Then an error is raised"
+  ],
+  "expected_module_count": [
+    3,
+    5
+  ],
+  "expected_class_count": [
+    10,
+    20
+  ],
+  "required_patterns": [
+    "Entity",
+    "ValueObject",
+    "UseCase",
+    "Adapter",
+    "Gateway"
+  ],
+  "target_language": "python",
+  "infrastructure_choices": [
+    {
+      "category": "rest_server_handler",
+      "technology": "flask",
+      "version_pin": "Flask==3.0"
+    },
+    {
+      "category": "message_queue_producer",
+      "technology": "kafka",
+      "version_pin": "confluent-kafka==2.5"
+    }
+  ],
+  "data_classification": [
+    {
+      "field_ref": "IngestedEvent.payload",
+      "sensitivity": "pii"
+    },
+    {
+      "field_ref": "IngestedEvent.headers",
+      "sensitivity": "pii"
+    }
+  ],
+  "produces_contracts": [
+    {
+      "name": "events.raw",
+      "transport": "kafka:events.raw",
+      "fields": [
+        {
+          "name": "id",
+          "type": "str"
+        },
+        {
+          "name": "received_at",
+          "type": "str"
+        },
+        {
+          "name": "headers",
+          "type": "dict[str, str]"
+        },
+        {
+          "name": "payload",
+          "type": "str"
+        }
+      ]
+    }
+  ]
+}

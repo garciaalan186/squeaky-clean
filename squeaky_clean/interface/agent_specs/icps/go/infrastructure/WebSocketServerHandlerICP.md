@@ -17,7 +17,7 @@ Exactly one Go file body inside a single ```go fenced block. NO prose. The file 
 4. Constructor `New<Name>(<deps>) (*<Name>, error)` stores the upgrader and any use-case dependency.
 5. Implement EVERY method in `methods:`. The signature `Handle(w http.ResponseWriter, r *http.Request)` is the standard Go HTTP handler shape.
 6. Inside `Handle`, upgrade via `upgrader.Upgrade(w, r, nil)`, then read/write messages in a loop. Return on read error.
-7. Respect hard rules: file ≤80 lines, ≤3 public methods, ≤2 args per method.
+7. Respect hard rules: file ≤80 lines, ≤5 public methods, ≤2 args per method.
 
 ## Constraints
 0. **§Notation → Go type fidelity**: `dict[K,V]`→`map[K]V`; `list`/`Type[]`→`[]Type`; `set`→`map[Type]struct{}`; `bytes`→`[]byte`; `str`→`string`; `int`→`int`; `float`→`float64`; `bool`→`bool`; `None`→no return.

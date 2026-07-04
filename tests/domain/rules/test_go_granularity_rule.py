@@ -14,7 +14,7 @@ func Add(a int, b int) int {
 
 _LONG = "\n".join([f"// line {i}" for i in range(90)])
 
-_FOUR_METHODS = """\
+_SIX_METHODS = """\
 package foo
 
 type Calc struct{}
@@ -23,6 +23,8 @@ func (c *Calc) A() int { return 1 }
 func (c *Calc) B() int { return 2 }
 func (c *Calc) C() int { return 3 }
 func (c *Calc) D() int { return 4 }
+func (c *Calc) E() int { return 5 }
+func (c *Calc) F() int { return 6 }
 """
 
 
@@ -43,10 +45,10 @@ def test_long_go_file_violates(tmp_path: Path) -> None:
     assert any("lines" in v.message for v in violations)
 
 
-def test_four_exported_methods_on_struct_violates(tmp_path: Path) -> None:
-    path = _write(tmp_path, "calc.go", _FOUR_METHODS)
+def test_six_exported_methods_on_struct_violates(tmp_path: Path) -> None:
+    path = _write(tmp_path, "calc.go", _SIX_METHODS)
     violations = GoGranularityRule().check(path)
-    assert any("4 exported funcs" in v.message for v in violations)
+    assert any("6 exported funcs" in v.message for v in violations)
 
 
 def test_non_go_file_skipped(tmp_path: Path) -> None:

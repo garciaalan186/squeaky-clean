@@ -15,7 +15,7 @@ Exactly one Rust file body inside a single ```rust fenced block. NO prose. The f
 2. Use the `fields:` declaration verbatim with appropriate Rust types (`String`, `i64`, `f64`, `bool`).
 3. Implement every spec method inside `impl <Name> { ... }`.
 4. Methods that "raise" return `Result<T, String>` and use `Err("...".into())` on violation.
-5. <=80 lines, <=3 public methods, <=2 args per method (excluding `&self`).
+5. <=80 lines, <=5 public methods, <=2 args per method (excluding `&self`).
 
 ## Constraints
 1. Emit ONLY the fenced Rust block.

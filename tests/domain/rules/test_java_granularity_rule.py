@@ -21,13 +21,15 @@ public class Foo {}
 class Bar {}
 """
 
-_FOUR_METHODS = """\
+_SIX_METHODS = """\
 public class Foo {
     public Foo() {}
     public int a() { return 1; }
     public int b() { return 2; }
     public int c() { return 3; }
     public int d() { return 4; }
+    public int e() { return 5; }
+    public int f() { return 6; }
 }
 """
 
@@ -75,10 +77,10 @@ def test_non_java_file_skipped(tmp_path: Path) -> None:
     assert JavaGranularityRule().check(path) == []
 
 
-def test_four_public_methods_violates(tmp_path: Path) -> None:
-    path = _write(tmp_path, "Foo.java", _FOUR_METHODS)
+def test_six_public_methods_violates(tmp_path: Path) -> None:
+    path = _write(tmp_path, "Foo.java", _SIX_METHODS)
     violations = JavaGranularityRule().check(path)
-    assert any("4 public methods" in v.message for v in violations)
+    assert any("6 public methods" in v.message for v in violations)
 
 
 def test_three_args_method_violates(tmp_path: Path) -> None:

@@ -17,7 +17,7 @@ Exactly one Rust file body inside a single ```rust fenced block. NO prose. MUST:
 4. Implement EVERY ClassSpec method. Methods matching a `primary_operations[i].name` paste `sdk_call` VERBATIM.
 5. `redis` is async via tokio (use `pub async fn`); `memcache` crate is sync (`pub fn`).
 6. Methods return `Result<T, E>`. NEVER `panic!`. Use `?` for propagation.
-7. Hard rules: ≤80 lines, ≤3 public methods, ≤2 args/method.
+7. Hard rules: ≤80 lines, ≤5 public methods, ≤2 args/method.
 
 ## Constraints
 0. **§Notation → Rust type fidelity**:

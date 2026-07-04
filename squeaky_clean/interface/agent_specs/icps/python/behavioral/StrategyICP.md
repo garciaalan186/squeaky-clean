@@ -16,7 +16,7 @@ Exactly one Python file body inside a single ```python fenced block. NO prose, N
 3. For the abstract interface: `from abc import ABC, abstractmethod`, declare one class inheriting `ABC`, decorate every method with `@abstractmethod`, method bodies are `...`.
 4. For a concrete: declare one plain class providing real method bodies. It may optionally inherit the interface by its string name if present in the same file context.
 5. Every method annotated (mypy --strict). No `Any`. No `type: ignore`.
-6. Respect hard rules: file <=80 lines, <=3 public methods, <=2 args per method (excluding `self`).
+6. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method (excluding `self`).
 7. **Imports**: every sibling import is `from <dotted_path> import <ClassName>` where `<dotted_path>` is the EXACT value to the right of `file=` in the SIBLING_INTERFACES entry for that class (e.g. `file=src.domain.auth.user` → `from src.domain.auth.user import User`). Use it verbatim. NEVER invent, shorten, or modify the path. NEVER use relative imports (`from .`, `from ..`) or bare-stem imports (`from user import User`). Plus stdlib. No third-party imports.
 
 ## Constraints
