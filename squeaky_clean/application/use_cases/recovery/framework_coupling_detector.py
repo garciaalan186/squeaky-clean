@@ -7,8 +7,18 @@ from squeaky_clean.domain.value_objects.layer_type import LayerType
 
 _STDLIB_BASES: frozenset[str] = frozenset({
     "object", "ABC", "ABCMeta", "Enum", "IntEnum", "StrEnum", "Flag",
-    "Exception", "BaseException", "Protocol", "NamedTuple", "TypedDict",
-    "Generic", "dict", "list", "tuple", "set", "str", "int",
+    "Protocol", "NamedTuple", "TypedDict", "Generic",
+    "dict", "list", "tuple", "set", "frozenset", "str", "int", "bytes",
+    # Builtin exception + warning hierarchy — bounded, stable stdlib, not
+    # framework coupling. Custom exceptions subclassing these are not smells.
+    "BaseException", "Exception", "RuntimeError", "ValueError", "TypeError",
+    "KeyError", "IndexError", "AttributeError", "NotImplementedError",
+    "StopIteration", "StopAsyncIteration", "OSError", "IOError", "LookupError",
+    "FileNotFoundError", "PermissionError", "ArithmeticError", "AssertionError",
+    "ZeroDivisionError", "ImportError", "ModuleNotFoundError", "NameError",
+    "OverflowError", "RecursionError", "TimeoutError", "ConnectionError",
+    "Warning", "DeprecationWarning", "PendingDeprecationWarning", "UserWarning",
+    "RuntimeWarning", "FutureWarning", "SyntaxWarning",
 })
 
 
