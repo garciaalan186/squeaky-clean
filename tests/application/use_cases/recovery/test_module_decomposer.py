@@ -2,11 +2,13 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.dtos.recovery.class_catalog import ClassCatalog
 from squeaky_clean.application.use_cases.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
 from squeaky_clean.application.use_cases.recovery.layer_assigner import LayerAssigner
 from squeaky_clean.application.use_cases.recovery.module_decomposer import ModuleDecomposer
+from squeaky_clean.application.use_cases.recovery.pattern_classifier import PatternClassifier
 from squeaky_clean.application.use_cases.recovery.python_class_catalog_extractor import (
     PythonClassCatalogExtractor,
 )
@@ -53,13 +55,17 @@ _FILES = {
 }
 
 
-def _spec(tmp: Path) -> ArchitectureSpec:
+def _ingest(tmp: Path) -> tuple[ClassCatalog, dict[str, LayerType]]:
     for rel, body in _FILES.items():
         path = tmp / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(body)
     catalog = PythonClassCatalogExtractor().extract(tmp)
-    layers = LayerAssigner().assign(catalog)
+    return catalog, LayerAssigner().assign(catalog)
+
+
+def _spec(tmp: Path) -> ArchitectureSpec:
+    catalog, layers = _ingest(tmp)
     return ModuleDecomposer().decompose(catalog, layers)
 
 
@@ -93,3 +99,15 @@ def test_emitted_squib_round_trips_and_validates(tmp_path: Path) -> None:
     reparsed = ParseArchitectureNotation().parse(SquibEmitter().emit(spec))
     assert reparsed.modules == spec.modules
     assert reparsed.validate() == ()
+
+
+def test_classified_patterns_thread_into_specs(tmp_path: Path) -> None:
+    catalog, layers = _ingest(tmp_path)
+    patterns = PatternClassifier().classify_all(catalog, layers)
+    spec = ModuleDecomposer().decompose(catalog, layers, patterns)
+    by_name = {c.name: c.pattern for m in spec.modules for c in m.classes}
+    assert by_name["Order"] == "Entity"
+    assert by_name["LineItem"] == "ValueObject"
+    assert by_name["OrderRepo"] == "Repository"
+    assert by_name["OrderService"] == "UseCase"
+    assert spec.validate() == ()
