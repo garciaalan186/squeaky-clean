@@ -40,3 +40,5 @@ class CLIArgs:
     infer_infrastructure: bool = False
     techspec_cache_ttl_days: int = 30
     emit_wiring: bool = True
+    squib_file: str | None = None
+    legacy_tests: str | None = None

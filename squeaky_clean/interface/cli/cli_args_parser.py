@@ -22,10 +22,10 @@ class CLIArgsParser:
         ns = parser.parse_args(argv)
         ids = self._resolve_ids(ns)
         if (not ids and not ns.problem_file and not ns.rebuild_dashboard
-                and ns.resume_run_dir is None):
+                and ns.resume_run_dir is None and ns.squib_file is None):
             parser.error(
                 "one of --problem, --problems, --sweep, --problem-file, "
-                "--rebuild-dashboard, or --resume required"
+                "--squib-file, --rebuild-dashboard, or --resume required"
             )
         return CLIArgs(
             problem_ids=ids,
@@ -67,6 +67,10 @@ class CLIArgsParser:
             infer_infrastructure=bool(ns.infer_infrastructure),
             techspec_cache_ttl_days=int(ns.techspec_cache_ttl_days),
             emit_wiring=bool(ns.emit_wiring),
+            squib_file=(str(ns.squib_file) if ns.squib_file is not None else None),
+            legacy_tests=(
+                str(ns.legacy_tests) if ns.legacy_tests is not None else None
+            ),
         )
 
     def _build(self) -> argparse.ArgumentParser:
@@ -184,6 +188,16 @@ class CLIArgsParser:
         wiring_group.add_argument(
             "--no-emit-wiring", dest="emit_wiring", action="store_false",
             help="Disable WiringGenerator output for this run.",
+        )
+        parser.add_argument(
+            "--squib-file", dest="squib_file", default=None,
+            help="Regenerate from a signed-off recovery Squib, bypassing "
+                 "the architect (Agentic Architecture Recovery, Stage 6).",
+        )
+        parser.add_argument(
+            "--legacy-tests", dest="legacy_tests", default=None,
+            help="Directory of the brownfield project's tests; acceptance "
+                 "criteria are derived from its test_* functions.",
         )
         return parser
 

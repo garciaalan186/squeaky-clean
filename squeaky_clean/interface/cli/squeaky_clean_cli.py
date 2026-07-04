@@ -1,6 +1,7 @@
 """SqueakyCleanCLI: top-level CLI wiring that invokes RunEval or RunSweep."""
 
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
@@ -11,6 +12,16 @@ from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
 )
 from squeaky_clean.application.use_cases.metrics_history_aggregator import (
     MetricsHistoryAggregator,
+)
+from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer import (
+    ProblemSpecSynthesizer,
+)
+from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
+from squeaky_clean.application.use_cases.recovery.squib_review_gate import (
+    SquibReviewGate,
+)
+from squeaky_clean.application.use_cases.recovery.supplied_architecture_designer import (
+    SuppliedArchitectureDesigner,
 )
 from squeaky_clean.application.use_cases.replicate_runner import ReplicateRunner
 from squeaky_clean.application.use_cases.resume_dispatch import ResumeDispatch
@@ -41,6 +52,8 @@ class SqueakyCleanCLI:
             router = RouterFactory().build(args.model_override)
             if args.resume_run_dir is not None:
                 return self._resume(router, args)
+            if args.squib_file is not None:
+                return self._recover(router, args)
             if args.problem_file is not None:
                 problem = LoadProblemSpecFromFile().load(Path(args.problem_file))
                 return self._dispatch(router, problem, args)
@@ -73,6 +86,17 @@ class SqueakyCleanCLI:
         print(f"[squeaky] run complete: report at {result.report_path}")
         print(f"[squeaky] tests_pass={result.metrics.tests_pass:.2f} "
               f"cost=${result.metrics.estimated_cost_usd:.4f}")
+        return 0
+
+    def _recover(self, router: object, args: CLIArgs) -> int:
+        spec = SquibReviewGate().load(Path(str(args.squib_file)))
+        tests_dir = Path(args.legacy_tests) if args.legacy_tests else None
+        problem = ProblemSpecSynthesizer().synthesize(spec, tests_dir)
+        designer = SuppliedArchitectureDesigner(spec, SquibEmitter().emit(spec))
+        rc = RunConfigFactory().build(args, replicate_id=0)
+        deps = DependencyBuilder().build(router, problem, rc)  # type: ignore[arg-type]
+        result = RunEval(replace(deps, design_architecture=designer)).execute(problem)
+        print(f"[squeaky] recovery regenerated: report at {result.report_path}")
         return 0
 
     def _replicates(

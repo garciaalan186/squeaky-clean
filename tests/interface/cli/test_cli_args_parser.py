@@ -128,3 +128,21 @@ def test_infra_flag_accepts_auto() -> None:
 def test_infra_flag_rejects_unknown_value() -> None:
     with pytest.raises(SystemExit):
         CLIArgsParser().parse(["--problem", "P0", "--infra", "magic"])
+
+
+def test_squib_file_is_a_valid_standalone_input() -> None:
+    args = CLIArgsParser().parse(["--squib-file", "out/recovered.squib"])
+    assert args.squib_file == "out/recovered.squib"
+    assert args.problem_ids == ()
+
+
+def test_legacy_tests_flag_is_parsed() -> None:
+    args = CLIArgsParser().parse(
+        ["--squib-file", "r.squib", "--legacy-tests", "legacy/tests"],
+    )
+    assert args.legacy_tests == "legacy/tests"
+
+
+def test_no_input_mode_is_rejected() -> None:
+    with pytest.raises(SystemExit):
+        CLIArgsParser().parse([])
