@@ -172,3 +172,17 @@ def test_triage_is_a_valid_standalone_input() -> None:
     args = CLIArgsParser().parse(["--triage", "out/violations.json"])
     assert args.triage == "out/violations.json"
     assert args.problem_ids == ()
+
+
+def test_refactor_and_plan_flags_are_parsed() -> None:
+    args = CLIArgsParser().parse(
+        ["--refactor", "recovered.squib", "--plan", "refactor_plan.json"],
+    )
+    assert args.refactor == "recovered.squib"
+    assert args.plan == "refactor_plan.json"
+
+
+def test_refactor_is_a_valid_standalone_input() -> None:
+    args = CLIArgsParser().parse(["--refactor", "recovered.squib"])
+    assert args.refactor == "recovered.squib"
+    assert args.problem_ids == ()

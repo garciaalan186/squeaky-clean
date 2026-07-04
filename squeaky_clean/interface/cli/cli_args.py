@@ -46,3 +46,6 @@ class CLIArgs:
     recover_out: str | None = None
     criteria: tuple[str, ...] = ()
     triage: str | None = None
+    refactor: str | None = None
+    plan: str | None = None
+    refactor_out: str | None = None

@@ -23,6 +23,7 @@ from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer impor
     ProblemSpecSynthesizer,
 )
 from squeaky_clean.application.use_cases.recovery.recovery_emitter import RecoveryEmitter
+from squeaky_clean.application.use_cases.recovery.refactor_emitter import RefactorEmitter
 from squeaky_clean.application.use_cases.recovery.refactor_plan_serializer import (
     RefactorPlanSerializer,
 )
@@ -64,6 +65,8 @@ class SqueakyCleanCLI:
                 return self._rebuild_dashboard()
             if args.triage is not None:
                 return self._triage(args)
+            if args.refactor is not None:
+                return self._refactor_emit(args)
             router = RouterFactory().build(args.model_override)
             if args.resume_run_dir is not None:
                 return self._resume(router, args)
@@ -138,6 +141,19 @@ class SqueakyCleanCLI:
         out.write_text(RefactorPlanSerializer().serialize(plan))
         print(f"[squeaky] triage complete: {len(plan.fix)} to fix, "
               f"{len(plan.ignore)} ignored -> {out}")
+        return 0
+
+    def _refactor_emit(self, args: CLIArgs) -> int:
+        if args.plan is None:
+            print("[squeaky] --refactor requires --plan", file=sys.stderr)
+            return 1
+        out = Path(args.refactor_out) if args.refactor_out else Path("refactored.squib")
+        summary = RefactorEmitter().emit(
+            Path(str(args.refactor)), Path(args.plan), out,
+        )
+        print(f"[squeaky] refactored {summary.classes_before} -> "
+              f"{summary.classes_after} classes across {summary.modules} "
+              f"modules -> {summary.out_path}")
         return 0
 
     def _console_ask(self, category: str, count: int) -> bool:
