@@ -112,8 +112,9 @@ class SqueakyCleanCLI:
         close = " (close call — review)" if summary.recommendation_close else ""
         print(f"[squeaky] recovered {summary.classes} classes into "
               f"{summary.modules} modules -> {summary.squib_path}")
-        print(f"[squeaky] {summary.proposals} framework-coupling refactor "
-              f"proposal(s) -> {summary.refactors_path}")
+        print(f"[squeaky] {summary.violations} architecture violation(s) "
+              f"({summary.coupling_violations} framework-coupling) -> "
+              f"{summary.violations_path}")
         print(f"[squeaky] coupled-class recommendation: "
               f"{summary.recommendation}{close}")
         return 0

@@ -2,12 +2,10 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.dtos.recovery.recovery_artifact import RecoveryArtifact
 from squeaky_clean.application.dtos.recovery.recovery_summary import RecoverySummary
 from squeaky_clean.application.use_cases.recovery.criteria_weighting import (
     CriteriaWeighting,
-)
-from squeaky_clean.application.use_cases.recovery.framework_coupling_detector import (
-    FrameworkCouplingDetector,
 )
 from squeaky_clean.application.use_cases.recovery.layer_assigner import LayerAssigner
 from squeaky_clean.application.use_cases.recovery.module_decomposer import ModuleDecomposer
@@ -16,20 +14,25 @@ from squeaky_clean.application.use_cases.recovery.python_class_catalog_extractor
     PythonClassCatalogExtractor,
 )
 from squeaky_clean.application.use_cases.recovery.refactor_decider import RefactorDecider
-from squeaky_clean.application.use_cases.recovery.refactor_proposal_renderer import (
-    RefactorProposalRenderer,
-)
 from squeaky_clean.application.use_cases.recovery.squib_review_gate import SquibReviewGate
+from squeaky_clean.application.use_cases.recovery.violation_analysis import ViolationAnalysis
+from squeaky_clean.application.use_cases.recovery.violation_report_renderer import (
+    ViolationReportRenderer,
+)
+from squeaky_clean.application.use_cases.recovery.violation_report_serializer import (
+    ViolationReportSerializer,
+)
 
 
 class RecoveryEmitter:
-    """Ingest a Python project and emit a reviewable Squib plus refactors.
+    """Ingest a Python project and emit a faithful Squib + violation report.
 
-    Runs the deterministic front-half end-to-end — ingest, layer, classify
-    (no LLM tie-break here, so the emit is free and reproducible),
-    decompose — then writes the Squib for review, a refactor-proposal
-    sidecar (Milestone L), and computes the preserve-vs-split MCDA verdict
-    (Milestone M) under the user's criteria ranking. No regeneration runs.
+    Runs the deterministic front-half — ingest, layer, classify (no LLM
+    tie-break, so the emit is free and reproducible), decompose — then
+    writes the faithful Squib (Recover), runs the analyzer suite and writes
+    a categorized violations.json + review markdown (Analyze), and computes
+    the preserve-vs-split MCDA verdict under the user's criteria ranking. No
+    regeneration and no refactoring run — those are downstream phases.
     """
 
     def __init__(self) -> None:
@@ -37,28 +40,34 @@ class RecoveryEmitter:
         self._layers: LayerAssigner = LayerAssigner()
         self._patterns: PatternClassifier = PatternClassifier()
         self._decomposer: ModuleDecomposer = ModuleDecomposer()
-        self._detector: FrameworkCouplingDetector = FrameworkCouplingDetector()
         self._gate: SquibReviewGate = SquibReviewGate()
-        self._renderer: RefactorProposalRenderer = RefactorProposalRenderer()
+        self._analysis: ViolationAnalysis = ViolationAnalysis()
+        self._serializer: ViolationReportSerializer = ViolationReportSerializer()
+        self._renderer: ViolationReportRenderer = ViolationReportRenderer()
         self._weighting: CriteriaWeighting = CriteriaWeighting()
         self._decider: RefactorDecider = RefactorDecider()
 
     def emit(
         self, root: Path, out_path: Path, ranking: tuple[str, ...],
     ) -> RecoverySummary:
-        """Emit the Squib + refactor sidecar; return a RecoverySummary."""
+        """Emit the Squib + violations report; return a RecoverySummary."""
         catalog = self._extractor.extract(root)
         layers = self._layers.assign(catalog)
-        patterns = self._patterns.classify_all(catalog, layers)
-        spec = self._decomposer.decompose(catalog, layers, patterns)
-        proposals = self._detector.detect_all(catalog, layers)
+        spec = self._decomposer.decompose(
+            catalog, layers, self._patterns.classify_all(catalog, layers),
+        )
         self._gate.emit(spec, out_path)
-        refactors = out_path.with_name(out_path.name + ".refactors.md")
-        refactors.write_text(self._renderer.render(proposals))
+        report = self._analysis.analyze(RecoveryArtifact(catalog, layers, spec))
+        vpath = out_path.with_name(out_path.name + ".violations.json")
+        vpath.write_text(self._serializer.serialize(report))
+        out_path.with_name(out_path.name + ".violations.md").write_text(
+            self._renderer.render(report),
+        )
         outcome = self._decider.decide(self._weighting.from_ranking(ranking))
         return RecoverySummary(
             classes=len(catalog.classes), modules=len(spec.modules),
-            proposals=len(proposals), recommendation=outcome.winner,
-            recommendation_close=outcome.close,
-            squib_path=str(out_path), refactors_path=str(refactors),
+            violations=len(report.violations),
+            coupling_violations=len(report.by_category().get("framework-coupling", ())),
+            recommendation=outcome.winner, recommendation_close=outcome.close,
+            squib_path=str(out_path), violations_path=str(vpath),
         )

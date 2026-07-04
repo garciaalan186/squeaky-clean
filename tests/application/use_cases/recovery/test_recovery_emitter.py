@@ -52,11 +52,12 @@ def test_emits_a_parseable_squib(tmp_path: Path) -> None:
     assert ParseArchitectureNotation().parse(text).modules
 
 
-def test_writes_refactor_sidecar_for_coupled_class(tmp_path: Path) -> None:
+def test_writes_categorized_violations_for_coupled_class(tmp_path: Path) -> None:
     summary = _run(tmp_path)
-    assert summary.proposals == 1  # type: ignore[attr-defined]  # Page(models.Model)
-    sidecar = Path(summary.refactors_path).read_text()  # type: ignore[attr-defined]
-    assert "Page" in sidecar and "PageRepository" in sidecar
+    assert summary.coupling_violations == 1  # type: ignore[attr-defined]  # Page(models.Model)
+    assert summary.violations >= 1  # type: ignore[attr-defined]
+    report = Path(summary.violations_path).read_text()  # type: ignore[attr-defined]
+    assert "framework-coupling" in report and "shop.domain.page.Page" in report
 
 
 def test_reports_mcda_recommendation(tmp_path: Path) -> None:

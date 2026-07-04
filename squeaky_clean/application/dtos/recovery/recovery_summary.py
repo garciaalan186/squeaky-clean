@@ -1,4 +1,4 @@
-"""RecoverySummary DTO: the result of emitting a Squib for review."""
+"""RecoverySummary DTO: the result of emitting a Squib + violations for review."""
 
 from dataclasses import dataclass
 
@@ -7,17 +7,19 @@ from dataclasses import dataclass
 class RecoverySummary:
     """What the front-half recovery run produced, for the CLI to report.
 
-    `recommendation` is the MCDA verdict for framework-coupled classes
-    (``preserve`` or ``split``) under the user's criteria ranking;
-    `recommendation_close` is true when that verdict was a near-tie and
-    the human should weigh in. `squib_path` and `refactors_path` are where
-    the reviewable Squib and the refactor sidecar were written.
+    `violations` is the total across all categories; `coupling_violations`
+    is the framework-coupling subset that drives the MCDA verdict.
+    `recommendation` is that verdict (``preserve`` or ``split``) under the
+    user's criteria ranking; `recommendation_close` is true on a near-tie.
+    `squib_path` and `violations_path` are where the faithful Squib and the
+    categorized violations.json were written.
     """
 
     classes: int
     modules: int
-    proposals: int
+    violations: int
+    coupling_violations: int
     recommendation: str
     recommendation_close: bool
     squib_path: str
-    refactors_path: str
+    violations_path: str
