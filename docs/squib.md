@@ -103,7 +103,7 @@ Before ICP fan-out, the framework runs five validators against the architect's o
 2. **`validate_cross_module_dependencies`** — every `Module::Type` is in the target's `EXPORTS`.
 3. **`validate_architecture_against_spec`** (F5 conformance) — every declared `domain_conventions` tag appears as INVARIANT; every `data_classification.field_ref` exists.
 4. **`validate_http_conventions`** (K4) — HTTP `headers` typed as `dict[str, str]`, body as `bytes`/`str`, etc.
-5. **`validate_contract_fidelity`** (case-tolerant) — consumer entities carry producer's contract field names verbatim.
+5. **`validate_contract_fidelity`** (case-tolerant) — consumer DTOs carry the producer's contract field names verbatim.
 
 Any validator firing triggers an architect retry with violations appended; second failure aborts the run with an actionable error message.
 

@@ -84,7 +84,7 @@ If you're authoring a multi-service distributed system, declare contracts:
 "consumes_contracts": [{"contract_name": "events.raw", "role": "consumes"}]
 ```
 
-The framework's contract registry persists the producer's declaration on disk. The consumer's run resolves it and validates that the consumer's `ConsumedEvent` entity carries the same field names verbatim — case-tolerant across language boundaries (Java's `receivedAt` matches Python's `received_at`).
+The framework's contract registry persists the producer's declaration on disk. The consumer's run resolves it and validates that the consumer's `ConsumedEvent` DTO carries the same field names verbatim — case-tolerant across language boundaries (Java's `receivedAt` matches Python's `received_at`).
 
 ### 6. Mark sensitive fields with `data_classification`
 

@@ -1,6 +1,6 @@
 # Architecture — Squeaky Clean
 
-The framework eats its own dog food: it follows Clean Architecture itself, with `squeaky_clean/domain/` importing nothing, `squeaky_clean/application/` importing only domain, `squeaky_clean/infrastructure/` implementing domain ports, and `squeaky_clean/interface/` as the entry point.
+Squeaky Clean eats its own dog food: it follows Clean Architecture itself, with `squeaky_clean/domain/` importing nothing, `squeaky_clean/application/` importing only domain, `squeaky_clean/infrastructure/` implementing domain ports, and `squeaky_clean/interface/` as the entry point.
 
 ## Three model tiers
 

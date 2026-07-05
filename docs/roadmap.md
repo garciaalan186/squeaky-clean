@@ -30,6 +30,7 @@ Public, milestone-level. Last updated 2026-04-29.
 - **Versioned spec library at v1.0.** The spec library is currently `0.1.0`. Tag a stable v1.0 once the catalog stabilizes after community feedback.
 - **Reduce architect HTTP-type drift.** The validator catches it with retry; long-term we want the architect to never need a retry on this class of constraint.
 - **Per-language Tier C maturity.** Today Java/Go/Rust/JS/TS tests_pass=0.00 in our event-pipeline benchmark because per-language test runners report zero on toolchain-availability fallback. Closing this requires CI-environment toolchain pinning + occasionally tightening the language-specific code-emit rules.
+- **Compute-efficiency ablation.** Measure the same architecture produced one-shot on a large model vs. Squeaky Clean's compact fan-out, to quantify the token (and proportional energy) reduction — the evidence that would promote the "leaner compute" goal from directional to measured.
 
 ## Open RFCs
 
