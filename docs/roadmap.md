@@ -19,10 +19,12 @@ Public, milestone-level. Last updated 2026-04-29.
 ## In progress
 
 - **Architectural Complexity Score (ACS)** — composite metric for normalizing cost/velocity across heterogeneous problems. Implemented; calibrating across the canonical problem set.
+- **Milestones L / M / N — Agentic Architecture Recovery.** The brownfield-in, Clean-Architecture-out inverse pipeline has landed: a faithful five-phase flow (Recover → Analyze → Triage → Refactor → Regenerate), a generic framework-coupling detector (L), a weighted architectural trade-off MCDA (M), and the four-phase violation pipeline (N) with categorized `violations.json`, opt-out triage, and the 1→N Entity+Repository+Adapter transform. Four-language ingest (Python AST; Java/JS/TS regex). Remaining: agentic business-vs-persistence member classification (turns the split skeleton into a faithful refactor), transforms for the non-coupling categories, and tree-sitter/AST backends for higher non-Python fidelity. See [`architecture_recovery.md`](architecture_recovery.md).
 
 ## Planned (post-launch)
 
 - **Milestone I — SystemSpec for distributed services.** Today, multi-service distributed systems require running each service as a separate ProblemSpec; cross-service contract fidelity is enforced via the registry. SystemSpec will let one declaration cover topology + services + resources together, generating all service codebases in one run.
+- **Recovery — agentic member classification.** Turn the framework-coupling refactor from a skeleton into a faithful split: an LLM classifies which of a coupled class's members are business rules (→ Entity) vs persistence concerns (→ Adapter). The first LLM step in the otherwise-deterministic recovery front-half. (Milestones L / M / N landed — see In progress.)
 - **Anthropic-only abstraction.** The `LLMGateway` port is multi-provider-ready; concrete adapters for OpenAI / Bedrock / local-Llama are post-launch work. PRs welcome.
 - **Hosted dashboard service.** A multi-user `meta-evaluation-results/` analysis service. Currently the dashboard is per-user static HTML.
 - **Versioned spec library at v1.0.** The spec library is currently `0.1.0`. Tag a stable v1.0 once the catalog stabilizes after community feedback.

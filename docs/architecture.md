@@ -123,6 +123,32 @@ Six languages share the same architecture orchestration; per-language adapters c
 
 A registry-driven `LanguageAdapterSelector` (registry coverage validated by unit test) dispatches per `target_language`.
 
+## Architecture Recovery — the inverse pipeline
+
+The same orchestration runs backward. **Agentic Architecture Recovery** ingests a brownfield project and rebuilds it as Clean Architecture, reusing the forward pipeline for regeneration.
+
+```
+brownfield project
+   │  (per-language ClassCatalogExtractor: Python AST, Java/JS/TS regex)
+   ▼
+ClassCatalog ──► LayerAssigner ──► PatternClassifier ──► ModuleDecomposer
+   │                                                          │
+   │                                                          ▼
+   │                                              ArchitectureSpec (faithful Squib)
+   │                                                          │
+   ├──► ViolationAnalysis (framework-coupling, dependency-rule, cyclic, ...)
+   │            │
+   │            ▼   InteractiveTriage (opt-out) ──► RefactorPlan
+   │                         │
+   │                         ▼
+   │                RefactorPhase (1→N Entity+Repository+Adapter split)
+   │                         │
+   ▼                         ▼
+recovered.squib      refactored.squib ──► SuppliedArchitectureDesigner ──► forward pipeline
+```
+
+The key property: **everything after ingest is language-neutral.** Layer assignment, pattern classification, decomposition, violation analysis, and refactoring all operate on the language-agnostic `ClassCatalog` / `ArchitectureSpec`, so a new source language needs only a new `ClassCatalogExtractor` behind the port + factory. The `SuppliedArchitectureDesigner` short-circuits the PrincipalArchitect so a signed-off Squib *is* the architecture that gets regenerated. Full design: [`architecture_recovery.md`](architecture_recovery.md).
+
 ## Cross-cutting concerns
 
 - **Prompt cache.** `--prompt-cache` (default on) + `cache_control: {"type": "ephemeral"}` on stable prefixes. Per-tier hit ratio + savings reported in SUMMARY.md.
@@ -138,4 +164,5 @@ A registry-driven `LanguageAdapterSelector` (registry coverage validated by unit
 - [`squib.md`](squib.md) — Squib grammar reference
 - [`writing_a_problem_spec.md`](writing_a_problem_spec.md) — author's guide
 - [`extending.md`](extending.md) — custom-pattern hook + custom Tier C agents
+- [`architecture_recovery.md`](architecture_recovery.md) — the inverse (brownfield → Clean Architecture) pipeline
 - [`infrastructure_layer_design.md`](infrastructure_layer_design.md) — full Tier C design

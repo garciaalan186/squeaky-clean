@@ -1,9 +1,13 @@
 """SqueakyCleanCLI: top-level CLI wiring that invokes RunEval or RunSweep."""
 
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.dtos.recovery.architectural_criterion import (
+    ALL_ARCHITECTURAL_CRITERIA,
+)
 from squeaky_clean.application.dtos.sweep_request import SweepRequest
 from squeaky_clean.application.use_cases.html_dashboard_writer import HtmlDashboardWriter
 from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
@@ -12,11 +16,33 @@ from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
 from squeaky_clean.application.use_cases.metrics_history_aggregator import (
     MetricsHistoryAggregator,
 )
+from squeaky_clean.application.use_cases.recovery.interactive_triage import (
+    InteractiveTriage,
+)
+from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer import (
+    ProblemSpecSynthesizer,
+)
+from squeaky_clean.application.use_cases.recovery.recovery_emitter import RecoveryEmitter
+from squeaky_clean.application.use_cases.recovery.refactor_emitter import RefactorEmitter
+from squeaky_clean.application.use_cases.recovery.refactor_plan_serializer import (
+    RefactorPlanSerializer,
+)
+from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
+from squeaky_clean.application.use_cases.recovery.squib_review_gate import (
+    SquibReviewGate,
+)
+from squeaky_clean.application.use_cases.recovery.supplied_architecture_designer import (
+    SuppliedArchitectureDesigner,
+)
+from squeaky_clean.application.use_cases.recovery.violation_report_deserializer import (
+    ViolationReportDeserializer,
+)
 from squeaky_clean.application.use_cases.replicate_runner import ReplicateRunner
 from squeaky_clean.application.use_cases.resume_dispatch import ResumeDispatch
 from squeaky_clean.application.use_cases.run_eval import RunEval
 from squeaky_clean.application.use_cases.run_sweep import RunSweep
 from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
@@ -38,9 +64,17 @@ class SqueakyCleanCLI:
         try:
             if args.rebuild_dashboard:
                 return self._rebuild_dashboard()
+            if args.triage is not None:
+                return self._triage(args)
+            if args.refactor is not None:
+                return self._refactor_emit(args)
             router = RouterFactory().build(args.model_override)
             if args.resume_run_dir is not None:
                 return self._resume(router, args)
+            if args.recover_from is not None:
+                return self._recover_emit(args)
+            if args.squib_file is not None:
+                return self._recover(router, args)
             if args.problem_file is not None:
                 problem = LoadProblemSpecFromFile().load(Path(args.problem_file))
                 return self._dispatch(router, problem, args)
@@ -74,6 +108,65 @@ class SqueakyCleanCLI:
         print(f"[squeaky] tests_pass={result.metrics.tests_pass:.2f} "
               f"cost=${result.metrics.estimated_cost_usd:.4f}")
         return 0
+
+    def _recover(self, router: object, args: CLIArgs) -> int:
+        spec = SquibReviewGate().load(Path(str(args.squib_file)))
+        tests_dir = Path(args.legacy_tests) if args.legacy_tests else None
+        problem = ProblemSpecSynthesizer().synthesize(spec, tests_dir)
+        designer = SuppliedArchitectureDesigner(spec, SquibEmitter().emit(spec))
+        rc = RunConfigFactory().build(args, replicate_id=0)
+        deps = DependencyBuilder().build(router, problem, rc)  # type: ignore[arg-type]
+        result = RunEval(replace(deps, design_architecture=designer)).execute(problem)
+        print(f"[squeaky] recovery regenerated: report at {result.report_path}")
+        return 0
+
+    def _recover_emit(self, args: CLIArgs) -> int:
+        out = Path(args.recover_out) if args.recover_out else Path("recovered.squib")
+        ranking = args.criteria or ALL_ARCHITECTURAL_CRITERIA
+        language = TargetLanguage(args.recover_language)
+        summary = RecoveryEmitter().emit(
+            Path(args.recover_from), out, ranking, language,  # type: ignore[arg-type]
+        )
+        close = " (close call — review)" if summary.recommendation_close else ""
+        print(f"[squeaky] recovered {summary.classes} classes into "
+              f"{summary.modules} modules -> {summary.squib_path}")
+        print(f"[squeaky] {summary.violations} architecture violation(s) "
+              f"({summary.coupling_violations} framework-coupling) -> "
+              f"{summary.violations_path}")
+        print(f"[squeaky] coupled-class recommendation: "
+              f"{summary.recommendation}{close}")
+        return 0
+
+    def _triage(self, args: CLIArgs) -> int:
+        path = Path(str(args.triage))
+        report = ViolationReportDeserializer().deserialize(path.read_text())
+        plan = InteractiveTriage().run(report, self._console_ask)
+        out = path.with_name("refactor_plan.json")
+        out.write_text(RefactorPlanSerializer().serialize(plan))
+        print(f"[squeaky] triage complete: {len(plan.fix)} to fix, "
+              f"{len(plan.ignore)} ignored -> {out}")
+        return 0
+
+    def _refactor_emit(self, args: CLIArgs) -> int:
+        if args.plan is None:
+            print("[squeaky] --refactor requires --plan", file=sys.stderr)
+            return 1
+        out = Path(args.refactor_out) if args.refactor_out else Path("refactored.squib")
+        summary = RefactorEmitter().emit(
+            Path(str(args.refactor)), Path(args.plan), out,
+        )
+        print(f"[squeaky] refactored {summary.classes_before} -> "
+              f"{summary.classes_after} classes across {summary.modules} "
+              f"modules -> {summary.out_path}")
+        return 0
+
+    def _console_ask(self, category: str, count: int) -> bool:
+        prompt = f"[squeaky] address all {count} {category} violation(s)? [Y/n] "
+        try:
+            answer = input(prompt).strip().lower()
+        except EOFError:
+            return True
+        return answer not in ("n", "no")
 
     def _replicates(
         self, router: object, problem: ProblemSpec, args: CLIArgs,

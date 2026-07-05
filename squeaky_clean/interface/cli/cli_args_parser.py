@@ -22,9 +22,12 @@ class CLIArgsParser:
         ns = parser.parse_args(argv)
         ids = self._resolve_ids(ns)
         if (not ids and not ns.problem_file and not ns.rebuild_dashboard
-                and ns.resume_run_dir is None):
+                and ns.resume_run_dir is None and ns.squib_file is None
+                and ns.recover_from is None and ns.triage is None
+                and ns.refactor is None):
             parser.error(
                 "one of --problem, --problems, --sweep, --problem-file, "
+                "--recover-from, --triage, --refactor, --squib-file, "
                 "--rebuild-dashboard, or --resume required"
             )
         return CLIArgs(
@@ -67,6 +70,26 @@ class CLIArgsParser:
             infer_infrastructure=bool(ns.infer_infrastructure),
             techspec_cache_ttl_days=int(ns.techspec_cache_ttl_days),
             emit_wiring=bool(ns.emit_wiring),
+            squib_file=(str(ns.squib_file) if ns.squib_file is not None else None),
+            legacy_tests=(
+                str(ns.legacy_tests) if ns.legacy_tests is not None else None
+            ),
+            recover_from=(
+                str(ns.recover_from) if ns.recover_from is not None else None
+            ),
+            recover_out=(
+                str(ns.recover_out) if ns.recover_out is not None else None
+            ),
+            recover_language=str(ns.recover_language),
+            criteria=tuple(
+                c.strip() for c in str(ns.criteria).split(",") if c.strip()
+            ) if ns.criteria is not None else (),
+            triage=(str(ns.triage) if ns.triage is not None else None),
+            refactor=(str(ns.refactor) if ns.refactor is not None else None),
+            plan=(str(ns.plan) if ns.plan is not None else None),
+            refactor_out=(
+                str(ns.refactor_out) if ns.refactor_out is not None else None
+            ),
         )
 
     def _build(self) -> argparse.ArgumentParser:
@@ -184,6 +207,56 @@ class CLIArgsParser:
         wiring_group.add_argument(
             "--no-emit-wiring", dest="emit_wiring", action="store_false",
             help="Disable WiringGenerator output for this run.",
+        )
+        parser.add_argument(
+            "--squib-file", dest="squib_file", default=None,
+            help="Regenerate from a signed-off recovery Squib, bypassing "
+                 "the architect (Agentic Architecture Recovery, Stage 6).",
+        )
+        parser.add_argument(
+            "--legacy-tests", dest="legacy_tests", default=None,
+            help="Directory of the brownfield project's tests; acceptance "
+                 "criteria are derived from its test_* functions.",
+        )
+        parser.add_argument(
+            "--recover-from", dest="recover_from", default=None,
+            help="Ingest a Python project and emit a reviewable Squib + "
+                 "refactor sidecar (Architecture Recovery onboarding).",
+        )
+        parser.add_argument(
+            "--recover-out", dest="recover_out", default=None,
+            help="Where to write the recovered Squib (default: "
+                 "recovered.squib in the cwd).",
+        )
+        parser.add_argument(
+            "--language", dest="recover_language", default="python",
+            choices=("python", "javascript", "typescript", "java"),
+            help="Source language of the project to recover (default python).",
+        )
+        parser.add_argument(
+            "--criteria", dest="criteria", default=None,
+            help="Comma-separated architectural criteria, most-important "
+                 "first, driving the preserve-vs-split MCDA verdict.",
+        )
+        parser.add_argument(
+            "--triage", dest="triage", default=None,
+            help="Interactively review a violations.json (opt-out per "
+                 "category) and write refactor_plan.json.",
+        )
+        parser.add_argument(
+            "--refactor", dest="refactor", default=None,
+            help="Apply a --plan refactor_plan.json to a recovered Squib and "
+                 "emit the refactored Squib (--refactor-out).",
+        )
+        parser.add_argument(
+            "--plan", dest="plan", default=None,
+            help="The refactor_plan.json produced by --triage (required "
+                 "with --refactor).",
+        )
+        parser.add_argument(
+            "--refactor-out", dest="refactor_out", default=None,
+            help="Where to write the refactored Squib (default: "
+                 "refactored.squib).",
         )
         return parser
 

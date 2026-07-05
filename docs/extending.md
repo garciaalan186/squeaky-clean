@@ -127,7 +127,18 @@ The framework's `LanguageAdapterRegistry` is registry-driven (Milestone K9). Add
 
 This is a substantial body of work (~2000 lines for a new language at full Tier C parity); we recommend opening an RFC issue first.
 
+## Recovery language extractors
+
+Adding a language to **Architecture Recovery** (the brownfield-ingest inverse pipeline) is much lighter than full generation parity, because everything after ingest is language-neutral. You only implement one thing: a `ClassCatalogExtractor`.
+
+1. Implement `ClassCatalogExtractor.extract(root) -> ClassCatalog` in `squeaky_clean/application/use_cases/recovery/`. Python uses a real `ast` walk; Java/JS/TS subclass `RegexCatalogExtractor` and reuse `RegexClassParser` + `RegexDecoratorScanner`, providing the class/method/field regexes and the FQN scheme.
+2. Register it in `class_catalog_extractor_factory.py` under its `TargetLanguage`.
+3. If the language has test/build conventions not already covered, extend `IngestScope`.
+
+The extractor's job is to emit `ClassRecord`s (FQN, bases, methods, fields, imports, decorators); layer assignment, pattern classification, decomposition, violation analysis, and refactoring are all shared and unchanged. See [`architecture_recovery.md`](architecture_recovery.md).
+
 ## See also
 
 - [`architecture.md`](architecture.md) — three model tiers
+- [`architecture_recovery.md`](architecture_recovery.md) — the inverse recovery pipeline
 - [`infrastructure_layer_design.md`](infrastructure_layer_design.md) — full Tier C / Tier T / Tier B design

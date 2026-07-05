@@ -40,3 +40,13 @@ class CLIArgs:
     infer_infrastructure: bool = False
     techspec_cache_ttl_days: int = 30
     emit_wiring: bool = True
+    squib_file: str | None = None
+    legacy_tests: str | None = None
+    recover_from: str | None = None
+    recover_out: str | None = None
+    recover_language: str = "python"
+    criteria: tuple[str, ...] = ()
+    triage: str | None = None
+    refactor: str | None = None
+    plan: str | None = None
+    refactor_out: str | None = None

@@ -83,8 +83,13 @@ See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md) for the Architectu
 - **Not a substitute for understanding your domain.** The framework asks you to declare your bounded contexts in `required_bounded_contexts` and your acceptance criteria in `acceptance_criteria`. Garbage spec → garbage generation.
 - **Not a code-completion tool.** Squeaky Clean produces complete projects from spec, not autocomplete suggestions in your editor.
 
+## The other direction: recovery
+
+The same discipline runs in reverse. **Agentic Architecture Recovery** points the framework at an existing brownfield project (Python, JavaScript, TypeScript, or Java), ingests it into a faithful `Squib`, analyzes it for Clean-Architecture violations, and — with your sign-off — refactors framework-coupled classes into Entity + Repository + Adapter before regenerating. Messy legacy code in, a freshly generated Clean-Architecture project out. See [Agentic Architecture Recovery](architecture_recovery.md).
+
 ## Next steps
 
 - [Quickstart](../README.md#quickstart) — generate the Todo API in 15 seconds.
 - [Architecture deep-dive](architecture.md) — three model tiers + agent hierarchy + the Squib grammar.
 - [Writing a ProblemSpec](writing_a_problem_spec.md) — walkthrough + best practices.
+- [Agentic Architecture Recovery](architecture_recovery.md) — the inverse path: brownfield → recovered Squib → refactor → regenerate.
