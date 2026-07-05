@@ -44,6 +44,7 @@ class CLIArgs:
     legacy_tests: str | None = None
     recover_from: str | None = None
     recover_out: str | None = None
+    recover_language: str = "python"
     criteria: tuple[str, ...] = ()
     triage: str | None = None
     refactor: str | None = None

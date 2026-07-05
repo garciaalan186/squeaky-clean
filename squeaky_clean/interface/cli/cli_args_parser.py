@@ -80,6 +80,7 @@ class CLIArgsParser:
             recover_out=(
                 str(ns.recover_out) if ns.recover_out is not None else None
             ),
+            recover_language=str(ns.recover_language),
             criteria=tuple(
                 c.strip() for c in str(ns.criteria).split(",") if c.strip()
             ) if ns.criteria is not None else (),
@@ -226,6 +227,11 @@ class CLIArgsParser:
             "--recover-out", dest="recover_out", default=None,
             help="Where to write the recovered Squib (default: "
                  "recovered.squib in the cwd).",
+        )
+        parser.add_argument(
+            "--language", dest="recover_language", default="python",
+            choices=("python", "javascript", "typescript", "java"),
+            help="Source language of the project to recover (default python).",
         )
         parser.add_argument(
             "--criteria", dest="criteria", default=None,

@@ -4,15 +4,15 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.recovery.recovery_artifact import RecoveryArtifact
 from squeaky_clean.application.dtos.recovery.recovery_summary import RecoverySummary
+from squeaky_clean.application.use_cases.recovery.class_catalog_extractor_factory import (
+    ClassCatalogExtractorFactory,
+)
 from squeaky_clean.application.use_cases.recovery.criteria_weighting import (
     CriteriaWeighting,
 )
 from squeaky_clean.application.use_cases.recovery.layer_assigner import LayerAssigner
 from squeaky_clean.application.use_cases.recovery.module_decomposer import ModuleDecomposer
 from squeaky_clean.application.use_cases.recovery.pattern_classifier import PatternClassifier
-from squeaky_clean.application.use_cases.recovery.python_class_catalog_extractor import (
-    PythonClassCatalogExtractor,
-)
 from squeaky_clean.application.use_cases.recovery.refactor_decider import RefactorDecider
 from squeaky_clean.application.use_cases.recovery.squib_review_gate import SquibReviewGate
 from squeaky_clean.application.use_cases.recovery.violation_analysis import ViolationAnalysis
@@ -22,6 +22,7 @@ from squeaky_clean.application.use_cases.recovery.violation_report_renderer impo
 from squeaky_clean.application.use_cases.recovery.violation_report_serializer import (
     ViolationReportSerializer,
 )
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 
 class RecoveryEmitter:
@@ -36,7 +37,7 @@ class RecoveryEmitter:
     """
 
     def __init__(self) -> None:
-        self._extractor: PythonClassCatalogExtractor = PythonClassCatalogExtractor()
+        self._extractors: ClassCatalogExtractorFactory = ClassCatalogExtractorFactory()
         self._layers: LayerAssigner = LayerAssigner()
         self._patterns: PatternClassifier = PatternClassifier()
         self._decomposer: ModuleDecomposer = ModuleDecomposer()
@@ -49,9 +50,10 @@ class RecoveryEmitter:
 
     def emit(
         self, root: Path, out_path: Path, ranking: tuple[str, ...],
+        language: TargetLanguage = TargetLanguage.PYTHON,
     ) -> RecoverySummary:
         """Emit the Squib + violations report; return a RecoverySummary."""
-        catalog = self._extractor.extract(root)
+        catalog = self._extractors.for_language(language).extract(root)
         layers = self._layers.assign(catalog)
         spec = self._decomposer.decompose(
             catalog, layers, self._patterns.classify_all(catalog, layers),

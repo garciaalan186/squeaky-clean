@@ -42,6 +42,7 @@ from squeaky_clean.application.use_cases.resume_dispatch import ResumeDispatch
 from squeaky_clean.application.use_cases.run_eval import RunEval
 from squeaky_clean.application.use_cases.run_sweep import RunSweep
 from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
@@ -122,7 +123,10 @@ class SqueakyCleanCLI:
     def _recover_emit(self, args: CLIArgs) -> int:
         out = Path(args.recover_out) if args.recover_out else Path("recovered.squib")
         ranking = args.criteria or ALL_ARCHITECTURAL_CRITERIA
-        summary = RecoveryEmitter().emit(Path(args.recover_from), out, ranking)  # type: ignore[arg-type]
+        language = TargetLanguage(args.recover_language)
+        summary = RecoveryEmitter().emit(
+            Path(args.recover_from), out, ranking, language,  # type: ignore[arg-type]
+        )
         close = " (close call — review)" if summary.recommendation_close else ""
         print(f"[squeaky] recovered {summary.classes} classes into "
               f"{summary.modules} modules -> {summary.squib_path}")

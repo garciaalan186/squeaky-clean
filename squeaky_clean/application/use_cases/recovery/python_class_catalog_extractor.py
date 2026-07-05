@@ -5,6 +5,9 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.recovery.class_catalog import ClassCatalog
 from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
+from squeaky_clean.application.use_cases.recovery.class_catalog_extractor import (
+    ClassCatalogExtractor,
+)
 from squeaky_clean.application.use_cases.recovery.import_graph_resolver import (
     ImportGraphResolver,
 )
@@ -14,7 +17,7 @@ from squeaky_clean.application.use_cases.recovery.python_class_extractor import 
 )
 
 
-class PythonClassCatalogExtractor:
+class PythonClassCatalogExtractor(ClassCatalogExtractor):
     """Walks a Python source tree and produces a deterministic ClassCatalog.
 
     Every ``*.py`` file under the root is parsed; its top-level classes

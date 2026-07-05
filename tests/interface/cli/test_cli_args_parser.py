@@ -154,6 +154,20 @@ def test_recover_from_is_a_valid_standalone_input() -> None:
     assert args.problem_ids == ()
 
 
+def test_recover_language_defaults_to_python() -> None:
+    assert CLIArgsParser().parse(["--recover-from", "p"]).recover_language == "python"
+
+
+def test_recover_language_flag_is_parsed() -> None:
+    args = CLIArgsParser().parse(["--recover-from", "p", "--language", "java"])
+    assert args.recover_language == "java"
+
+
+def test_unknown_language_is_rejected() -> None:
+    with pytest.raises(SystemExit):
+        CLIArgsParser().parse(["--recover-from", "p", "--language", "cobol"])
+
+
 def test_criteria_are_parsed_in_order() -> None:
     args = CLIArgsParser().parse(
         ["--recover-from", "p", "--criteria", "testability, simplicity ,performance"],
