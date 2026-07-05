@@ -86,6 +86,8 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 
 - **Cross-service contract fidelity.** Two services produce/consume the same Kafka topic? The Contract Registry enforces field-shape agreement across language boundaries with case-tolerant validation. The consumer's `ConsumedEvent` carries the producer's contract field names verbatim.
 
+- **Bidirectional: generate *and* recover.** The same Clean-Architecture discipline runs in reverse. Point Squeaky at a brownfield Python/JS/TS/Java project and it recovers a faithful `Squib`, analyzes it for architecture violations, and (with your sign-off) refactors framework-coupled classes into Entity + Repository + Adapter before regenerating. See [Agentic Architecture Recovery](docs/architecture_recovery.md).
+
 ## Coverage matrix
 
 | Category | Python | Java | Go | Rust | JS | TS |
@@ -147,13 +149,36 @@ Three model tiers: Architect (high-parameter), Manager (mid), atomic agent (comp
 - **Not a one-shot LLM call.** Squeaky orchestrates dozens of LLM calls per run, parallelized, with prompt caching and a strict per-tier cost budget.
 - **Not a substitute for understanding your domain.** Garbage spec → garbage generation. The framework asks you to declare your bounded contexts and acceptance criteria.
 
-## Coming next: Agentic Architecture Recovery
+## Agentic Architecture Recovery
 
-Squeaky today generates Clean-Architecture projects from a `ProblemSpec`. The next milestone is the inverse path: point the framework at an existing brownfield project and it ingests the codebase via a reproducible AST extractor, classifies each class against the 34-pattern catalog, emits a `Squib` for you to review and edit, then re-enters the standard generation pipeline to rebuild the project from scratch. Net effect: messy legacy code in, freshly generated Clean-Architecture project out.
+Squeaky runs in **both directions**. Beyond generating from a `ProblemSpec`, it can point at an existing brownfield project and rebuild it as Clean Architecture — messy legacy code in, a freshly generated Clean-Architecture project out.
 
-Day-1 scope: Python projects in their entirety, 7 of the 34 GoF/DDD patterns classified directly, acceptance criteria auto-derived from the legacy test suite, and a human review gate between extraction and regeneration. Tree-sitter extractors for Java, Go, Rust, JavaScript, and TypeScript follow once the Python round-trip lands.
+Recovery is a five-phase pipeline, each phase persisted and independently re-runnable:
 
-Tracked as Milestone L on the [public roadmap](https://github.com/garciaalan186/squeaky-clean/blob/main/ROADMAP.md). Read the docs: [Agentic Architecture Recovery](https://docs.squeakyclean.ai/start/agentic-architecture-recovery/).
+```
+--recover-from  ─►  --triage  ─►  --refactor  ─►  --squib-file
+  Recover +           Triage         Refactor        Regenerate
+  Analyze          (opt-out review)  (apply fixes)   (standard pipeline)
+```
+
+```bash
+# Ingest a project → faithful Squib + categorized violations
+squeaky --recover-from ./legacy-app --language python --recover-out out/recovered.squib \
+        --criteria testability,evolvability,simplicity,performance,migration_safety,delivery_speed
+# Opt-out review of the findings → a refactor plan
+squeaky --triage out/recovered.squib.violations.json
+# Apply the accepted fixes (framework-coupled classes → Entity + Repository + Adapter)
+squeaky --refactor out/recovered.squib --plan out/refactor_plan.json --refactor-out out/refactored.squib
+# Feed the signed-off Squib back into generation
+squeaky --squib-file out/refactored.squib --legacy-tests ./legacy-app/tests
+```
+
+- **Faithful recovery.** The recovered Squib is a true photograph of the original — coupling and all. Judgment (Analyze) and fixing (Refactor) are separate, opt-in phases.
+- **Framework-agnostic violation analysis.** A generic detector flags domain classes welded to a foreign base (ORM models, Active Record) by allowlisting the language *standard library*, not indexing every framework. Plus dependency-rule, cyclic-dependency, granularity, and decorative-class categories.
+- **Priorities-driven refactoring.** You rank shared architectural criteria (`--criteria`); a weighted MCDA decides *preserve* vs *split* per coupled class, with hard invariants as non-negotiable gates.
+- **Four-language ingest.** `--language {python,javascript,typescript,java}` — Python via a real AST walk, JS/TS/Java via regex extractors (lower fidelity, documented). Go/Rust follow.
+
+Full guide: [Agentic Architecture Recovery](docs/architecture_recovery.md). Tracked as Milestones **L / M / N** on the [roadmap](docs/roadmap.md).
 
 ## Examples
 
@@ -170,6 +195,7 @@ Docs live at <https://docs.squeakyclean.ai>. Highlights:
 - **Squib grammar** — the inter-tier instruction set.
 - **Author your first ProblemSpec** — walkthrough + best practices.
 - **Custom patterns** — extension hook + custom Tier C agents.
+- **Agentic Architecture Recovery** — the inverse path: brownfield code → recovered `Squib` → refactor → regenerate.
 - **Infrastructure layer design** — full design doc.
 - **Benchmarks** — methodology + measured run data.
 - **Roadmap** — public, milestone-level.
@@ -184,4 +210,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). The framework eats its own dog food: e
 
 ## Project status
 
-**Active development.** 60 Tier C atomic agents across 15 infrastructure categories; six target languages. Pre-launch milestone (Milestone K) complete. Looking for early users with real ProblemSpecs.
+**Active development.** 60 Tier C atomic agents across 15 infrastructure categories; six target languages. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.

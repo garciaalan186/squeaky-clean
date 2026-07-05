@@ -1,5 +1,8 @@
 # Architecture-Aware Recovery Refactoring + Architectural MCDA
 
+> **Status: implemented.** This is the design record; for CLI usage see the
+> user guide, [`architecture_recovery.md`](architecture_recovery.md).
+
 Design note for roadmap Milestones **L** and **M**. Both stem from one
 observation surfaced while benchmarking Agentic Architecture Recovery on a
 real Django CMS (Wagtail): recovering messy code *toward* Clean Architecture

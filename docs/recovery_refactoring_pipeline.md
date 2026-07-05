@@ -1,5 +1,8 @@
 # Recovery Refactoring Pipeline: Recover → Analyze → Triage → Refactor
 
+> **Status: implemented.** This is the design record; for CLI usage see the
+> user guide, [`architecture_recovery.md`](architecture_recovery.md).
+
 Design note for roadmap **Milestone N**. Supersedes the "recovery emits the
 fix" framing: recovery stays *faithful*, and cleanup is a separate, optional,
 violation-driven downstream. Milestones L and M compose into this pipeline
