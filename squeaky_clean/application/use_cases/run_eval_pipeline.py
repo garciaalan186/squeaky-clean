@@ -73,11 +73,11 @@ from squeaky_clean.application.use_cases.python_requirements_generator import (
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_metrics_builder import RunEvalMetricsBuilder
 from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
-from squeaky_clean.application.use_cases.spec_conformance_checker import (
-    SpecConformanceChecker,
-)
 from squeaky_clean.application.use_cases.select_infrastructure_choices import (
     select_infrastructure_choices,
+)
+from squeaky_clean.application.use_cases.spec_conformance_checker import (
+    SpecConformanceChecker,
 )
 from squeaky_clean.application.use_cases.validate_architecture_against_spec import (
     SpecConformanceError,
@@ -88,6 +88,9 @@ from squeaky_clean.application.use_cases.validate_contract_fidelity import (
 )
 from squeaky_clean.application.use_cases.validate_cross_module_dependencies import (
     validate_cross_module_dependencies,
+)
+from squeaky_clean.application.use_cases.validate_dependency_injection import (
+    validate_dependency_injection,
 )
 from squeaky_clean.application.use_cases.validate_http_conventions import (
     validate_http_conventions,
@@ -133,6 +136,7 @@ class RunEvalPipeline:
         self._mcda_runs: int = 0
         self._dep_install_failed: bool = False
         self._http_violations: int = 0
+        self._di_violations: int = 0
         self._architect_retries: int = 0
         self._test_criteria_filtered: int = 0
 
@@ -149,6 +153,7 @@ class RunEvalPipeline:
         d = self._deps
         emitter = CheckpointEmitter(problem.id, output_dir)
         arch = d.design_architecture.execute(problem)
+        arch = self._check_dependency_injection(arch, problem)
         self._persist_notation(output_dir)
         emitter.architect_done(d.design_architecture.last_raw_notation)
         self._check_cross_module_deps(arch, output_dir)
@@ -201,6 +206,7 @@ class RunEvalPipeline:
         metrics.spec_conformance_violations = len(
             SpecConformanceChecker().check(impl)
         )
+        metrics.dependency_injection_violations = self._di_violations
         self._security.apply(
             output_dir, metrics, self._deps.run_config.enable_sast,
         )
@@ -396,6 +402,39 @@ class RunEvalPipeline:
             raise HttpConventionsError(retry_violations)
         self._http_violations = 0
         return retry_arch
+
+    def _check_dependency_injection(
+        self, arch: ArchitectureSpec, problem: ProblemSpec,
+    ) -> ArchitectureSpec:
+        """Deterministic gate: make an orchestrator's injected port explicit.
+
+        Detect a UseCase/Facade that declares no fields yet must inject a
+        same-module port, then re-ask the architect with that specific
+        feedback. Non-fatal: a retry that raises, is structurally invalid,
+        or does not reduce the violations is discarded for the original.
+        """
+        violations = validate_dependency_injection(arch)
+        self._di_violations = len(violations)
+        if not violations:
+            return arch
+        for v in violations:
+            self._logger.event("dependency_injection_violation", message=v)
+        self._architect_retries += 1
+        try:
+            retry = self._deps.design_architecture.execute(
+                problem, prior_violations=violations)
+        except Exception as exc:  # noqa: BLE001
+            self._logger.event("di_retry_error", error=str(exc))
+            return arch
+        if validate_cross_module_dependencies(retry):
+            self._logger.event("di_retry_discarded", reason="cross_module")
+            return arch
+        retry_violations = validate_dependency_injection(retry)
+        if len(retry_violations) < len(violations):
+            self._di_violations = len(retry_violations)
+            return retry
+        self._logger.event("di_retry_discarded", reason="no_improvement")
+        return arch
 
     def _check_contract_fidelity(
         self, arch: ArchitectureSpec, problem: ProblemSpec, output_dir: Path,
