@@ -47,8 +47,8 @@ import { EventPublisher } from './event_publisher.js';
 export class KafkaJsProducer implements EventPublisher {
   private readonly _producer: Producer;
 
-  constructor(brokers: string) {
-    const kafka = new Kafka({ brokers: brokers.split(',') });
+  constructor(brokers: string[]) {
+    const kafka = new Kafka({ brokers });
     this._producer = kafka.producer();
   }
 
