@@ -11,6 +11,7 @@ from squeaky_clean.application.use_cases.fixer_stage import (
     FixerStage,
     FixerStageResult,
 )
+from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 
 
@@ -21,6 +22,7 @@ class CompileGateRequest:
     implementation: ModuleImplementation
     output_dir: Path
     max_passes: int
+    architecture: ArchitectureSpec | None = None
 
 
 @dataclass(frozen=True)
@@ -54,8 +56,7 @@ class CompileGate:
             if result.ok or not result.offending_stems:
                 break
             stats = self._fixer.apply(
-                self._fix_request(request.implementation, result),
-                request.output_dir,
+                self._fix_request(request, result), request.output_dir,
             )
             agg = agg.merge(stats)
             if stats.classes_fixed == 0:
@@ -65,11 +66,12 @@ class CompileGate:
 
     @staticmethod
     def _fix_request(
-        impl: ModuleImplementation, result: CompileResult,
+        request: CompileGateRequest, result: CompileResult,
     ) -> FixRequest:
         return FixRequest(
-            implementation=impl,
+            implementation=request.implementation,
             test_run_result=TestRunResult(
                 0, result.error_count, 0, 0, result.raw_output),
             override_stems=result.offending_stems,
+            architecture=request.architecture,
         )

@@ -11,6 +11,7 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.dtos.fix_request import FixRequest
 from squeaky_clean.application.dtos.integration_request import IntegrationRequest
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
@@ -139,6 +140,7 @@ class RunEvalPipeline:
         self._di_violations: int = 0
         self._architect_retries: int = 0
         self._test_criteria_filtered: int = 0
+        self._arch: ArchitectureSpec | None = None
 
     def run(self, problem: ProblemSpec, output_dir: Path) -> EvalReportBundle:
         """Execute the full pipeline; on budget exit produce a partial report."""
@@ -154,6 +156,7 @@ class RunEvalPipeline:
         emitter = CheckpointEmitter(problem.id, output_dir)
         arch = d.design_architecture.execute(problem)
         arch = self._check_dependency_injection(arch, problem)
+        self._arch = arch
         self._persist_notation(output_dir)
         emitter.architect_done(d.design_architecture.last_raw_notation)
         self._check_cross_module_deps(arch, output_dir)
@@ -259,7 +262,7 @@ class RunEvalPipeline:
         """Compile before tests; fix implicated source classes on failure."""
         return self._compile_gate.run(CompileGateRequest(
             implementation=impl, output_dir=output_dir,
-            max_passes=self._max_fixer_passes(),
+            max_passes=self._max_fixer_passes(), architecture=self._arch,
         ))
 
     def _run_fixer_loop(
@@ -275,7 +278,9 @@ class RunEvalPipeline:
             if cur_run.failed == 0 and cur_run.errors == 0:
                 break
             stats = self._fixer.apply(
-                FixerStage.requested(impl, cur_run), output_dir,
+                FixRequest(implementation=impl, test_run_result=cur_run,
+                           architecture=self._arch),
+                output_dir,
             )
             agg = agg.merge(stats)
             if stats.classes_fixed == 0:

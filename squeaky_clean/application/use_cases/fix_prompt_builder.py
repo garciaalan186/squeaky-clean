@@ -34,6 +34,9 @@ class FixPromptBuilder:
         spec = candidate.class_spec
         fields = ", ".join(spec.fields) if spec.fields else ""
         methods = ", ".join(spec.methods) if spec.methods else ""
+        siblings = (
+            [candidate.sibling_context, ""] if candidate.sibling_context else []
+        )
         return "\n".join([
             _HEADER, "",
             f"CLASS {spec.name}",
@@ -41,6 +44,9 @@ class FixPromptBuilder:
             f"FIELDS [{fields}]",
             f"METHODS [{methods}]",
             f"FILE_PATH {candidate.original.file_path}",
+            "", *siblings,
+            "Import collaborators from the `file=` paths above; implement "
+            "every method a port you `implements`/`depends` on declares.",
             "", "CURRENT CODE:",
             f"```\n{candidate.original.code}\n```",
             "", "TEST OUTPUT (failure excerpt):",
