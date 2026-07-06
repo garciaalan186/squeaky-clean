@@ -73,6 +73,9 @@ from squeaky_clean.application.use_cases.python_requirements_generator import (
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_metrics_builder import RunEvalMetricsBuilder
 from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
+from squeaky_clean.application.use_cases.spec_conformance_checker import (
+    SpecConformanceChecker,
+)
 from squeaky_clean.application.use_cases.select_infrastructure_choices import (
     select_infrastructure_choices,
 )
@@ -195,6 +198,9 @@ class RunEvalPipeline:
         metrics.architect_retries = self._architect_retries
         metrics.test_criteria_filtered = self._test_criteria_filtered
         metrics.compile_errors = compile_result.compile_errors
+        metrics.spec_conformance_violations = len(
+            SpecConformanceChecker().check(impl)
+        )
         self._security.apply(
             output_dir, metrics, self._deps.run_config.enable_sast,
         )
