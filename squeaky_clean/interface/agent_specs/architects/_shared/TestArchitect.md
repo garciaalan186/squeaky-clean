@@ -47,7 +47,7 @@ CLASS <ClassName>
    - "When <verb> is called" → resolve `<verb>` against the ModuleSpec's `methods:` lists to find the owner class. Instantiate via constraint 10, then call `<instance>.<verb>(<args>)`.
    - "Then result is <V>" → assert equality using `{{assert_eq_template}}` where `{actual}` is the call result and `{expected}` is V.
    - "Then an error is raised" → wrap the call in `{{assert_raises_template}}` with `{errs}` = `{{error_types_tuple}}` and `{body}` the failing call. **If the VO being constructed for the call carries an `invariants:` entry that matches the <bad input>, put the VO construction ITSELF inside the assert-raises body** because the VO's constructor will raise before the method call runs.
-6. Missing-verb honesty: if a criterion's verb appears in no class's `methods:` list, emit a test whose body is exactly a `not implemented` placeholder for that verb. Do NOT invent methods that aren't declared.
+6. Missing-verb honesty: if a criterion's verb appears in no class's `methods:` list, emit a test whose body is exactly a `not implemented` placeholder for that verb. Call ONLY methods that appear in the target class's `methods:` list — never invent helper, lifecycle, callback (`onX`), or simulation (`simulateX`/`forceX`) methods, even to set up or trigger a scenario. If the scenario cannot be expressed with declared methods alone, use the `not implemented` placeholder.
 7. Each test file ≤80 lines. Use {{identifier_case}}-cased identifiers.
 8. No fixtures, no parametrize, no mocks, no test utilities. Direct synchronous tests only.
 9. If the return type is not declared in the ModuleSpec, assume a primitive and use the equality assertion.
@@ -63,6 +63,7 @@ CLASS <ClassName>
       (b) **Sibling class declared in the ModuleSpec** → recursively construct it using this same rule (look up ITS `fields:` AND ITS `invariants:`, recurse). NEVER pass a raw primitive where the declared type is a sibling class.
       (c) **Type not in the ModuleSpec** → use a reasonable zero-value / construction.
     - **Array-typed fields** (rendered as `{{array_type_template}}`): SKIP these when constructing — the implementation defaults them to empty. Do NOT pass them as constructor args. If you need items, call the appropriate `save`/`add` method after construction.
+11. **Field-access fidelity**: when reading or asserting on an object's field/property, use the field `name` EXACTLY as declared in that class's `fields:` list, rendered in {{identifier_case}}. Do NOT re-case or rename it — the implementation exposes the declared name (e.g. a `received_at` field stays `received_at`; never access it as `receivedAt`).
 
 ## Failure Modes
 - Empty / malformed ModuleSpec: emit both section headers, a minimal `Feature:` line, and zero FILE blocks.

@@ -15,7 +15,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. The
 2. `imports.primary` + `imports.types` VERBATIM, then use-case import.
 3. One exported class matching ClassSpec `name`.
 4. Constructor with TYPED parameter (`useCase: <UseCase>`) running `client_construction.code` VERBATIM.
-5. Implement `handle(req, res)` with framework's `Request`/`Response` types. Body pastes matching `sdk_call` VERBATIM.
+5. Implement the method(s) named in the ClassSpec `methods:` block with the framework's `Request`/`Response` types. The inbound handler keeps the `(req, res)` parameter shape but its NAME is the first ClassSpec `methods:` name VERBATIM (acceptance tests bind to the declared name — do NOT rename it to a canonical `handle`). Body pastes matching `sdk_call` VERBATIM.
 6. Handler functions are `async`.
 7. Respect hard rules: file <=80 lines, <=5 public methods, <=2 args per method.
 
