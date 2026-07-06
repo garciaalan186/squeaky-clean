@@ -51,7 +51,7 @@ CLASS <ClassName>
    - "When <verb> is called" -> resolve `<verb>` against the ModuleSpec's `methods:` lists to find the owner class. Instantiate the owner via constraint 10, then call `instance.<verb>(<args>)`.
    - "Then result is <V>" -> `const result = ...; assert.strictEqual(result, V);` for primitives, `assert.strictEqual(result.value, V);` for VO returns.
    - "Then an error is raised" -> `assert.throws(() => { ... }, Error);` — always pass the base `Error` class. **If the VO's constructor will throw, put the VO construction ITSELF inside the `assert.throws` body.**
-6. Missing-verb honesty: if a verb appears in no class's `methods:`, emit `assert.fail('verb <verb> not in ModuleSpec');`.
+6. Missing-verb honesty: if a verb appears in no class's `methods:`, emit `assert.fail('verb <verb> not in ModuleSpec');`. Call ONLY methods listed in the target class's `methods:` — never invent callback (`onX`) or simulation (`simulateX`/`forceX`) helpers, even to trigger a scenario. Access a field by its declared `name` verbatim in {{identifier_case}} — never re-case it (a `received_at` field is read as `received_at`, never `receivedAt`).
 7. Each test file <=80 lines. camelCase file stems. Paths start with `tests/`.
 8. No mocks, no fixtures, no test utilities. Direct synchronous tests only.
 9. If the return type is not declared, assume a primitive and use `assert.strictEqual(result, V);`.

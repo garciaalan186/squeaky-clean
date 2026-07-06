@@ -53,7 +53,7 @@ CLASS <ClassName>
    - "Then result is <V>" -> `assertEquals(V, result)` for primitives, `assertEquals(V, result.getValue())` for VO returns.
    - **Array return types**: when the method signature declares `Type[]`, the result variable MUST be typed `Type[]` (array), NEVER `List<Type>`. Use `.length` not `.size()` for count assertions. Example — spec says `listPending(): Todo[]`, criterion says "Then the result length is 1": write `Todo[] result = instance.listPending(); assertEquals(1, result.length);`. Wrong: `List<Todo> result = ...; assertEquals(1, result.size());`.
    - "Then an error is raised" -> `assertThrows(IllegalArgumentException.class, () -> { ... });`. **If the VO constructor will throw, put construction inside the lambda.**
-6. Missing-verb honesty: if a criterion's verb is not in any class's `methods:`, emit `fail("verb <verb> not in ModuleSpec");`.
+6. Missing-verb honesty: if a criterion's verb is not in any class's `methods:`, emit `fail("verb <verb> not in ModuleSpec");`. Call ONLY methods listed in the target class's `methods:` — never invent callback (`onX`) or simulation (`simulateX`/`forceX`) helpers, even to trigger a scenario. Access a field by its declared `name` verbatim — never re-case it (a `received_at` field is read via its declared accessor, never a renamed `receivedAt`).
 7. Each test file <=80 lines. PascalCase class names. Paths start with `src/test/java/`.
 8. No mocks, no fixtures. Direct synchronous tests only.
 9. If the return type is not declared, assume a primitive and use `assertEquals`.
