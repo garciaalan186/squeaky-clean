@@ -37,5 +37,7 @@ class FixFailureMapper:
         ):
             return stem == src_stem
         if self._language is TargetLanguage.JAVA:
-            return stem == cls.class_name + "Test"
+            # <Class>Test.java for test-driven fixes; bare <Class>.java for
+            # compile-driven fixes against the production source file.
+            return stem in (cls.class_name + "Test", cls.class_name)
         return False

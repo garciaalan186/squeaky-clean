@@ -30,6 +30,11 @@ from squeaky_clean.application.use_cases.build_manifest_generator import (
 )
 from squeaky_clean.application.use_cases.cargo_toml_generator import generate_cargo_toml
 from squeaky_clean.application.use_cases.checkpoint_emitter import CheckpointEmitter
+from squeaky_clean.application.use_cases.compile_gate import (
+    CompileGate,
+    CompileGateRequest,
+    CompileGateResult,
+)
 from squeaky_clean.application.use_cases.contract_fidelity_error import (
     ContractFidelityError,
 )
@@ -101,6 +106,9 @@ class RunEvalPipeline:
         self._fixer: FixerStage = FixerStage(
             deps.fix_failing_classes, deps.file_system,
         )
+        self._compile_gate: CompileGate = CompileGate(
+            deps.project_compiler, self._fixer,
+        )
         self._merger: ArchitectureMerger = ArchitectureMerger()
         self._orchestrator: OrchestrateArchitecture = OrchestrateArchitecture(
             deps.orchestrate_module,
@@ -163,9 +171,11 @@ class RunEvalPipeline:
         self._maybe_emit_build_manifest(arch, problem, output_dir)
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
+        compile_result = self._run_compile_gate(impl, output_dir)
         test_run = d.test_runner.run(output_dir)
         emitter.tested()
         test_run, fix_stats = self._run_fixer_loop(impl, test_run, output_dir)
+        fix_stats = fix_stats.merge(compile_result.fixer)
         emitter.fixed(fix_stats.passes)
         func_run = (d.functional_test_runner.run(output_dir)
                     if d.functional_test_runner else None)
@@ -184,6 +194,7 @@ class RunEvalPipeline:
         metrics.http_convention_violations = self._http_violations
         metrics.architect_retries = self._architect_retries
         metrics.test_criteria_filtered = self._test_criteria_filtered
+        metrics.compile_errors = compile_result.compile_errors
         self._security.apply(
             output_dir, metrics, self._deps.run_config.enable_sast,
         )
@@ -229,6 +240,15 @@ class RunEvalPipeline:
                 ),
             ))
         return self._merger.merge_test_architectures(per_module)
+
+    def _run_compile_gate(
+        self, impl: ModuleImplementation, output_dir: Path,
+    ) -> CompileGateResult:
+        """Compile before tests; fix implicated source classes on failure."""
+        return self._compile_gate.run(CompileGateRequest(
+            implementation=impl, output_dir=output_dir,
+            max_passes=self._max_fixer_passes(),
+        ))
 
     def _run_fixer_loop(
         self, impl: ModuleImplementation, test_run: TestRunResult,

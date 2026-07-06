@@ -23,6 +23,7 @@ from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathSc
 from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
 from squeaky_clean.domain.interfaces.metric_collector import MetricCollector
+from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
@@ -61,3 +62,4 @@ class RunEvalDependencies:
     tech_spec_resolver: TechSpecResolver | None = None
     infrastructure_choice_architect: InfrastructureChoiceArchitect | None = None
     dependency_installer: DependencyInstaller | None = None
+    project_compiler: ProjectCompiler | None = None

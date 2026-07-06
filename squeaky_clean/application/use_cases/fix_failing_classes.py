@@ -31,7 +31,7 @@ class FixFailingClasses:
 
     def execute(self, request: FixRequest) -> FixResult:
         """Return FixResult with rewritten classes and fixer-stage usage stats."""
-        stems = self._parser.parse(
+        stems = request.override_stems or self._parser.parse(
             request.test_run_result.raw_output, self._deps.toolkit.language,
         )
         if not stems:

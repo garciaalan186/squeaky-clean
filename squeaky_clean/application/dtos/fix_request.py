@@ -12,3 +12,7 @@ class FixRequest:
 
     implementation: ModuleImplementation
     test_run_result: TestRunResult
+    # When non-empty, these source-file stems drive the fix directly instead
+    # of parsing them from test output — used by the compile gate, whose
+    # compiler output is not in test-runner format.
+    override_stems: tuple[str, ...] = ()

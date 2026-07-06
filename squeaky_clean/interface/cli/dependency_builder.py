@@ -19,6 +19,9 @@ from squeaky_clean.application.use_cases.infrastructure_choice_architect import 
     InfrastructureChoiceArchitect,
 )
 from squeaky_clean.application.use_cases.integrate_module import IntegrateModule
+from squeaky_clean.application.use_cases.language_compiler_factory import (
+    LanguageCompilerFactory,
+)
 from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
 from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
 from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
@@ -139,6 +142,9 @@ class DependencyBuilder:
             tech_spec_resolver=self._tech_spec_resolver(rc),
             infrastructure_choice_architect=self._infra_choice_architect(rc, gateway),
             dependency_installer=adapters.dependency_installer,
+            project_compiler=LanguageCompilerFactory().for_language(
+                problem.target_language
+            ),
         )
 
     @staticmethod
