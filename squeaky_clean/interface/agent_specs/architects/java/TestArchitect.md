@@ -66,6 +66,7 @@ CLASS <ClassName>
         - numeric field with ">= 0" / "non-negative" -> `0`
         - otherwise -> `0` / `""` / `false`
     - Sibling class fields: recursively construct using this rule (look up ITS `fields:` AND ITS `invariants:`, recurse). NEVER pass a raw primitive where the declared type is a sibling class.
+    - **Gateway/port fields (Type is a Gateway pattern — a Java `interface`)**: do NOT `new` the interface. Provide it with an anonymous implementation — `new <Port>() { @Override public <ReturnType> <method>(<args>) { /* trivial */ } }` — supplying a minimal body for every method the port declares, and inject that. A `void` port method body may be empty; a value-returning one returns a benign default. NEVER pass `null` or a primitive for a port field.
     - **Array-typed fields** (`name: Type[]`): SKIP these when constructing — the implementation provides a no-arg constructor that defaults to empty. Call `new ClassName()` without those fields. If you need items, call `repo.save(item)` after construction.
 
 ## Failure Modes

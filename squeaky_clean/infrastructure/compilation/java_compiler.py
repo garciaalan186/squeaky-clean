@@ -10,6 +10,8 @@ from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 from squeaky_clean.infrastructure.testing.maven_test_runner import _resolve_java_home
 
 _TIMEOUT_SECONDS: int = 300
+# Strip ANSI colour escapes mvn emits even under capture, so the marker parses.
+_ANSI: re.Pattern[str] = re.compile(r"\x1b\[[0-9;]*m")
 # mvn emits ``[ERROR] <path>.java:[line,col] <msg>`` for compile failures.
 _ERROR_LINE: re.Pattern[str] = re.compile(
     r"^\[ERROR\]\s+(?P<path>\S+\.java):\[\d+,\d+\]", re.MULTILINE)
@@ -33,12 +35,14 @@ class JavaCompiler(ProjectCompiler):
         if java_home is not None:
             env["JAVA_HOME"] = java_home
         return subprocess.run(
-            ["mvn", "-q", "test-compile"], cwd=str(project_dir),
+            # -B (batch mode) disables ANSI colour so `[ERROR]` markers parse.
+            ["mvn", "-B", "-q", "test-compile"], cwd=str(project_dir),
             capture_output=True, text=True, timeout=_TIMEOUT_SECONDS,
             check=False, env=env,
         )
 
     def _parse(self, output: str) -> CompileResult:
+        output = _ANSI.sub("", output)
         paths = _ERROR_LINE.findall(output)
         stems = self._src_stems(paths)
         return CompileResult(
