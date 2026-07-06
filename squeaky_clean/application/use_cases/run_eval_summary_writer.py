@@ -27,8 +27,10 @@ class RunEvalSummaryWriter:
         lines.append("")
         lines.append("| id | pass rate | violations | cost USD | duration ms |")
         lines.append("|----|-----------|------------|----------|-------------|")
+        pass_rate = (f"{m.tests_pass:.2f}" if m.test_status == "ok"
+                     else f"— ({m.test_status})")
         lines.append(
-            f"| {bundle.problem.id} | {m.tests_pass:.2f} "
+            f"| {bundle.problem.id} | {pass_rate} "
             f"| {m.architecture_violations} "
             f"| {m.estimated_cost_usd:.4f} "
             f"| {m.total_wall_clock_ms} |"
@@ -72,11 +74,19 @@ class RunEvalSummaryWriter:
         self, lines: list[str], bundle: EvalReportBundle,
     ) -> None:
         pr = bundle.test_run_result
+        m = bundle.metrics
         total = pr.passed + pr.failed + pr.errors
         lines.append("## Honest Assessment")
         lines.append(
             f"- tests: {pr.passed} passed, {pr.failed} failed, "
             f"{pr.errors} errors (of {total})"
+        )
+        lines.append(f"- test status: {m.test_status}")
+        lines.append(
+            f"- functional pass: {m.functional_tests_pass:.2f} "
+            f"({m.functional_test_count} tests) | "
+            f"security pass: {m.security_tests_pass:.2f} "
+            f"({m.security_test_count} tests)"
         )
         lines.append(
             f"- architecture violations: {len(bundle.validation.violations)}"

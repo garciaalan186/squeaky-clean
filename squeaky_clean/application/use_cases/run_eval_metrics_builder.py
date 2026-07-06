@@ -53,6 +53,8 @@ class RunEvalMetricsBuilder:
         impl = inputs.implementation
         m = EvalMetrics.empty()
         m.tests_pass = (pr.passed / total) if total > 0 else 0.0
+        m.tests_collected = total
+        m.test_status = self._test_status(pr.passed, pr.failed, pr.errors)
         m.architecture_violations = len(inputs.validation.violations)
         m.estimated_cost_usd = (
             inputs.architect_cost_usd
@@ -98,11 +100,31 @@ class RunEvalMetricsBuilder:
             if sec_total > 0:
                 sec_passed = inputs.test_run_result.passed - fr.passed
                 m.security_tests_pass = (sec_passed / sec_total) if sec_total > 0 else 0.0
+            # Headline reflects functional acceptance (the documented meaning
+            # of tests_pass), not the security-diluted blend; the numerous
+            # auto-generated security tests are reported via security_tests_pass.
+            m.tests_pass = m.functional_tests_pass
+            m.test_status = self._test_status(fr.passed, fr.failed, fr.errors)
+            m.tests_collected = func_total
         else:
             tr = inputs.test_run_result
             total = tr.passed + tr.failed + tr.errors
             m.functional_tests_pass = m.tests_pass
             m.functional_test_count = total
+
+    @staticmethod
+    def _test_status(passed: int, failed: int, errors: int) -> str:
+        """Classify a test run so a real 0% is not confused with "no run".
+
+        ``not_measured`` = nothing collected (toolchain absent);
+        ``build_failed`` = only errors, no test executed to pass/fail
+        (compile/collection failure); ``ok`` = tests actually ran.
+        """
+        if passed + failed + errors == 0:
+            return "not_measured"
+        if passed == 0 and failed == 0 and errors > 0:
+            return "build_failed"
+        return "ok"
 
     def _file_stats(self, m: EvalMetrics, i: MetricsInputs) -> None:
         s = i.file_stats
