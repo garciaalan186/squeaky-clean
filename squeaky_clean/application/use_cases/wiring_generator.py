@@ -133,7 +133,10 @@ class WiringGenerator:
                          output_dir: Path) -> Path:
         path = output_dir / "src" / "index.ts"
         path.parent.mkdir(parents=True, exist_ok=True)
-        cats: dict[str, object] = {s.category: True for s in tech_specs.values()
+        # Carry the technology (not a bare True) so the renderer can match
+        # the wiring's HTTP framework to the resolved handler (e.g. express).
+        cats: dict[str, object] = {s.category: s.technology
+                                   for s in tech_specs.values()
                                    if s.language == "typescript"}
         path.write_text(render_fastify_main(cats))
         return path
