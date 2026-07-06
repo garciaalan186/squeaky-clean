@@ -47,7 +47,7 @@ CLASS <ClassName>
    - Add type annotations on variables where helpful: `const result: number = ...`.
 5. Criterion -> code mapping rules (apply mechanically):
    - "Given <plural-noun> X and Y" -> `const a: number = X; const b: number = Y;` using the same primitive literal types as written.
-   - If the target method signature declares a VO parameter, construct the VO via the instantiation rules in constraint 10.
+   - If a method parameter's declared Type is a class in the ModuleSpec (ValueObject/Entity/etc.), you MUST wrap the value: `new <Type>(<givenValue>)` — NEVER pass the raw primitive. E.g. for `body: RawBody` with Given body `'hello'` → `new RawBody('hello')`, never `'hello'`.
    - "When <verb> is called" -> resolve `<verb>` against the ModuleSpec's `methods:` lists to find the owner class. Instantiate the owner via constraint 10, then call `instance.<verb>(<args>)`.
    - "Then result is <V>" -> `const result = ...; assert.strictEqual(result, V);` for primitives, `assert.strictEqual(result.value, V);` for VO returns.
    - "Then an error is raised" -> `assert.throws(() => { ... }, Error);` — always pass the base `Error` class. **If the VO's constructor will throw, put the VO construction ITSELF inside the `assert.throws` body.**
@@ -57,6 +57,7 @@ CLASS <ClassName>
 9. If the return type is not declared, assume a primitive and use `assert.strictEqual(result, V);`.
 10. **Instantiation rules**:
     - Look up the class's `fields:` entry. If non-empty, pass those values in positional order to the constructor using the EXACT field names from the spec (`fields: [value: string]` → `new MessageContent('x')`, never invent `{text: 'x'}` syntax). Otherwise `new ClassName()`.
+    - **Collaborator field (Type is another class in the ModuleSpec, not a primitive)**: construct it — never substitute a primitive. If the field's Type is a Gateway/port (an abstract class that a sibling declares it `implements:` in its `invariants:`/`implements:`), instantiate that CONCRETE implementer instead of the abstract port, using the implementer's own `fields:` (recurse). Never write `new <AbstractPort>()`.
     - Primitive type -> literal from Given clause. If no Given clause provides the value, use an INVARIANT-SATISFYING default based on the OWNING CLASS's `invariants:` list:
         - string field with "non-empty" / "not empty" / "not blank" -> `'x'`
         - numeric field with "positive" / "> 0" / ">= 1" -> `1`

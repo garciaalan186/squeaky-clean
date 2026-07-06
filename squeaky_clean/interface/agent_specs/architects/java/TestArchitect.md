@@ -48,7 +48,7 @@ CLASS <ClassName>
    - Body constructs inputs, invokes the real method, and asserts the Then clause.
 5. Criterion -> code mapping rules (apply mechanically):
    - "Given <plural-noun> X and Y" -> variable declarations with literal values.
-   - If the target method signature declares a VO parameter (e.g. `a: Operand`) AND the class exists in the ModuleSpec, construct via instantiation rules in constraint 10.
+   - If a method parameter's declared Type is a class in the ModuleSpec (ValueObject/Entity/etc.), you MUST wrap the value: `new <Type>(<givenValue>)` — NEVER pass the raw primitive. E.g. for `body: RawBody` with Given body `"hello"` → `new RawBody("hello")`, never `"hello"`. Construct via instantiation rules in constraint 10.
    - "When <verb> is called" -> resolve `<verb>` against the ModuleSpec's `methods:`, find owner class, instantiate via constraint 10, call `instance.<verb>(<args>)`.
    - "Then result is <V>" -> `assertEquals(V, result)` for primitives, `assertEquals(V, result.getValue())` for VO returns.
    - **Array return types**: when the method signature declares `Type[]`, the result variable MUST be typed `Type[]` (array), NEVER `List<Type>`. Use `.length` not `.size()` for count assertions. Example — spec says `listPending(): Todo[]`, criterion says "Then the result length is 1": write `Todo[] result = instance.listPending(); assertEquals(1, result.length);`. Wrong: `List<Todo> result = ...; assertEquals(1, result.size());`.
