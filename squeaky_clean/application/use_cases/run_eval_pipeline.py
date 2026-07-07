@@ -50,6 +50,9 @@ from squeaky_clean.application.use_cases.cross_module_dependency_error import (
 from squeaky_clean.application.use_cases.derive_required_categories import (
     derive_required_categories,
 )
+from squeaky_clean.application.use_cases.emit_invariant_tests import (
+    EmitInvariantTests,
+)
 from squeaky_clean.application.use_cases.fixer_stage import FixerStage, FixerStageResult
 from squeaky_clean.application.use_cases.go_mod_generator import generate_go_mod
 from squeaky_clean.application.use_cases.http_conventions_error import (
@@ -194,6 +197,7 @@ class RunEvalPipeline:
         emitter.integrated()
         self._maybe_emit_wiring(arch, output_dir)
         self._maybe_emit_build_manifest(arch, problem, output_dir)
+        self._emit_invariant_tests(arch, problem, output_dir)
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
         compile_result = self._run_compile_gate(impl, output_dir)
@@ -256,6 +260,12 @@ class RunEvalPipeline:
             kept = filter_criteria_for_module(
                 problem.acceptance_criteria, m,
             )
+            # No criterion targets this module (e.g. a pure VO/Entity domain
+            # module) — its only duties are invariants, emitted deterministically
+            # by EmitInvariantTests. Skip the LLM TestArchitect for it.
+            if not kept:
+                self._test_criteria_filtered += len(problem.acceptance_criteria)
+                continue
             self._test_criteria_filtered += (
                 len(problem.acceptance_criteria) - len(kept)
             )
@@ -290,6 +300,18 @@ class RunEvalPipeline:
             return 0
         obligations = ProjectTestObligations().project(self._arch, problem)
         return len(CheckTestObligations().check(obligations, output_dir))
+
+    def _emit_invariant_tests(
+        self, arch: ArchitectureSpec, problem: ProblemSpec, output_dir: Path,
+    ) -> None:
+        """Deterministically write construction-raises invariant tests."""
+        toolkit = self._deps.toolkit
+        if toolkit is None:
+            return
+        for rel, body in EmitInvariantTests().emit(arch, problem, toolkit).items():
+            path = output_dir / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(body)
 
     def _run_obligation_repair(
         self, problem: ProblemSpec, output_dir: Path,

@@ -101,23 +101,20 @@ class TestArchitectureContextFormatter:
         if ctx.architecture is None:
             return []
         names = {c.name for c in module.classes}
+        # Constructor-invariant duties are emitted deterministically elsewhere
+        # (EmitInvariantTests); the LLM only writes behavioural criterion tests.
         mine = [o for o in ProjectTestObligations().project(
-            ctx.architecture, ctx.problem) if o.target_class in names]
+            ctx.architecture, ctx.problem)
+            if o.target_class in names and o.method != "<init>"]
         if not mine:
             return []
         out = ["TestObligations (emit EXACTLY one test per line and ONLY "
                "these — do NOT add field-storage or happy-path tests; comment "
                "each test with its `from:` source):"]
         for o in mine:
-            if o.method == "<init>":
-                out.append(
-                    f"  - construct {o.target_class} with input that VIOLATES "
-                    f"\"{o.detail}\" and assert the constructor raises — "
-                    f"from: {o.source}")
-            else:
-                out.append(
-                    f"  - {o.target_class}.{o.method} must {o.kind.value} "
-                    f"({o.detail or 'the declared outcome'}) — from: {o.source}")
+            out.append(
+                f"  - {o.target_class}.{o.method} must {o.kind.value} "
+                f"({o.detail or 'the declared outcome'}) — from: {o.source}")
         return out
 
     def _is_layered(self, ctx: TestArchitectureContext) -> bool:
