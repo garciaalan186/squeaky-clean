@@ -25,6 +25,11 @@ _EQUALS = re.compile(
     r"result is\s+(\S+)|returns?\s+(\S+)|equals?\s+(\S+)", re.IGNORECASE)
 _FIELD = re.compile(r"contain|with keys|holds|includes", re.IGNORECASE)
 _CTOR: str = "<init>"
+# Only these patterns enforce their invariants in a constructor (and can be
+# instantiated). A Gateway/Adapter/UseCase invariant is behavioural, not a
+# constructor-validation duty, so it is not a test obligation.
+_VALIDATION_PATTERNS: frozenset[str] = frozenset(
+    {"ValueObject", "Entity", "Aggregate"})
 
 
 def _normalize(token: str) -> str:
@@ -93,6 +98,8 @@ class ProjectTestObligations:
         out: list[TestObligation] = []
         for module in arch.modules:
             for cls in module.classes:
+                if cls.pattern not in _VALIDATION_PATTERNS:
+                    continue
                 for inv in cls.invariants:
                     out.append(TestObligation(
                         cls.name, _CTOR, AssertionKind.RAISES, inv, inv))
