@@ -19,8 +19,13 @@ _SYSTEM: str = (
     "which is AUTHORITATIVE. Fix the TEST to match the actual constructor "
     "and method signatures shown in SOURCE — never change the source, never "
     "weaken an assertion's intent. Preserve the scenarios and the file's "
-    "imports style. Emit ONLY the corrected full test file in one fenced "
-    "code block, no prose."
+    "imports style. To supply a value the code under test needs: for a "
+    "first-party interface/abstract port, use a minimal in-test "
+    "implementation; for a CONCRETE third-party/SDK class (e.g. a Spring "
+    "KafkaTemplate), construct it with the library's real constructor or "
+    "factory — NEVER anonymous-subclass a concrete class or invent a method "
+    "with the wrong signature. Emit ONLY the corrected full test file in one "
+    "fenced code block, no prose."
 )
 
 
