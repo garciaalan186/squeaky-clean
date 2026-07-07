@@ -9,6 +9,7 @@ from typing import cast
 
 from squeaky_clean.application.dtos.data_classification import DataClassification
 from squeaky_clean.application.dtos.entity_lifecycle import EntityLifecycle, StateTransition
+from squeaky_clean.application.dtos.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.dtos.infrastructure_choice import InfrastructureChoice
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.query_semantic import QuerySemantic
@@ -73,6 +74,13 @@ class LoadProblemSpecFromFile:
             mcda_weights=self._weights(d.get("mcda_weights")),
             produces_contracts=parse_produces(d.get("produces_contracts")),
             consumes_contracts=parse_consumes(d.get("consumes_contracts")),
+            expected_outcomes=tuple(
+                ExpectedOutcome(
+                    verb=str(i.get("verb") or ""),
+                    kind=str(i.get("kind") or "call_only"),
+                    value=str(i.get("value") or ""))
+                for i in cast(list[dict[str, object]],
+                              d.get("expected_outcomes") or [])),
         )
 
     @staticmethod

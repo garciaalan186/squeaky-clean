@@ -115,6 +115,7 @@ class EvalMetrics:
     runs: int = 1
 
     spec_conformance_violations: int = 0
+    test_obligation_gaps: int = 0
     cross_module_dependency_violations: int = 0
     http_convention_violations: int = 0
     dependency_injection_violations: int = 0

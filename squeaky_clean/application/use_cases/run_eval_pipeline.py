@@ -30,6 +30,9 @@ from squeaky_clean.application.use_cases.build_manifest_generator import (
     BuildManifestGenerator,
 )
 from squeaky_clean.application.use_cases.cargo_toml_generator import generate_cargo_toml
+from squeaky_clean.application.use_cases.check_test_obligations import (
+    CheckTestObligations,
+)
 from squeaky_clean.application.use_cases.checkpoint_emitter import CheckpointEmitter
 from squeaky_clean.application.use_cases.compile_gate import (
     CompileGate,
@@ -68,6 +71,9 @@ from squeaky_clean.application.use_cases.percentile_summary_renderer import (
     PercentileSummaryRenderer,
 )
 from squeaky_clean.application.use_cases.pipeline_outputs import PipelineOutputs
+from squeaky_clean.application.use_cases.project_test_obligations import (
+    ProjectTestObligations,
+)
 from squeaky_clean.application.use_cases.python_requirements_generator import (
     generate as generate_python_requirements,
 )
@@ -209,6 +215,7 @@ class RunEvalPipeline:
         metrics.spec_conformance_violations = len(
             SpecConformanceChecker().check(impl)
         )
+        metrics.test_obligation_gaps = self._obligation_gaps(problem, output_dir)
         metrics.dependency_injection_violations = self._di_violations
         self._security.apply(
             output_dir, metrics, self._deps.run_config.enable_sast,
@@ -255,6 +262,15 @@ class RunEvalPipeline:
                 ),
             ))
         return self._merger.merge_test_architectures(per_module)
+
+    def _obligation_gaps(
+        self, problem: ProblemSpec, output_dir: Path,
+    ) -> int:
+        """Deterministic count of spec obligations no generated test discharges."""
+        if self._arch is None:
+            return 0
+        obligations = ProjectTestObligations().project(self._arch, problem)
+        return len(CheckTestObligations().check(obligations, output_dir))
 
     def _run_compile_gate(
         self, impl: ModuleImplementation, output_dir: Path,
