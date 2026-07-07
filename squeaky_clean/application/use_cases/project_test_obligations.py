@@ -17,6 +17,7 @@ from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.test_obligation import TestObligation
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.assertion_kind import AssertionKind
+from squeaky_clean.domain.value_objects.layer_type import LayerType
 
 _WHEN = re.compile(r"\bWhen\s+([A-Za-z_][A-Za-z0-9_]*)", re.IGNORECASE)
 _THEN = re.compile(r"\bThen\b(.*)$", re.IGNORECASE | re.DOTALL)
@@ -76,7 +77,15 @@ class ProjectTestObligations:
     def _verb_index(arch: ArchitectureSpec) -> dict[str, tuple[str, str]]:
         index: dict[str, tuple[str, str]] = {}
         for module in arch.modules:
+            # A verb whose only home is an abstract Gateway port or an
+            # Infrastructure adapter is an integration concern (no concrete,
+            # unit-testable implementation in the app/domain layers) — it is
+            # the developer's integration test, not a unit obligation.
+            if module.layer is LayerType.INFRASTRUCTURE:
+                continue
             for cls in module.classes:
+                if cls.pattern == "Gateway":
+                    continue
                 for method in cls.methods:
                     name = method.split("(", 1)[0].strip()
                     index.setdefault(_normalize(name), (cls.name, name))

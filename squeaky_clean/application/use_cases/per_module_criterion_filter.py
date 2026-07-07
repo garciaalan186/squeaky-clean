@@ -38,6 +38,11 @@ def _method_name(method_signature: str) -> str:
 def _module_method_names(module: ModuleSpec) -> set[str]:
     names: set[str] = set()
     for cls in module.classes:
+        # A verb owned only by an abstract Gateway port has no concrete,
+        # unit-testable implementation here — testing it would instantiate the
+        # abstract port. Leave it to the developer's integration tests.
+        if cls.pattern == "Gateway":
+            continue
         for method in cls.methods:
             names.add(_normalize(_method_name(method)))
     return names

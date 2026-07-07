@@ -80,6 +80,10 @@ from squeaky_clean.application.use_cases.project_test_obligations import (
 from squeaky_clean.application.use_cases.python_requirements_generator import (
     generate as generate_python_requirements,
 )
+from squeaky_clean.application.use_cases.repair_failing_tests import (
+    FailingTestsRequest,
+    RepairFailingTests,
+)
 from squeaky_clean.application.use_cases.repair_obligation_gaps import (
     ObligationRepairRequest,
     ObligationRepairResult,
@@ -210,6 +214,13 @@ class RunEvalPipeline:
             self._run_compile_gate(impl, output_dir)
             test_run = d.test_runner.run(output_dir)
             fix_stats = fix_stats.merge(oblig.usage)
+        if test_run.failed > 0:
+            crash = RepairFailingTests(d.test_repairer).run(
+                FailingTestsRequest(
+                    test_run.raw_output, output_dir, d.toolkit))
+            if crash.classes_fixed > 0:
+                test_run = d.test_runner.run(output_dir)
+                fix_stats = fix_stats.merge(crash)
         emitter.fixed(fix_stats.passes)
         func_run = (d.functional_test_runner.run(output_dir)
                     if d.functional_test_runner else None)
