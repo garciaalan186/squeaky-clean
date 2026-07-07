@@ -114,7 +114,7 @@ class RunEvalPipeline:
             deps.fix_failing_classes, deps.file_system,
         )
         self._compile_gate: CompileGate = CompileGate(
-            deps.project_compiler, self._fixer,
+            deps.project_compiler, self._fixer, deps.test_repairer,
         )
         self._merger: ArchitectureMerger = ArchitectureMerger()
         self._orchestrator: OrchestrateArchitecture = OrchestrateArchitecture(
@@ -263,6 +263,7 @@ class RunEvalPipeline:
         return self._compile_gate.run(CompileGateRequest(
             implementation=impl, output_dir=output_dir,
             max_passes=self._max_fixer_passes(), architecture=self._arch,
+            toolkit=self._deps.toolkit,
         ))
 
     def _run_fixer_loop(

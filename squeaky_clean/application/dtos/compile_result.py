@@ -18,3 +18,8 @@ class CompileResult:
     error_count: int
     offending_stems: tuple[str, ...]
     raw_output: str
+    # Project-relative paths of TEST files with compile errors. These are
+    # regenerated against the real source (source-authoritative) rather than
+    # fixed like production classes, since the drift is in the test's
+    # assumptions about signatures, not the implementation.
+    test_files: tuple[str, ...] = ()

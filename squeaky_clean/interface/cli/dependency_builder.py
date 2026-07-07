@@ -29,6 +29,7 @@ from squeaky_clean.application.use_cases.mcda_registry import MCDARegistry
 from squeaky_clean.application.use_cases.mcda_scorer import MCDAScorer
 from squeaky_clean.application.use_cases.orchestrate_module import OrchestrateModule
 from squeaky_clean.application.use_cases.parse_implemented_class import ParseImplementedClass
+from squeaky_clean.application.use_cases.repair_test_file import RepairTestFile
 from squeaky_clean.application.use_cases.review_security import ReviewSecurity
 from squeaky_clean.application.use_cases.rule_runner import RuleRunner
 from squeaky_clean.application.use_cases.run_config import RunConfig
@@ -145,6 +146,8 @@ class DependencyBuilder:
             project_compiler=LanguageCompilerFactory().for_language(
                 problem.target_language
             ),
+            test_repairer=RepairTestFile(gateway, router, rc),
+            toolkit=toolkit,
         )
 
     @staticmethod

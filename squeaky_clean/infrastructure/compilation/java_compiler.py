@@ -48,7 +48,21 @@ class JavaCompiler(ProjectCompiler):
         return CompileResult(
             ok=len(paths) == 0, error_count=len(paths),
             offending_stems=stems, raw_output=output[:8000],
+            test_files=self._test_files(paths),
         )
+
+    @staticmethod
+    def _test_files(paths: list[str]) -> tuple[str, ...]:
+        """Project-relative paths of failing test sources (mvn is absolute)."""
+        out: list[str] = []
+        for raw in paths:
+            idx = raw.find("src/test/")
+            if idx < 0:
+                continue
+            rel = raw[idx:]
+            if rel not in out:
+                out.append(rel)
+        return tuple(out)
 
     @staticmethod
     def _src_stems(paths: list[str]) -> tuple[str, ...]:

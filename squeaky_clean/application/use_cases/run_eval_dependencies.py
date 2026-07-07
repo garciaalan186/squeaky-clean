@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 
+from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
 from squeaky_clean.application.use_cases.cost_gate import CostGate
 from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
 from squeaky_clean.application.use_cases.fix_failing_classes import FixFailingClasses
@@ -17,6 +18,7 @@ from squeaky_clean.application.use_cases.infrastructure_choice_architect import 
 from squeaky_clean.application.use_cases.integrate_module import IntegrateModule
 from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.application.use_cases.orchestrate_module import OrchestrateModule
+from squeaky_clean.application.use_cases.repair_test_file import RepairTestFile
 from squeaky_clean.application.use_cases.review_security import ReviewSecurity
 from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathScanner
@@ -63,3 +65,5 @@ class RunEvalDependencies:
     infrastructure_choice_architect: InfrastructureChoiceArchitect | None = None
     dependency_installer: DependencyInstaller | None = None
     project_compiler: ProjectCompiler | None = None
+    test_repairer: RepairTestFile | None = None
+    toolkit: LanguageToolkit | None = None

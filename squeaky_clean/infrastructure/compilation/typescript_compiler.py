@@ -38,7 +38,19 @@ class TypeScriptCompiler(ProjectCompiler):
         return CompileResult(
             ok=len(paths) == 0, error_count=len(paths),
             offending_stems=stems, raw_output=output,
+            test_files=self._test_files(paths),
         )
+
+    @staticmethod
+    def _test_files(paths: list[str]) -> tuple[str, ...]:
+        """Project-relative paths of test files with errors (tsc is relative)."""
+        out: list[str] = []
+        for raw in paths:
+            p = Path(raw)
+            if ("tests" in p.parts or p.name.endswith(".test.ts")) \
+                    and raw not in out:
+                out.append(raw)
+        return tuple(out)
 
     @staticmethod
     def _src_stems(paths: list[str]) -> tuple[str, ...]:
