@@ -60,12 +60,13 @@ class RepairTestFile:
         try:
             current = path.read_text()
         except OSError:
-            return None
+            current = ""  # new file: the obligation has no test yet — create it
         response = self._deps.gateway.complete(self._request(request, current))
         match = _FENCE.search(response.content)
         if match is not None:
             fixed = match.group(1)
             if fixed.strip() and fixed != current:
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(fixed)
         return response
 
@@ -80,13 +81,41 @@ class RepairTestFile:
         )
 
     def _prompt(self, req: TestRepairRequest, current: str) -> str:
-        return "\n".join([
+        parts = [
             "SOURCE (authoritative — match these signatures):",
             self._sources(req.project_dir, req.toolkit),
-            "", "COMPILE ERRORS:", f"```\n{req.error_excerpt[:3000]}\n```",
-            "", f"TEST FILE ({req.rel_path}) — emit a corrected version:",
+        ]
+        exemplar = self._exemplar(req.project_dir, req.rel_path)
+        if exemplar:
+            parts += ["", "TEST STYLE (match this test framework + import "
+                      "style EXACTLY — same runner, same assertion library):",
+                      f"```\n{exemplar}\n```"]
+        parts += [
+            "", "COMPILE ERRORS / OBLIGATIONS:",
+            f"```\n{req.error_excerpt[:3000]}\n```",
+            "", f"TEST FILE ({req.rel_path}) — emit a corrected version "
+            "(if empty, create it):",
             f"```\n{current}\n```",
-        ])
+        ]
+        return "\n".join(parts)
+
+    @staticmethod
+    def _exemplar(project_dir: Path, exclude_rel: str) -> str:
+        """An existing test file to copy the framework/import style from."""
+        for p in sorted(project_dir.rglob("*")):
+            name = p.name
+            is_test = (name.startswith("test_") and name.endswith(".py")) \
+                or name.endswith((".test.ts", ".test.js")) \
+                or name.endswith("Test.java")
+            if not is_test or "node_modules" in p.parts or "target" in p.parts:
+                continue
+            if str(p.relative_to(project_dir)) == exclude_rel:
+                continue
+            try:
+                return p.read_text()[:2000]
+            except OSError:
+                continue
+        return ""
 
     @staticmethod
     def _sources(project_dir: Path, toolkit: LanguageToolkit) -> str:

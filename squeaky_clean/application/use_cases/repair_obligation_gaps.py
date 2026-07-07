@@ -77,7 +77,7 @@ class RepairObligationGaps:
         n = 0
         cost = 0.0
         toks_in = toks_out = dur = 0
-        for rel, obs in self._group(gaps, request.output_dir).items():
+        for rel, obs in self._group(gaps, request).items():
             resp = repairer.repair(TestRepairRequest(
                 request.output_dir, rel, self._instruction(obs), toolkit))
             if resp is None:
@@ -90,29 +90,96 @@ class RepairObligationGaps:
         return FixerStageResult(n, toks_in, toks_out, cost, dur, 1 if n else 0)
 
     def _group(
-        self, gaps: tuple[TestObligation, ...], output_dir: Path,
+        self, gaps: tuple[TestObligation, ...],
+        request: "ObligationRepairRequest",
     ) -> dict[str, list[TestObligation]]:
         by_file: dict[str, list[TestObligation]] = {}
         for gap in gaps:
-            rel = self._test_file_for(gap.target_class, output_dir)
+            # Constructor-invariant duties go to a fresh dedicated file: the
+            # repairer reliably CREATES a clean invariants test, whereas
+            # asking it to graft an assertion into an existing storage-test
+            # file is unreliable.
+            rel = (self._invariants_path(gap.target_class, request.toolkit)
+                   if gap.method == "<init>"
+                   else self._test_file_for(gap.target_class, request))
             if rel is not None:
                 by_file.setdefault(rel, []).append(gap)
         return by_file
 
-    @staticmethod
-    def _test_file_for(class_name: str, output_dir: Path) -> str | None:
-        needle = re.compile(rf"\b{re.escape(class_name)}\b")
-        for p in sorted(output_dir.rglob("*")):
-            if not p.is_file() or not _TEST_FILE.search(p.name):
-                continue
-            if "node_modules" in p.parts or "target" in p.parts:
-                continue
-            try:
-                if needle.search(p.read_text()):
-                    return str(p.relative_to(output_dir))
-            except OSError:
-                continue
+    def _invariants_path(
+        self, class_name: str, toolkit: LanguageToolkit | None,
+    ) -> str | None:
+        """Dedicated new test-file path for a class's invariant duties."""
+        if toolkit is None:
+            return None
+        lang = toolkit.language.value
+        if lang == "python":
+            return f"tests/test_{self._snake(class_name)}_invariants.py"
+        if lang in ("typescript", "javascript"):
+            ext = "ts" if lang == "typescript" else "js"
+            return f"tests/{self._camel(class_name)}Invariants.test.{ext}"
+        if lang == "java":
+            return f"src/test/java/com/example/{class_name}InvariantsTest.java"
         return None
+
+    def _test_file_for(
+        self, class_name: str, request: "ObligationRepairRequest",
+    ) -> str | None:
+        """The class's own test file — an existing one, else a new path.
+
+        Prefers a test file whose stem is the class name; falls back to any
+        test that references it; when none exists, returns a canonical new
+        path so the repairer CREATES the missing test.
+        """
+        forms = self._forms(class_name)
+        named: str | None = None
+        mentions: str | None = None
+        for p in sorted(request.output_dir.rglob("*")):
+            if (not p.is_file() or not _TEST_FILE.search(p.name)
+                    or "node_modules" in p.parts or "target" in p.parts):
+                continue
+            stem = p.name.split(".")[0].replace("Test", "")
+            rel = str(p.relative_to(request.output_dir))
+            if stem in forms and named is None:
+                named = rel
+            elif mentions is None and re.search(
+                    rf"\b{re.escape(class_name)}\b", self._read(p)):
+                mentions = rel
+        return named or mentions or self._canonical(class_name, request.toolkit)
+
+    @staticmethod
+    def _read(path: Path) -> str:
+        try:
+            return path.read_text()
+        except OSError:
+            return ""
+
+    def _canonical(
+        self, class_name: str, toolkit: LanguageToolkit | None,
+    ) -> str | None:
+        """Canonical new test path for a class with no test file yet."""
+        if toolkit is None:
+            return None
+        lang = toolkit.language.value
+        if lang == "python":
+            return f"tests/test_{self._snake(class_name)}.py"
+        if lang in ("typescript", "javascript"):
+            ext = "ts" if lang == "typescript" else "js"
+            return f"tests/{self._camel(class_name)}.test.{ext}"
+        if lang == "java":
+            return f"src/test/java/com/example/{class_name}Test.java"
+        return None
+
+    def _forms(self, name: str) -> set[str]:
+        return {name, self._snake(name), self._camel(name)}
+
+    @staticmethod
+    def _snake(name: str) -> str:
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
+
+    def _camel(self, name: str) -> str:
+        parts = [p for p in self._snake(name).split("_") if p]
+        return parts[0] + "".join(p.title() for p in parts[1:]) if parts else name
 
     @staticmethod
     def _instruction(obs: list[TestObligation]) -> str:
@@ -122,10 +189,16 @@ class RepairObligationGaps:
             "the behaviour and keeps a real assertion (never a trivial one):",
         ]
         for o in obs:
-            detail = o.detail or "the declared outcome"
-            lines.append(
-                f"- from `{o.source}`: call {o.method} on {o.target_class} "
-                f"and assert it {o.kind.value} ({detail})")
+            if o.method == "<init>":
+                lines.append(
+                    f"- from `{o.source}`: construct {o.target_class} with "
+                    f"input that VIOLATES \"{o.detail}\" and assert the "
+                    f"constructor raises")
+            else:
+                detail = o.detail or "the declared outcome"
+                lines.append(
+                    f"- from `{o.source}`: call {o.method} on {o.target_class} "
+                    f"and assert it {o.kind.value} ({detail})")
         return "\n".join(lines)
 
     @staticmethod
