@@ -106,13 +106,18 @@ class TestArchitectureContextFormatter:
         if not mine:
             return []
         out = ["TestObligations (emit EXACTLY one test per line and ONLY "
-               "these; comment each test with its `from:` source):"]
+               "these — do NOT add field-storage or happy-path tests; comment "
+               "each test with its `from:` source):"]
         for o in mine:
-            subject = (f"construct {o.target_class}" if o.method == "<init>"
-                       else f"{o.target_class}.{o.method}")
-            out.append(
-                f"  - {subject} must {o.kind.value} "
-                f"({o.detail or 'the declared outcome'}) — from: {o.source}")
+            if o.method == "<init>":
+                out.append(
+                    f"  - construct {o.target_class} with input that VIOLATES "
+                    f"\"{o.detail}\" and assert the constructor raises — "
+                    f"from: {o.source}")
+            else:
+                out.append(
+                    f"  - {o.target_class}.{o.method} must {o.kind.value} "
+                    f"({o.detail or 'the declared outcome'}) — from: {o.source}")
         return out
 
     def _is_layered(self, ctx: TestArchitectureContext) -> bool:

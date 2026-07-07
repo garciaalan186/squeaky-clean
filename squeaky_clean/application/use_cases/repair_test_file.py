@@ -15,11 +15,15 @@ from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _FENCE: re.Pattern[str] = re.compile(r"```[a-zA-Z]*\n(.*?)```", re.DOTALL)
 _SYSTEM: str = (
-    "You repair a failing test so it compiles against the REAL source, "
-    "which is AUTHORITATIVE. Fix the TEST to match the actual constructor "
-    "and method signatures shown in SOURCE — never change the source, never "
-    "weaken an assertion's intent. Preserve the scenarios and the file's "
-    "imports style. To supply a value the code under test needs: for a "
+    "You repair a test file against the REAL source, which is AUTHORITATIVE. "
+    "The instruction describes what is wrong: a COMPILE ERROR (fix the test "
+    "to match the actual signatures) and/or undischarged TestObligations "
+    "(ADD a test for each — e.g. 'construct X with violating input and assert "
+    "it raises' means `with pytest.raises(...): X(bad)` / `assert.throws(() => "
+    "new X(bad))` / `assertThrows(() -> new X(bad))`). KEEP every existing "
+    "passing test, ADD what is missing, and never change the source or weaken "
+    "an assertion's intent. Preserve the file's import style. To supply a "
+    "value the code under test needs: for a "
     "first-party interface/abstract port, use a minimal in-test "
     "implementation; for a CONCRETE third-party/SDK class (e.g. a Spring "
     "KafkaTemplate), construct it with the library's real constructor or "

@@ -30,6 +30,25 @@ _CTOR: str = "<init>"
 # constructor-validation duty, so it is not a test obligation.
 _VALIDATION_PATTERNS: frozenset[str] = frozenset(
     {"ValueObject", "Entity", "Aggregate"})
+# An invariant is a constructor-raises duty only when it constrains a value.
+# Behavioural invariants (structure, logging, wire-format) are not tested by
+# constructing bad input, so they are not obligations.
+_BEHAVIOURAL_INV: tuple[str, ...] = (
+    "match", "publish", "implement", "uses ", "logged", "exposed", "topic",
+    "field names", "verbatim", "must contain exactly",
+)
+_VALIDATION_INV: tuple[str, ...] = (
+    "empty", "blank", "positive", "negative", "non-negative", "valid",
+    "length", ">=", "<=", "> 0", "between", "at least", "at most",
+    "must be", "cannot",
+)
+
+
+def _is_validation_invariant(inv: str) -> bool:
+    low = inv.lower()
+    if any(b in low for b in _BEHAVIOURAL_INV):
+        return False
+    return any(v in low for v in _VALIDATION_INV)
 
 
 def _normalize(token: str) -> str:
@@ -101,6 +120,8 @@ class ProjectTestObligations:
                 if cls.pattern not in _VALIDATION_PATTERNS:
                     continue
                 for inv in cls.invariants:
+                    if not _is_validation_invariant(inv):
+                        continue
                     out.append(TestObligation(
                         cls.name, _CTOR, AssertionKind.RAISES, inv, inv))
         return out
