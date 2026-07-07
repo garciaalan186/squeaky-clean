@@ -58,6 +58,7 @@ class CLIArgsParser:
             ),
             warn_cost_pct=float(ns.warn_cost_pct),
             enable_sast=bool(ns.enable_sast),
+            enable_security_tests=bool(ns.enable_security_tests),
             prompt_cache=bool(ns.prompt_cache),
             prompt_cache_tiers=tuple(
                 t.strip() for t in str(ns.prompt_cache_tiers).split(",") if t.strip()
@@ -145,6 +146,11 @@ class CLIArgsParser:
         parser.add_argument("--enable-sast", dest="enable_sast",
                             action="store_true",
                             help="Run bandit SAST over generated code (opt-in)")
+        parser.add_argument("--security-tests", dest="enable_security_tests",
+                            action="store_true",
+                            help="Generate the (spec-grounded) security test "
+                                 "layer; off by default so the suite is the "
+                                 "acceptance contract")
         cache_group = parser.add_mutually_exclusive_group()
         cache_group.add_argument(
             "--prompt-cache", dest="prompt_cache", action="store_true",

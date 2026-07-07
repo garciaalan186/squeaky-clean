@@ -179,7 +179,10 @@ class RunEvalPipeline:
         arch = self._check_http_conventions(arch, problem, output_dir)
         self._check_contract_fidelity(arch, problem, output_dir)
         test_arch = self._merge_test_architectures(arch, problem)
-        sec_arch = self._merge_security_test_architectures(arch, problem)
+        sec_arch = (
+            self._merge_security_test_architectures(arch, problem)
+            if self._deps.run_config.enable_security_tests
+            else TestArchitecture(gherkin_scenarios=(), test_skeletons=()))
         emitter.test_arch_done(test_arch, sec_arch)
         self._resolve_tech_specs(problem, arch)
         module_impls = self._orchestrator.execute(arch)

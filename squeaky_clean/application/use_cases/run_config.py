@@ -29,6 +29,9 @@ class RunConfig:
     infer_infrastructure: bool = False
     techspec_cache_ttl_days: int = 30
     emit_wiring: bool = True
+    # Auto-generated security tests are unanchored to the spec and flaky;
+    # off by default so the generated suite is the acceptance contract.
+    enable_security_tests: bool = False
 
     def sampling_for(self, tier: ModelTier) -> TierSampling:
         """Return effective TierSampling for ``tier`` using this run's seed."""

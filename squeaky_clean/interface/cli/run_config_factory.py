@@ -39,6 +39,7 @@ class RunConfigFactory:
                 infer_infrastructure=args.infer_infrastructure,
                 techspec_cache_ttl_days=args.techspec_cache_ttl_days,
                 emit_wiring=args.emit_wiring,
+                enable_security_tests=args.enable_security_tests,
             )
         policy = self._policy_with_overrides(args)
         return RunConfig(
@@ -49,6 +50,7 @@ class RunConfigFactory:
             infer_infrastructure=args.infer_infrastructure,
             techspec_cache_ttl_days=args.techspec_cache_ttl_days,
             emit_wiring=args.emit_wiring,
+            enable_security_tests=args.enable_security_tests,
         )
 
     def _policy_with_overrides(self, args: CLIArgs) -> TemperaturePolicy:

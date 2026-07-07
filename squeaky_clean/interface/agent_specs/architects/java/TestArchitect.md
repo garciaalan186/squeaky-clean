@@ -12,6 +12,9 @@ One serialized ModuleSpec (classes + fields + methods with signatures) + the Pro
 ## Output Contract
 Two fenced sections, in order, nothing else:
 
+**Contract-driven generation (HIGHEST PRIORITY).** If the prompt contains a `TestObligations:` block, emit ONE test per obligation line and ONLY those (do not add tests for other classes or extra scenarios). Each test performs the stated action and keeps the stated assertion (`must raises` -> an error-raising assertion; `must equals (V)` -> an equality assertion on V; `must field_holds` -> assert on the named field; `must call_only` -> invoke the method), and STARTS with a one-line comment citing its `from:` source criterion. If the prompt contains an `Integration:` directive, emit ZERO test files — the developer owns integration tests for live-infrastructure adapters. Only when neither block is present, fall back to the per-criterion rules below.
+
+
 ```
 GHERKIN
 ---
