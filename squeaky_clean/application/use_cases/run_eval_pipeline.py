@@ -245,8 +245,14 @@ class RunEvalPipeline:
     def _merge_test_architectures(
         self, arch: ArchitectureSpec, problem: ProblemSpec,
     ) -> TestArchitecture:
+        from squeaky_clean.domain.value_objects.layer_type import LayerType
         per_module: list[TestArchitecture] = []
         for m in arch.modules:
+            # rec 3: Infrastructure adapters need live infra — the developer
+            # owns their integration tests; their behaviour is covered at the
+            # port level. Skip unit-test generation for the whole layer.
+            if m.layer is LayerType.INFRASTRUCTURE:
+                continue
             kept = filter_criteria_for_module(
                 problem.acceptance_criteria, m,
             )
