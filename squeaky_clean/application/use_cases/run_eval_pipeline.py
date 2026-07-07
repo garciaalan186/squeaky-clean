@@ -77,6 +77,11 @@ from squeaky_clean.application.use_cases.project_test_obligations import (
 from squeaky_clean.application.use_cases.python_requirements_generator import (
     generate as generate_python_requirements,
 )
+from squeaky_clean.application.use_cases.repair_obligation_gaps import (
+    ObligationRepairRequest,
+    ObligationRepairResult,
+    RepairObligationGaps,
+)
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_metrics_builder import RunEvalMetricsBuilder
 from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
@@ -193,6 +198,11 @@ class RunEvalPipeline:
         emitter.tested()
         test_run, fix_stats = self._run_fixer_loop(impl, test_run, output_dir)
         fix_stats = fix_stats.merge(compile_result.fixer)
+        oblig = self._run_obligation_repair(problem, output_dir)
+        if oblig.usage.classes_fixed > 0:
+            self._run_compile_gate(impl, output_dir)
+            test_run = d.test_runner.run(output_dir)
+            fix_stats = fix_stats.merge(oblig.usage)
         emitter.fixed(fix_stats.passes)
         func_run = (d.functional_test_runner.run(output_dir)
                     if d.functional_test_runner else None)
@@ -271,6 +281,18 @@ class RunEvalPipeline:
             return 0
         obligations = ProjectTestObligations().project(self._arch, problem)
         return len(CheckTestObligations().check(obligations, output_dir))
+
+    def _run_obligation_repair(
+        self, problem: ProblemSpec, output_dir: Path,
+    ) -> ObligationRepairResult:
+        """Feedback edge: repair tests until they discharge spec obligations."""
+        if self._arch is None:
+            return ObligationRepairResult(0, FixerStageResult(0, 0, 0, 0.0, 0, 0))
+        obligations = ProjectTestObligations().project(self._arch, problem)
+        return RepairObligationGaps(self._deps.test_repairer).run(
+            ObligationRepairRequest(
+                obligations, output_dir, self._deps.toolkit,
+                self._max_fixer_passes()))
 
     def _run_compile_gate(
         self, impl: ModuleImplementation, output_dir: Path,
