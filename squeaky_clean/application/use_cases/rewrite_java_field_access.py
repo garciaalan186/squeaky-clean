@@ -14,19 +14,18 @@ import re
 from pathlib import Path
 
 from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
-from squeaky_clean.application.use_cases.pascal_to_camel_converter import (
-    PascalToCamelConverter,
-)
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+
+
+def _snake_to_camel(name: str) -> str:
+    parts = name.split("_")
+    return parts[0] + "".join(p[:1].upper() + p[1:] for p in parts[1:])
 
 _CONSTRUCTABLE = frozenset({"Entity", "ValueObject", "Aggregate"})
 
 
 class RewriteJavaFieldAccess:
     """Rewrites direct field reads on VO/Entity variables into getter calls."""
-
-    def __init__(self) -> None:
-        self._camel: PascalToCamelConverter = PascalToCamelConverter()
 
     def rewrite(
         self, arch: ArchitectureSpec, output_dir: Path,
@@ -59,7 +58,7 @@ class RewriteJavaFieldAccess:
                     continue
                 field_map: dict[str, str] = {}
                 for entry in cls.fields:
-                    field = self._camel.convert(entry.split(":", 1)[0].strip())
+                    field = _snake_to_camel(entry.split(":", 1)[0].strip())
                     field_map[field] = f"get{field[:1].upper()}{field[1:]}"
                 out[cls.name] = field_map
         return out

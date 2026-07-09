@@ -53,6 +53,9 @@ from squeaky_clean.application.use_cases.derive_required_categories import (
 from squeaky_clean.application.use_cases.emit_invariant_tests import (
     EmitInvariantTests,
 )
+from squeaky_clean.application.use_cases.emit_java_entity_serialization import (
+    EmitJavaEntitySerialization,
+)
 from squeaky_clean.application.use_cases.fixer_stage import FixerStage, FixerStageResult
 from squeaky_clean.application.use_cases.go_mod_generator import generate_go_mod
 from squeaky_clean.application.use_cases.http_conventions_error import (
@@ -211,6 +214,7 @@ class RunEvalPipeline:
         if d.toolkit is not None:
             RewriteEntityConstruction().rewrite(arch, output_dir, d.toolkit)
             RewriteJavaFieldAccess().rewrite(arch, output_dir, d.toolkit)
+            EmitJavaEntitySerialization().emit(arch, output_dir, d.toolkit)
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
         compile_result = self._run_compile_gate(impl, output_dir)
