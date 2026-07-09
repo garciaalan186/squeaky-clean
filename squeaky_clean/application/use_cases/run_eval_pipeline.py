@@ -89,6 +89,9 @@ from squeaky_clean.application.use_cases.repair_obligation_gaps import (
     ObligationRepairResult,
     RepairObligationGaps,
 )
+from squeaky_clean.application.use_cases.rewrite_entity_construction import (
+    RewriteEntityConstruction,
+)
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_metrics_builder import RunEvalMetricsBuilder
 from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
@@ -202,6 +205,8 @@ class RunEvalPipeline:
         self._maybe_emit_wiring(arch, output_dir)
         self._maybe_emit_build_manifest(arch, problem, output_dir)
         self._emit_invariant_tests(arch, problem, output_dir)
+        if d.toolkit is not None:
+            RewriteEntityConstruction().rewrite(arch, output_dir, d.toolkit)
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
         compile_result = self._run_compile_gate(impl, output_dir)
