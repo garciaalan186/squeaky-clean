@@ -92,6 +92,9 @@ from squeaky_clean.application.use_cases.repair_obligation_gaps import (
 from squeaky_clean.application.use_cases.rewrite_entity_construction import (
     RewriteEntityConstruction,
 )
+from squeaky_clean.application.use_cases.rewrite_java_field_access import (
+    RewriteJavaFieldAccess,
+)
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_metrics_builder import RunEvalMetricsBuilder
 from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
@@ -207,6 +210,7 @@ class RunEvalPipeline:
         self._emit_invariant_tests(arch, problem, output_dir)
         if d.toolkit is not None:
             RewriteEntityConstruction().rewrite(arch, output_dir, d.toolkit)
+            RewriteJavaFieldAccess().rewrite(arch, output_dir, d.toolkit)
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
         compile_result = self._run_compile_gate(impl, output_dir)
