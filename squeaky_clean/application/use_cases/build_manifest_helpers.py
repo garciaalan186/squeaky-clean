@@ -41,6 +41,16 @@ def render_dependency(group_id: str, artifact_id: str, version: str) -> str:
     )
 
 
+def render_managed_dependency(group_id: str, artifact_id: str) -> str:
+    """Render a ``<dependency>`` whose version is managed by the parent BOM."""
+    return (
+        "        <dependency>\n"
+        f"            <groupId>{group_id}</groupId>\n"
+        f"            <artifactId>{artifact_id}</artifactId>\n"
+        "        </dependency>"
+    )
+
+
 def render_test_dependency() -> str:
     """Render the JUnit 5 test dependency stanza (always present)."""
     return (

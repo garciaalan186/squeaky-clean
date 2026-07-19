@@ -1,6 +1,9 @@
 """DottedPathResolver: convert (layer, module, class) into a Python dotted path."""
 
 from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
+from squeaky_clean.application.use_cases.pascal_to_camel_converter import (
+    PascalToCamelConverter,
+)
 from squeaky_clean.application.use_cases.snake_case_converter import SnakeCaseConverter
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
@@ -17,6 +20,7 @@ class DottedPathResolver:
     def __init__(self, toolkit: LanguageToolkit) -> None:
         self._toolkit: LanguageToolkit = toolkit
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
+        self._camel: PascalToCamelConverter = PascalToCamelConverter()
 
     def resolve(
         self,
@@ -31,6 +35,11 @@ class DottedPathResolver:
         if not found anywhere.
         """
         owner = self._find_owner(class_name, module, architecture)
+        # camelCase languages (TS/JS/Go) name files camelCase in
+        # AssignPatternsPaths._stem; the import stem handed to ICPs must
+        # match, or generated `import ... from './<stem>.js'` won't resolve.
+        if self._toolkit.identifier_case == "camel":
+            return self._camel.convert(class_name)
         stem = self._snake.convert(class_name)
         if self._toolkit.identifier_case != "snake":
             return stem

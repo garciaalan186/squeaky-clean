@@ -120,3 +120,16 @@ def test_repository_in_domain_layer_never_routes_tier_c() -> None:
         infrastructure_mode="auto",
     )
     assert icp == "python/ddd_clean/SimpleClassICP"
+
+
+def test_application_gateway_maps_to_gateway_icp() -> None:
+    _TS = LanguageToolkitFactory().for_language(TargetLanguage.TYPESCRIPT)
+    _JAVA = LanguageToolkitFactory().for_language(TargetLanguage.JAVA)
+    assert MapPatternToICP().map("Gateway", _PY) == "python/ddd_clean/GatewayICP"
+    assert MapPatternToICP().map("Gateway", _TS) == "typescript/ddd_clean/GatewayICP"
+    assert MapPatternToICP().map("Gateway", _JAVA) == "java/ddd_clean/GatewayICP"
+
+
+def test_gateway_falls_back_to_simpleclass_without_a_spec() -> None:
+    # Go has no GatewayICP yet, so it keeps the SimpleClass fallback.
+    assert MapPatternToICP().map("Gateway", _GO) == "go/ddd_clean/SimpleClassICP"

@@ -36,6 +36,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. The `@KafkaListener` annotation MUST be present on the `consume` method, with `topics` and `groupId` set as string literals.
 7. Do NOT swallow exceptions — every catch re-raises as `RuntimeException`.
 8. Use camelCase for method names, PascalCase for class names.
+9. **Construct the domain entity via its ALL-ARGS CONSTRUCTOR** — `new <Entity>(f1, f2, ...)` passing the parsed values positionally in the entity's declared field order (from the SIBLING_INTERFACES `fields:`). NEVER call a no-arg `new <Entity>()` then assign fields (the entity has no no-arg constructor and its fields are `private`), and NEVER read/write an entity or value-object field directly — use the constructor to build and the `get<Field>()` getters to read.
 
 ## Pattern Knowledge
 **Gateway (DDD) over a Spring Kafka consumer**: the consumer adapter is wired by Spring's `KafkaListenerContainerFactory`. The `@KafkaListener` annotation registers the method as a message handler; Spring deserializes the `String` payload (per `spring.kafka.consumer.value-deserializer`), and the adapter parses it into a domain shape via Jackson before delegating to the use case.

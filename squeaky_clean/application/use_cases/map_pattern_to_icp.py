@@ -9,6 +9,9 @@ from squeaky_clean.domain.value_objects.layer_type import LayerType
 _DDD_CLEAN: frozenset[str] = frozenset({"Entity", "ValueObject", "SimpleClass"})
 _BEHAVIORAL: frozenset[str] = frozenset({"Strategy"})
 _INFRA_PATTERNS: frozenset[str] = frozenset({"Repository", "Gateway", "Adapter"})
+# Languages with a dedicated GatewayICP (abstract port: TS/Java interface,
+# Python ABC). Others keep the SimpleClass fallback until a spec exists.
+_GATEWAY_LANGS: frozenset[str] = frozenset({"python", "typescript", "java"})
 _FALLBACK_NAME: str = "SimpleClassICP"
 _FALLBACK_CATEGORY: str = "ddd_clean"
 
@@ -55,6 +58,8 @@ class MapPatternToICP:
             return f"{library}/ddd_clean/{pattern}ICP"
         if pattern in _BEHAVIORAL:
             return f"{library}/behavioral/{pattern}ICP"
+        if pattern == "Gateway" and library in _GATEWAY_LANGS:
+            return f"{library}/ddd_clean/GatewayICP"
         return f"{library}/{_FALLBACK_CATEGORY}/{_FALLBACK_NAME}"
 
     def map_with_layer(

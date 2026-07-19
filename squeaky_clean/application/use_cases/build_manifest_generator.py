@@ -10,6 +10,7 @@ from squeaky_clean.application.use_cases.build_manifest_helpers import (
     is_spring_technology,
     parse_install_package,
     render_dependency,
+    render_managed_dependency,
     render_test_dependency,
 )
 from squeaky_clean.application.use_cases.build_manifest_templates import (
@@ -48,6 +49,16 @@ class BuildManifestGenerator:
             ))
             for s in external
         ]
+        # A Spring app's wiring bootstraps via @SpringBootApplication and its
+        # adapters parse JSON with Jackson. A web app gets both transitively
+        # from spring-boot-starter-web, but a pure consumer/worker has no web
+        # starter — add the base starter + Jackson explicitly (parent-managed
+        # versions; a no-op when web already pulls them in).
+        if spring:
+            deps.append(render_managed_dependency(
+                "org.springframework.boot", "spring-boot-starter"))
+            deps.append(render_managed_dependency(
+                "com.fasterxml.jackson.core", "jackson-databind"))
         deps.append(render_test_dependency())
         body = self._render(problem.slug, spring, deps)
         path = output_dir / "pom.xml"

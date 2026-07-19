@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  An opinionated, semi-deterministic agentic framework. One declarative
+  An opinionated, semi-deterministic agentic tool. One declarative
   <code>ProblemSpec</code> in, a buildable, testable application out. By
   capitalizing on the modularity of Clean Architecture, Squeaky orchestrates
   atomic agents in parallel across compact, low-parameter models.
@@ -24,11 +24,15 @@
 
 ## Why Squeaky Clean?
 
-Small-parameter models frequently hallucinate, forcing engineers toward high-parameter alternatives where computational costs scale quadratically with context. Squeaky Clean is an opinionated, semi-deterministic agentic software development framework designed to break this cycle.
+Small-parameter models frequently hallucinate, forcing engineers toward high-parameter alternatives where computational costs scale quadratically with context. Squeaky Clean is an opinionated, semi-deterministic agentic software development tool designed to break this cycle.
 
 Squeaky Clean (or Squeaky) capitalizes on the modularity and granularity of Clean Architecture, SOLID principles, and GoF + DDD patterns. By doing so, it maximizes parallelization and wall-clock velocity while minimizing both the "hallucination blast radius" and operational costs.
 
 The framework defines an Architectural DSL called **Squib** to orchestrate atomic, pattern-specialized agents that run efficiently on compact, low-parameter models. The Squib between tiers is a frozen, validated grammar (~200 chars per class, machine-checkable), ensuring the cheaper tier never has to guess what the more capable tier meant.
+
+**Why "Clean."** Clean Architecture keeps software maintainable by holding details — the database, the web, the framework — at the edges. That same discipline has a second payoff as AI enters the loop: leaner compute. LLM inference cost grows super-linearly with context length (attention is O(n²)), and reaching for a higher-parameter model multiplies the curve. Because Clean Architecture decomposes a system into small, bounded contexts, each atomic agent sees one class and one pattern — a ~200-character Squib — so the overwhelming majority of token volume runs on compact models. Fewer tokens on smaller models means measurably lower cost per run today, and — proportionally — lower energy.
+
+Reducing the ecological footprint of AI-assisted development is a goal this open-source project is building toward, not a figure it claims. We measure tokens and cost; energy is proportional to compute, so we speak of it proportionally — and we'll publish a monolithic-vs-Squeaky token ablation before quantifying further.
 
 ## Quick Start
 

@@ -73,9 +73,10 @@ See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md) for the Architectu
 ## Differentiators
 
 - **Deterministic runs.** Same `ProblemSpec` + `--deterministic` produces byte-identical architecture.squib across two runs. Proven; reproduced in CI.
-- **Cross-language parity.** The same `ProblemSpec` switching `target_language` to `java` produces the equivalent Spring Boot project. Same architectural shape; idiomatic SDK calls.
+- **Cross-language architecture.** The same `ProblemSpec` switching `target_language` to `java` produces the same architectural shape as a Spring Boot project — same layering and port/adapter split, idiomatic SDK calls. Execution parity (a green test suite) is verified today for Python; other languages are in progress (see the roadmap).
 - **Cross-service contract fidelity.** When two services produce/consume the same Kafka topic, Squeaky Clean's Contract Registry enforces field-shape agreement across language boundaries — the consumer's `ConsumedEvent` carries the producer's contract field names verbatim, with case-tolerance for languages whose conventions would otherwise rename `received_at` → `receivedAt`.
 - **Architectural discipline preserved.** Domain layer never imports infrastructure. Concrete adapters never live in the application layer. Generated code passes the framework's own dependency rule.
+- **Clean, twice over.** The same discipline that holds frameworks and databases at the edges also holds compute down: because each atomic agent sees only one class — a ~200-character Squib — the token volume runs on compact models, not one long context on a big one. LLM cost grows super-linearly with context (attention is O(n²)), so smaller contexts on smaller models mean measurably lower cost per run, and proportionally lower energy. Cutting the ecological footprint of AI-assisted development is a goal this open-source project is building toward — measured in tokens and cost today, not a carbon figure it claims.
 
 ## What it's not
 

@@ -18,7 +18,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 5. Declare a public constructor that takes each field as a parameter and assigns via `this.field = param`.
 6. Provide a public getter for each field (e.g. `public int getValue()`).
 7. Override `equals(Object)` and `hashCode()` comparing ALL fields with `@Override`.
-8. Implement every method in the ClassSpec as a public method with explicit return type.
+8. Implement every method in the ClassSpec as a public method with explicit return type. **A method whose return type is THIS value object itself (a factory such as `fromEvent`, `of`, `create`, `parse`) MUST be declared `public static`** — it builds a new instance from its arguments and callers invoke it as `<Class>.<method>(...)`, so it cannot be an instance method.
 9. Respect hard rules: file <=80 lines, 1 class, <=5 public methods, <=2 args per method. Getters, constructors, `equals`, and `hashCode` do NOT count toward the method limit.
 10. **Standard library imports.** If any field, parameter, or return type uses `java.util` classes (List, ArrayList, Map, HashMap, Set, HashSet, Collections), generate the necessary import statements (e.g. `import java.util.List;`, `import java.util.ArrayList;`). Also import `java.util.Objects` if using `Objects.hash()` or `Objects.equals()`. **Sibling classes ARE in `com.example` so they need NO explicit import.**
 

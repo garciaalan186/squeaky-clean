@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
 from squeaky_clean.application.dtos.test_run_result import TestRunResult
+from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 
 
 @dataclass(frozen=True)
@@ -12,3 +13,10 @@ class FixRequest:
 
     implementation: ModuleImplementation
     test_run_result: TestRunResult
+    # When non-empty, these source-file stems drive the fix directly instead
+    # of parsing them from test output — used by the compile gate, whose
+    # compiler output is not in test-runner format.
+    override_stems: tuple[str, ...] = ()
+    # Full architecture, so the fixer can be handed sibling interfaces +
+    # import paths (needed to resolve cross-file references).
+    architecture: ArchitectureSpec | None = None

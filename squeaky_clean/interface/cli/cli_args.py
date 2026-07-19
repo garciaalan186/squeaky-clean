@@ -30,6 +30,7 @@ class CLIArgs:
     max_cost_usd: float | None = None
     warn_cost_pct: float = 0.8
     enable_sast: bool = False
+    enable_security_tests: bool = False
     prompt_cache: bool = True
     prompt_cache_tiers: tuple[str, ...] = (
         "architect", "manager", "icp", "fixer",

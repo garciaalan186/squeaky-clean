@@ -6,7 +6,8 @@
   "language": "typescript",
   "install": {
     "manager": "npm",
-    "package": "express@^4.19.0"
+    "package": "express@^4.19.0",
+    "types_package": "@types/express@^4.17.21"
   },
   "imports": {
     "primary": "import type { Request, Response } from 'express';",

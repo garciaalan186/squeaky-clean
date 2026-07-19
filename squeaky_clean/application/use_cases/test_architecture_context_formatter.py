@@ -10,10 +10,14 @@ from squeaky_clean.application.use_cases.dotted_class_path_resolver import (
 from squeaky_clean.application.use_cases.per_module_criterion_filter import (
     filter_criteria_for_module,
 )
+from squeaky_clean.application.use_cases.project_test_obligations import (
+    ProjectTestObligations,
+)
 from squeaky_clean.application.use_cases.snake_case_converter import SnakeCaseConverter
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.value_objects.layer_type import LayerType
 
 
 class TestArchitectureContextFormatter:
@@ -54,6 +58,7 @@ class TestArchitectureContextFormatter:
             lines.append("AcceptanceCriteria:")
             for crit in filtered:
                 lines.append(f"  - {crit}")
+        lines.extend(self._obligations_block(ctx))
         lines.append("Classes:")
         for cls in module.classes:
             lines.append(self._format_class(cls, module, layered, ctx))
@@ -77,6 +82,40 @@ class TestArchitectureContextFormatter:
             "No extra prose, no extra markdown."
         )
         return "\n".join(lines)
+
+    def _obligations_block(
+        self, ctx: TestArchitectureContext,
+    ) -> list[str]:
+        """The contract this module must discharge (rec 2/3/4/5).
+
+        Infrastructure modules are integration-only (no unit tests). Other
+        modules emit ONE test per projected obligation targeting one of their
+        classes — narrowing generation to contract-bearing subjects and
+        carrying the source criterion for traceability.
+        """
+        module = ctx.module
+        if module.layer is LayerType.INFRASTRUCTURE:
+            return ["Integration: this module's adapters require live "
+                    "infrastructure. Emit ZERO tests here — the developer "
+                    "owns integration tests for these classes."]
+        if ctx.architecture is None:
+            return []
+        names = {c.name for c in module.classes}
+        # Constructor-invariant duties are emitted deterministically elsewhere
+        # (EmitInvariantTests); the LLM only writes behavioural criterion tests.
+        mine = [o for o in ProjectTestObligations().project(
+            ctx.architecture, ctx.problem)
+            if o.target_class in names and o.method != "<init>"]
+        if not mine:
+            return []
+        out = ["TestObligations (emit EXACTLY one test per line and ONLY "
+               "these — do NOT add field-storage or happy-path tests; comment "
+               "each test with its `from:` source):"]
+        for o in mine:
+            out.append(
+                f"  - {o.target_class}.{o.method} must {o.kind.value} "
+                f"({o.detail or 'the declared outcome'}) — from: {o.source}")
+        return out
 
     def _is_layered(self, ctx: TestArchitectureContext) -> bool:
         return (

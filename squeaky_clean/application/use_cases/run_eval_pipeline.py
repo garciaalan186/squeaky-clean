@@ -11,6 +11,7 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.dtos.fix_request import FixRequest
 from squeaky_clean.application.dtos.integration_request import IntegrationRequest
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
@@ -29,7 +30,15 @@ from squeaky_clean.application.use_cases.build_manifest_generator import (
     BuildManifestGenerator,
 )
 from squeaky_clean.application.use_cases.cargo_toml_generator import generate_cargo_toml
+from squeaky_clean.application.use_cases.check_test_obligations import (
+    CheckTestObligations,
+)
 from squeaky_clean.application.use_cases.checkpoint_emitter import CheckpointEmitter
+from squeaky_clean.application.use_cases.compile_gate import (
+    CompileGate,
+    CompileGateRequest,
+    CompileGateResult,
+)
 from squeaky_clean.application.use_cases.contract_fidelity_error import (
     ContractFidelityError,
 )
@@ -40,6 +49,12 @@ from squeaky_clean.application.use_cases.cross_module_dependency_error import (
 )
 from squeaky_clean.application.use_cases.derive_required_categories import (
     derive_required_categories,
+)
+from squeaky_clean.application.use_cases.emit_invariant_tests import (
+    EmitInvariantTests,
+)
+from squeaky_clean.application.use_cases.emit_java_entity_serialization import (
+    EmitJavaEntitySerialization,
 )
 from squeaky_clean.application.use_cases.fixer_stage import FixerStage, FixerStageResult
 from squeaky_clean.application.use_cases.go_mod_generator import generate_go_mod
@@ -62,14 +77,35 @@ from squeaky_clean.application.use_cases.percentile_summary_renderer import (
     PercentileSummaryRenderer,
 )
 from squeaky_clean.application.use_cases.pipeline_outputs import PipelineOutputs
+from squeaky_clean.application.use_cases.project_test_obligations import (
+    ProjectTestObligations,
+)
 from squeaky_clean.application.use_cases.python_requirements_generator import (
     generate as generate_python_requirements,
+)
+from squeaky_clean.application.use_cases.repair_failing_tests import (
+    FailingTestsRequest,
+    RepairFailingTests,
+)
+from squeaky_clean.application.use_cases.repair_obligation_gaps import (
+    ObligationRepairRequest,
+    ObligationRepairResult,
+    RepairObligationGaps,
+)
+from squeaky_clean.application.use_cases.rewrite_entity_construction import (
+    RewriteEntityConstruction,
+)
+from squeaky_clean.application.use_cases.rewrite_java_field_access import (
+    RewriteJavaFieldAccess,
 )
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_metrics_builder import RunEvalMetricsBuilder
 from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
 from squeaky_clean.application.use_cases.select_infrastructure_choices import (
     select_infrastructure_choices,
+)
+from squeaky_clean.application.use_cases.spec_conformance_checker import (
+    SpecConformanceChecker,
 )
 from squeaky_clean.application.use_cases.validate_architecture_against_spec import (
     SpecConformanceError,
@@ -80,6 +116,9 @@ from squeaky_clean.application.use_cases.validate_contract_fidelity import (
 )
 from squeaky_clean.application.use_cases.validate_cross_module_dependencies import (
     validate_cross_module_dependencies,
+)
+from squeaky_clean.application.use_cases.validate_dependency_injection import (
+    validate_dependency_injection,
 )
 from squeaky_clean.application.use_cases.validate_http_conventions import (
     validate_http_conventions,
@@ -100,6 +139,9 @@ class RunEvalPipeline:
         )
         self._fixer: FixerStage = FixerStage(
             deps.fix_failing_classes, deps.file_system,
+        )
+        self._compile_gate: CompileGate = CompileGate(
+            deps.project_compiler, self._fixer, deps.test_repairer,
         )
         self._merger: ArchitectureMerger = ArchitectureMerger()
         self._orchestrator: OrchestrateArchitecture = OrchestrateArchitecture(
@@ -122,8 +164,10 @@ class RunEvalPipeline:
         self._mcda_runs: int = 0
         self._dep_install_failed: bool = False
         self._http_violations: int = 0
+        self._di_violations: int = 0
         self._architect_retries: int = 0
         self._test_criteria_filtered: int = 0
+        self._arch: ArchitectureSpec | None = None
 
     def run(self, problem: ProblemSpec, output_dir: Path) -> EvalReportBundle:
         """Execute the full pipeline; on budget exit produce a partial report."""
@@ -138,6 +182,8 @@ class RunEvalPipeline:
         d = self._deps
         emitter = CheckpointEmitter(problem.id, output_dir)
         arch = d.design_architecture.execute(problem)
+        arch = self._check_dependency_injection(arch, problem)
+        self._arch = arch
         self._persist_notation(output_dir)
         emitter.architect_done(d.design_architecture.last_raw_notation)
         self._check_cross_module_deps(arch, output_dir)
@@ -149,7 +195,10 @@ class RunEvalPipeline:
         arch = self._check_http_conventions(arch, problem, output_dir)
         self._check_contract_fidelity(arch, problem, output_dir)
         test_arch = self._merge_test_architectures(arch, problem)
-        sec_arch = self._merge_security_test_architectures(arch, problem)
+        sec_arch = (
+            self._merge_security_test_architectures(arch, problem)
+            if self._deps.run_config.enable_security_tests
+            else TestArchitecture(gherkin_scenarios=(), test_skeletons=()))
         emitter.test_arch_done(test_arch, sec_arch)
         self._resolve_tech_specs(problem, arch)
         module_impls = self._orchestrator.execute(arch)
@@ -161,11 +210,30 @@ class RunEvalPipeline:
         emitter.integrated()
         self._maybe_emit_wiring(arch, output_dir)
         self._maybe_emit_build_manifest(arch, problem, output_dir)
+        self._emit_invariant_tests(arch, problem, output_dir)
+        if d.toolkit is not None:
+            RewriteEntityConstruction().rewrite(arch, output_dir, d.toolkit)
+            RewriteJavaFieldAccess().rewrite(arch, output_dir, d.toolkit)
+            EmitJavaEntitySerialization().emit(arch, output_dir, d.toolkit)
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
+        compile_result = self._run_compile_gate(impl, output_dir)
         test_run = d.test_runner.run(output_dir)
         emitter.tested()
         test_run, fix_stats = self._run_fixer_loop(impl, test_run, output_dir)
+        fix_stats = fix_stats.merge(compile_result.fixer)
+        oblig = self._run_obligation_repair(problem, output_dir)
+        if oblig.usage.classes_fixed > 0:
+            self._run_compile_gate(impl, output_dir)
+            test_run = d.test_runner.run(output_dir)
+            fix_stats = fix_stats.merge(oblig.usage)
+        if test_run.failed > 0:
+            crash = RepairFailingTests(d.test_repairer).run(
+                FailingTestsRequest(
+                    test_run.raw_output, output_dir, d.toolkit))
+            if crash.classes_fixed > 0:
+                test_run = d.test_runner.run(output_dir)
+                fix_stats = fix_stats.merge(crash)
         emitter.fixed(fix_stats.passes)
         func_run = (d.functional_test_runner.run(output_dir)
                     if d.functional_test_runner else None)
@@ -184,6 +252,12 @@ class RunEvalPipeline:
         metrics.http_convention_violations = self._http_violations
         metrics.architect_retries = self._architect_retries
         metrics.test_criteria_filtered = self._test_criteria_filtered
+        metrics.compile_errors = compile_result.compile_errors
+        metrics.spec_conformance_violations = len(
+            SpecConformanceChecker().check(impl)
+        )
+        metrics.test_obligation_gaps = self._obligation_gaps(problem, output_dir)
+        metrics.dependency_injection_violations = self._di_violations
         self._security.apply(
             output_dir, metrics, self._deps.run_config.enable_sast,
         )
@@ -199,11 +273,23 @@ class RunEvalPipeline:
     def _merge_test_architectures(
         self, arch: ArchitectureSpec, problem: ProblemSpec,
     ) -> TestArchitecture:
+        from squeaky_clean.domain.value_objects.layer_type import LayerType
         per_module: list[TestArchitecture] = []
         for m in arch.modules:
+            # rec 3: Infrastructure adapters need live infra — the developer
+            # owns their integration tests; their behaviour is covered at the
+            # port level. Skip unit-test generation for the whole layer.
+            if m.layer is LayerType.INFRASTRUCTURE:
+                continue
             kept = filter_criteria_for_module(
                 problem.acceptance_criteria, m,
             )
+            # No criterion targets this module (e.g. a pure VO/Entity domain
+            # module) — its only duties are invariants, emitted deterministically
+            # by EmitInvariantTests. Skip the LLM TestArchitect for it.
+            if not kept:
+                self._test_criteria_filtered += len(problem.acceptance_criteria)
+                continue
             self._test_criteria_filtered += (
                 len(problem.acceptance_criteria) - len(kept)
             )
@@ -230,6 +316,49 @@ class RunEvalPipeline:
             ))
         return self._merger.merge_test_architectures(per_module)
 
+    def _obligation_gaps(
+        self, problem: ProblemSpec, output_dir: Path,
+    ) -> int:
+        """Deterministic count of spec obligations no generated test discharges."""
+        if self._arch is None:
+            return 0
+        obligations = ProjectTestObligations().project(self._arch, problem)
+        return len(CheckTestObligations().check(obligations, output_dir))
+
+    def _emit_invariant_tests(
+        self, arch: ArchitectureSpec, problem: ProblemSpec, output_dir: Path,
+    ) -> None:
+        """Deterministically write construction-raises invariant tests."""
+        toolkit = self._deps.toolkit
+        if toolkit is None:
+            return
+        for rel, body in EmitInvariantTests().emit(arch, problem, toolkit).items():
+            path = output_dir / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(body)
+
+    def _run_obligation_repair(
+        self, problem: ProblemSpec, output_dir: Path,
+    ) -> ObligationRepairResult:
+        """Feedback edge: repair tests until they discharge spec obligations."""
+        if self._arch is None:
+            return ObligationRepairResult(0, FixerStageResult(0, 0, 0, 0.0, 0, 0))
+        obligations = ProjectTestObligations().project(self._arch, problem)
+        return RepairObligationGaps(self._deps.test_repairer).run(
+            ObligationRepairRequest(
+                obligations, output_dir, self._deps.toolkit,
+                self._max_fixer_passes()))
+
+    def _run_compile_gate(
+        self, impl: ModuleImplementation, output_dir: Path,
+    ) -> CompileGateResult:
+        """Compile before tests; fix implicated source classes on failure."""
+        return self._compile_gate.run(CompileGateRequest(
+            implementation=impl, output_dir=output_dir,
+            max_passes=self._max_fixer_passes(), architecture=self._arch,
+            toolkit=self._deps.toolkit,
+        ))
+
     def _run_fixer_loop(
         self, impl: ModuleImplementation, test_run: TestRunResult,
         output_dir: Path,
@@ -243,7 +372,9 @@ class RunEvalPipeline:
             if cur_run.failed == 0 and cur_run.errors == 0:
                 break
             stats = self._fixer.apply(
-                FixerStage.requested(impl, cur_run), output_dir,
+                FixRequest(implementation=impl, test_run_result=cur_run,
+                           architecture=self._arch),
+                output_dir,
             )
             agg = agg.merge(stats)
             if stats.classes_fixed == 0:
@@ -370,6 +501,39 @@ class RunEvalPipeline:
             raise HttpConventionsError(retry_violations)
         self._http_violations = 0
         return retry_arch
+
+    def _check_dependency_injection(
+        self, arch: ArchitectureSpec, problem: ProblemSpec,
+    ) -> ArchitectureSpec:
+        """Deterministic gate: make an orchestrator's injected port explicit.
+
+        Detect a UseCase/Facade that declares no fields yet must inject a
+        same-module port, then re-ask the architect with that specific
+        feedback. Non-fatal: a retry that raises, is structurally invalid,
+        or does not reduce the violations is discarded for the original.
+        """
+        violations = validate_dependency_injection(arch)
+        self._di_violations = len(violations)
+        if not violations:
+            return arch
+        for v in violations:
+            self._logger.event("dependency_injection_violation", message=v)
+        self._architect_retries += 1
+        try:
+            retry = self._deps.design_architecture.execute(
+                problem, prior_violations=violations)
+        except Exception as exc:  # noqa: BLE001
+            self._logger.event("di_retry_error", error=str(exc))
+            return arch
+        if validate_cross_module_dependencies(retry):
+            self._logger.event("di_retry_discarded", reason="cross_module")
+            return arch
+        retry_violations = validate_dependency_injection(retry)
+        if len(retry_violations) < len(violations):
+            self._di_violations = len(retry_violations)
+            return retry
+        self._logger.event("di_retry_discarded", reason="no_improvement")
+        return arch
 
     def _check_contract_fidelity(
         self, arch: ArchitectureSpec, problem: ProblemSpec, output_dir: Path,

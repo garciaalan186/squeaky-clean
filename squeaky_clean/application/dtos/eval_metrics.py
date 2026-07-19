@@ -10,6 +10,12 @@ class EvalMetrics:
     """Aggregated metrics collected during one Squeaky Clean eval run."""
 
     tests_pass: float = 0.0
+    # Distinguishes a measured 0% pass rate from "no tests ran": "ok"
+    # (tests executed), "build_failed" (compile/collection errored before
+    # any test ran), "not_measured" (zero tests collected — toolchain
+    # absent). ``tests_collected`` is the executed test count backing it.
+    test_status: str = "ok"
+    tests_collected: int = 0
     architecture_violations: int = 0
     compile_errors: int = 0
 
@@ -109,8 +115,10 @@ class EvalMetrics:
     runs: int = 1
 
     spec_conformance_violations: int = 0
+    test_obligation_gaps: int = 0
     cross_module_dependency_violations: int = 0
     http_convention_violations: int = 0
+    dependency_injection_violations: int = 0
     architect_retries: int = 0
 
     budget_exceeded: bool = False

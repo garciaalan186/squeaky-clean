@@ -124,7 +124,9 @@ def test_h5b_categories_fall_back_when_manual() -> None:
         ("get_secret",),
         infrastructure_mode="manual",
     )
-    assert icp == "python/ddd_clean/SimpleClassICP"
+    # Manual mode skips Tier C and falls back to the legacy map(), which
+    # routes an abstract Gateway port to the (interface-emitting) GatewayICP.
+    assert icp == "python/ddd_clean/GatewayICP"
 
 
 def test_secrets_beats_search_get_when_get_secret_present() -> None:

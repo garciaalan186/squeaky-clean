@@ -22,3 +22,6 @@ class FixCandidate:
     class_spec: ClassSpec
     failure_excerpt: str
     toolkit: LanguageToolkit
+    # SIBLING_INTERFACES block (names, methods, import paths of collaborators)
+    # so the fixer can resolve cross-file imports and interface conformance.
+    sibling_context: str = ""

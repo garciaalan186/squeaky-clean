@@ -12,7 +12,15 @@ _SYSTEM: str = (
     "If the test output suggests a different signature, the test is "
     "wrong — trust the spec. If the spec declares `Type[]` as a return "
     "type, the source MUST return `Type[]` (Java: array; TS: `Type[]`); "
-    "never substitute `List<Type>`. Never rename methods to match tests."
+    "never substitute `List<Type>`. Never rename methods to match tests. "
+    "Use SIBLING_INTERFACES as the exact shape of collaborator classes and "
+    "fix cross-class mismatches accordingly: (a) if a value where a domain "
+    "class is required is a plain object literal `{...}` (e.g. TS 'Property "
+    "equals is missing in type ...'), replace it with `new <Class>(...)` "
+    "using that class's constructor from SIBLING_INTERFACES; (b) if a field "
+    "'has private access', read it through its `get<Field>()` getter; (c) if "
+    "a factory method 'cannot be referenced from a static context', either "
+    "call it on an instance or construct the target directly with `new`."
 )
 
 _HEADER: str = (
@@ -34,6 +42,9 @@ class FixPromptBuilder:
         spec = candidate.class_spec
         fields = ", ".join(spec.fields) if spec.fields else ""
         methods = ", ".join(spec.methods) if spec.methods else ""
+        siblings = (
+            [candidate.sibling_context, ""] if candidate.sibling_context else []
+        )
         return "\n".join([
             _HEADER, "",
             f"CLASS {spec.name}",
@@ -41,6 +52,9 @@ class FixPromptBuilder:
             f"FIELDS [{fields}]",
             f"METHODS [{methods}]",
             f"FILE_PATH {candidate.original.file_path}",
+            "", *siblings,
+            "Import collaborators from the `file=` paths above; implement "
+            "every method a port you `implements`/`depends` on declares.",
             "", "CURRENT CODE:",
             f"```\n{candidate.original.code}\n```",
             "", "TEST OUTPUT (failure excerpt):",

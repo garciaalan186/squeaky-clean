@@ -13,7 +13,7 @@
     "types": []
   },
   "client_construction": {
-    "code": "this._kafka = new Kafka({ brokers: brokers.split(',') }); this._consumer = this._kafka.consumer({ groupId }); this._topic = topic;",
+    "code": "this._kafka = new Kafka({ brokers }); this._consumer = this._kafka.consumer({ groupId }); this._topic = topic;",
     "is_async": false,
     "thread_safe": true,
     "dependencies": [

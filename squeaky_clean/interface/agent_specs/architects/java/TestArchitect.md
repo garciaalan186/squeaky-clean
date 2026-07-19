@@ -12,6 +12,9 @@ One serialized ModuleSpec (classes + fields + methods with signatures) + the Pro
 ## Output Contract
 Two fenced sections, in order, nothing else:
 
+**Contract-driven generation (HIGHEST PRIORITY).** If the prompt contains a `TestObligations:` block, emit ONE test per obligation line and ONLY those (do not add tests for other classes or extra scenarios). Each test performs the stated action and keeps the stated assertion (`must raises` -> an error-raising assertion; `must equals (V)` -> an equality assertion on V; `must field_holds` -> assert on the named field; `must call_only` -> invoke the method), and STARTS with a one-line comment citing its `from:` source criterion. If the prompt contains an `Integration:` directive, emit ZERO test files — the developer owns integration tests for live-infrastructure adapters. Only when neither block is present, fall back to the per-criterion rules below.
+
+
 ```
 GHERKIN
 ---
@@ -48,12 +51,12 @@ CLASS <ClassName>
    - Body constructs inputs, invokes the real method, and asserts the Then clause.
 5. Criterion -> code mapping rules (apply mechanically):
    - "Given <plural-noun> X and Y" -> variable declarations with literal values.
-   - If the target method signature declares a VO parameter (e.g. `a: Operand`) AND the class exists in the ModuleSpec, construct via instantiation rules in constraint 10.
+   - If a method parameter's declared Type is a class in the ModuleSpec (ValueObject/Entity/etc.), you MUST wrap the value: `new <Type>(<givenValue>)` — NEVER pass the raw primitive. E.g. for `body: RawBody` with Given body `"hello"` → `new RawBody("hello")`, never `"hello"`. Construct via instantiation rules in constraint 10.
    - "When <verb> is called" -> resolve `<verb>` against the ModuleSpec's `methods:`, find owner class, instantiate via constraint 10, call `instance.<verb>(<args>)`.
    - "Then result is <V>" -> `assertEquals(V, result)` for primitives, `assertEquals(V, result.getValue())` for VO returns.
    - **Array return types**: when the method signature declares `Type[]`, the result variable MUST be typed `Type[]` (array), NEVER `List<Type>`. Use `.length` not `.size()` for count assertions. Example — spec says `listPending(): Todo[]`, criterion says "Then the result length is 1": write `Todo[] result = instance.listPending(); assertEquals(1, result.length);`. Wrong: `List<Todo> result = ...; assertEquals(1, result.size());`.
    - "Then an error is raised" -> `assertThrows(IllegalArgumentException.class, () -> { ... });`. **If the VO constructor will throw, put construction inside the lambda.**
-6. Missing-verb honesty: if a criterion's verb is not in any class's `methods:`, emit `fail("verb <verb> not in ModuleSpec");`.
+6. Missing-verb honesty: if a criterion's verb is not in any class's `methods:`, emit `fail("verb <verb> not in ModuleSpec");`. Call ONLY methods listed in the target class's `methods:` — never invent callback (`onX`) or simulation (`simulateX`/`forceX`) helpers, even to trigger a scenario. Access a field by its declared `name` verbatim — never re-case it (a `received_at` field is read via its declared accessor, never a renamed `receivedAt`).
 7. Each test file <=80 lines. PascalCase class names. Paths start with `src/test/java/`.
 8. No mocks, no fixtures. Direct synchronous tests only.
 9. If the return type is not declared, assume a primitive and use `assertEquals`.
@@ -66,6 +69,7 @@ CLASS <ClassName>
         - numeric field with ">= 0" / "non-negative" -> `0`
         - otherwise -> `0` / `""` / `false`
     - Sibling class fields: recursively construct using this rule (look up ITS `fields:` AND ITS `invariants:`, recurse). NEVER pass a raw primitive where the declared type is a sibling class.
+    - **Gateway/port fields (Type is a Gateway pattern — a Java `interface`)**: do NOT `new` the interface. Provide it with an anonymous implementation — `new <Port>() { @Override public <ReturnType> <method>(<args>) { /* trivial */ } }` — supplying a minimal body for every method the port declares, and inject that. A `void` port method body may be empty; a value-returning one returns a benign default. NEVER pass `null` or a primitive for a port field.
     - **Array-typed fields** (`name: Type[]`): SKIP these when constructing — the implementation provides a no-arg constructor that defaults to empty. Call `new ClassName()` without those fields. If you need items, call `repo.save(item)` after construction.
 
 ## Failure Modes

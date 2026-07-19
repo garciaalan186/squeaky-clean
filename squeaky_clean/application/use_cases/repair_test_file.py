@@ -1,0 +1,135 @@
+"""RepairTestFile: regenerate a test file to compile against the real source."""
+
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
+from squeaky_clean.application.use_cases.icp_execution_deps import IcpExecutionDeps
+from squeaky_clean.application.use_cases.run_config import RunConfig
+from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
+from squeaky_clean.domain.interfaces.llm_request import LLMRequest
+from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.infrastructure.llm.model_router import ModelRouter
+
+_FENCE: re.Pattern[str] = re.compile(r"```[a-zA-Z]*\n(.*?)```", re.DOTALL)
+_SYSTEM: str = (
+    "You repair a test file against the REAL source, which is AUTHORITATIVE. "
+    "The instruction describes what is wrong: a COMPILE ERROR (fix the test "
+    "to match the actual signatures) and/or undischarged TestObligations "
+    "(ADD a test for each — e.g. 'construct X with violating input and assert "
+    "it raises' means `with pytest.raises(...): X(bad)` / `assert.throws(() => "
+    "new X(bad))` / `assertThrows(() -> new X(bad))`). KEEP every existing "
+    "passing test, ADD what is missing, and never change the source or weaken "
+    "an assertion's intent. Preserve the file's import style. To supply a "
+    "value the code under test needs: for a "
+    "first-party interface/abstract port, use a minimal in-test "
+    "implementation; for a CONCRETE third-party/SDK class (e.g. a Spring "
+    "KafkaTemplate), construct it with the library's real constructor or "
+    "factory — NEVER anonymous-subclass a concrete class or invent a method "
+    "with the wrong signature. Emit ONLY the corrected full test file in one "
+    "fenced code block, no prose."
+)
+
+
+@dataclass(frozen=True)
+class TestRepairRequest:
+    """One test file to repair, with the diagnostics needed to fix it."""
+
+    project_dir: Path
+    rel_path: str
+    error_excerpt: str
+    toolkit: LanguageToolkit
+
+
+class RepairTestFile:
+    """Single LLM call that rewrites one test file to match the real source."""
+
+    def __init__(
+        self, gateway: LLMGateway, router: ModelRouter,
+        run_config: RunConfig | None = None,
+    ) -> None:
+        self._deps = IcpExecutionDeps(
+            gateway=gateway, router=router,
+            run_config=run_config or RunConfig())
+
+    def repair(self, request: TestRepairRequest) -> LLMResponse | None:
+        """Rewrite the test file in place; return the LLM response (or None)."""
+        path = request.project_dir / request.rel_path
+        try:
+            current = path.read_text()
+        except OSError:
+            current = ""  # new file: the obligation has no test yet — create it
+        response = self._deps.gateway.complete(self._request(request, current))
+        match = _FENCE.search(response.content)
+        if match is not None:
+            fixed = match.group(1)
+            if fixed.strip() and fixed != current:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(fixed)
+        return response
+
+    def _request(self, req: TestRepairRequest, current: str) -> LLMRequest:
+        sampling = self._deps.run_config.sampling_for(ModelTier.FIXER)
+        return LLMRequest(
+            model=self._deps.router.route(ModelTier.FIXER),
+            system_prompt=_SYSTEM,
+            user_prompt=self._prompt(req, current),
+            temperature=sampling.temperature, seed=sampling.seed,
+            replicate_id=self._deps.run_config.replicate_id, tier="fixer",
+        )
+
+    def _prompt(self, req: TestRepairRequest, current: str) -> str:
+        parts = [
+            "SOURCE (authoritative — match these signatures):",
+            self._sources(req.project_dir, req.toolkit),
+        ]
+        exemplar = self._exemplar(req.project_dir, req.rel_path)
+        if exemplar:
+            parts += ["", "TEST STYLE (match this test framework + import "
+                      "style EXACTLY — same runner, same assertion library):",
+                      f"```\n{exemplar}\n```"]
+        parts += [
+            "", "COMPILE ERRORS / OBLIGATIONS:",
+            f"```\n{req.error_excerpt[:3000]}\n```",
+            "", f"TEST FILE ({req.rel_path}) — emit a corrected version "
+            "(if empty, create it):",
+            f"```\n{current}\n```",
+        ]
+        return "\n".join(parts)
+
+    @staticmethod
+    def _exemplar(project_dir: Path, exclude_rel: str) -> str:
+        """An existing test file to copy the framework/import style from."""
+        for p in sorted(project_dir.rglob("*")):
+            name = p.name
+            is_test = (name.startswith("test_") and name.endswith(".py")) \
+                or name.endswith((".test.ts", ".test.js")) \
+                or name.endswith("Test.java")
+            if not is_test or "node_modules" in p.parts or "target" in p.parts:
+                continue
+            if str(p.relative_to(project_dir)) == exclude_rel:
+                continue
+            try:
+                return p.read_text()[:2000]
+            except OSError:
+                continue
+        return ""
+
+    @staticmethod
+    def _sources(project_dir: Path, toolkit: LanguageToolkit) -> str:
+        """Concatenate the production source files (excluding tests)."""
+        ext = toolkit.file_extension
+        out: list[str] = []
+        for p in sorted(project_dir.rglob(f"*{ext}")):
+            parts = p.parts
+            if "test" in parts or "tests" in parts or p.name.endswith(f".test{ext}"):
+                continue
+            if "node_modules" in parts or "dist" in parts or "target" in parts:
+                continue
+            try:
+                out.append(f"// {p.name}\n{p.read_text()}")
+            except OSError:
+                continue
+        return "\n\n".join(out)[:12000]

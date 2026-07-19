@@ -13,7 +13,7 @@
     "types": []
   },
   "client_construction": {
-    "code": "const kafka = new Kafka({ brokers: brokers.split(',') }); this._producer = kafka.producer();",
+    "code": "const kafka = new Kafka({ brokers: brokers }); this._producer = kafka.producer();",
     "is_async": false,
     "thread_safe": true,
     "dependencies": [

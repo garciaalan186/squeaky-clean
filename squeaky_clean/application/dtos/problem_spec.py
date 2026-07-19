@@ -6,6 +6,7 @@ from squeaky_clean.application.dtos.contract import Contract
 from squeaky_clean.application.dtos.contract_ref import ContractRef
 from squeaky_clean.application.dtos.data_classification import DataClassification
 from squeaky_clean.application.dtos.entity_lifecycle import EntityLifecycle
+from squeaky_clean.application.dtos.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.dtos.infrastructure_choice import InfrastructureChoice
 from squeaky_clean.application.dtos.query_semantic import QuerySemantic
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
@@ -33,3 +34,4 @@ class ProblemSpec:
     mcda_weights: dict[str, float] | None = None
     produces_contracts: tuple[Contract, ...] = ()
     consumes_contracts: tuple[ContractRef, ...] = ()
+    expected_outcomes: tuple[ExpectedOutcome, ...] = ()

@@ -12,6 +12,9 @@ One serialized ModuleSpec (classes + fields + methods with signatures) + the Pro
 ## Output Contract
 Two fenced sections, in order, nothing else:
 
+**Contract-driven generation (HIGHEST PRIORITY).** If the prompt contains a `TestObligations:` block, emit ONE test per obligation line and ONLY those (do not add tests for other classes or extra scenarios). Each test performs the stated action and keeps the stated assertion (`must raises` -> an error-raising assertion; `must equals (V)` -> an equality assertion on V; `must field_holds` -> assert on the named field; `must call_only` -> invoke the method), and STARTS with a one-line comment citing its `from:` source criterion. If the prompt contains an `Integration:` directive, emit ZERO test files — the developer owns integration tests for live-infrastructure adapters. Only when neither block is present, fall back to the per-criterion rules below.
+
+
 ```
 GHERKIN
 ---
@@ -47,11 +50,11 @@ CLASS <ClassName>
    - Body binds inputs from the Given clause, invokes the real method, asserts the Then clause.
 5. Criterion → code mapping rules (apply mechanically):
    - "Given <plural-noun> X and Y" → bind `a, b = X, Y` using the same primitive literal types as written.
-   - If the target method signature declares a VO parameter (e.g. `a: Operand`) AND the referenced class exists in the ModuleSpec, construct the VO via the instantiation rules in constraint 10.
+   - If a method parameter's declared Type is a class in the ModuleSpec (ValueObject/Entity/etc.), you MUST wrap the value: `<Type>(<givenValue>)` — NEVER pass the raw primitive. E.g. for `body: RawBody` with Given body `'hello'` → `RawBody('hello')`, never `'hello'`. Construct it via the instantiation rules in constraint 10.
    - "When <verb> is called" → resolve `<verb>` against the ModuleSpec's `methods:` lists to find the owner class. Instantiate the owner via the instantiation rules in constraint 10, then call `<instance>.<verb>(<args>)`.
    - "Then result is <V>" → `result = ...; assert result == V` for primitive returns, `assert result.value == V` for VO returns.
    - "Then an error is raised" → wrap call in `with pytest.raises((ValueError, ZeroDivisionError)):` (always use this tuple, NEVER a single narrower type — the implementing ICP may pick either depending on whether it validates at construction or in the method). **If the VO being constructed for the call carries an `invariants:` entry that matches the <bad input>, put the VO construction ITSELF inside the `with pytest.raises(...)` block**, because the VO's constructor will raise before the method call runs. Example: `with pytest.raises((ValueError, ZeroDivisionError)): DivisionService().divide(1, Divisor(0))` — not `divisor = Divisor(0); with pytest.raises(...): ...`.
-6. Missing-verb honesty: if a criterion's verb appears in no class's `methods:` list, emit a test whose body is exactly `pytest.fail("verb <verb> not in ModuleSpec")`. Do NOT invent methods that aren't declared.
+6. Missing-verb honesty: if a criterion's verb appears in no class's `methods:` list, emit a test whose body is exactly `pytest.fail("verb <verb> not in ModuleSpec")`. Do NOT invent methods that aren't declared — call ONLY methods listed in the target class's `methods:`, never invented callback (`on_x`) or simulation (`simulate_x`/`force_x`) helpers. Access a field by its declared `name` verbatim in snake_case — never re-case it (a `received_at` field is read as `received_at`, never `receivedAt`).
 7. Each test file ≤80 lines. Snake_case identifiers. Every FILE path starts with the `TestDir:` value from the user prompt (e.g. `tests/domain/calculator/`).
 8. No fixtures, no parametrize, no mocks, no conftest additions. Direct synchronous tests.
 9. If the return type is not declared in the ModuleSpec, assume a primitive and use `assert result == V`.
