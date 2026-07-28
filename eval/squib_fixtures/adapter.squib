@@ -1,0 +1,11 @@
+MODULE Payments
+LAYER Infrastructure
+EXPORTS [StripeAdapter]
+DEPENDS []
+CLASSES {
+  StripeAdapter -> Adapter {
+    implements: PaymentPort
+    methods: [charge(amount: Money): Result]
+    depends: [StripeSdk]
+  }
+}

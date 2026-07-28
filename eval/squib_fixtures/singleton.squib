@@ -1,0 +1,10 @@
+MODULE Configuration
+LAYER Infrastructure
+EXPORTS [AppConfig]
+DEPENDS []
+CLASSES {
+  AppConfig -> Singleton {
+    fields: [values: str]
+    methods: [get(key: str): str]
+  }
+}

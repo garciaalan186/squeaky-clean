@@ -1,0 +1,10 @@
+MODULE ChatRoom
+LAYER Application
+EXPORTS [ChatMediator]
+DEPENDS []
+CLASSES {
+  ChatMediator -> Mediator {
+    methods: [notify(sender: str, event: str): void]
+    depends: [Member]
+  }
+}

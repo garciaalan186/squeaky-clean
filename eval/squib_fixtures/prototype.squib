@@ -1,0 +1,10 @@
+MODULE Shapes
+LAYER Domain
+EXPORTS [Shape]
+DEPENDS []
+CLASSES {
+  Shape -> Prototype {
+    fields: [color: str]
+    methods: [clone(): Shape]
+  }
+}

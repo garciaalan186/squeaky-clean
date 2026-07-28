@@ -1,0 +1,10 @@
+MODULE Text
+LAYER Domain
+EXPORTS [Glyph]
+DEPENDS []
+CLASSES {
+  Glyph -> Flyweight {
+    fields: [symbol: str]
+    methods: [render(position: int): void]
+  }
+}

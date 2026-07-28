@@ -20,6 +20,10 @@ from eval.problems.p3_chat_app_js import P3JS
 from eval.problems.p3_chat_app_ts import P3TS
 from eval.problems.p4_twitter_clone import P4
 from eval.problems.p5_oauth2_server import P5
+from eval.problems.p6_stock_monitor import P6
+from eval.problems.p7_order_lifecycle import P7
+from eval.problems.p8_text_editor import P8
+from eval.problems.p9_drawing_canvas import P9
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 
 _REGISTRY: dict[str, ProblemSpec] = {
@@ -29,6 +33,11 @@ _REGISTRY: dict[str, ProblemSpec] = {
     "P2": P2, "P2JS": P2JS, "P2TS": P2TS, "P2JAVA": P2JAVA,
     "P3": P3, "P3JS": P3JS, "P3TS": P3TS, "P3JAVA": P3JAVA,
     "P4": P4, "P5": P5,
+    # Pattern-rich problems — each demands a structurally distinct pattern the
+    # P0–P5 suite never exercises (Observer, State, Command+Memento,
+    # Composite+Visitor). These measure whether the architect *chooses* the
+    # right pattern end-to-end, complementing the golden-Squib routing test.
+    "P6": P6, "P7": P7, "P8": P8, "P9": P9,
 }
 
 

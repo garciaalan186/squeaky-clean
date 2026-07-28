@@ -1,0 +1,10 @@
+MODULE OrderLifecycle
+LAYER Domain
+EXPORTS [OrderState]
+DEPENDS []
+CLASSES {
+  OrderState -> State {
+    methods: [next(order: Order): OrderState]
+    concretes: [PendingState, ShippedState]
+  }
+}

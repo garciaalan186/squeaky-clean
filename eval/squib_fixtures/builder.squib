@@ -1,0 +1,9 @@
+MODULE Reporting
+LAYER Application
+EXPORTS [ReportBuilder]
+DEPENDS []
+CLASSES {
+  ReportBuilder -> Builder {
+    methods: [with_title(title: str): ReportBuilder, build(): Report]
+  }
+}

@@ -1,0 +1,9 @@
+MODULE OrderEvents
+LAYER Domain
+EXPORTS [OrderPlaced]
+DEPENDS []
+CLASSES {
+  OrderPlaced -> DomainEvent {
+    fields: [order_id: str, occurred_on: str]
+  }
+}

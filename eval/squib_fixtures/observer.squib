@@ -1,0 +1,10 @@
+MODULE Notifications
+LAYER Domain
+EXPORTS [EventObserver]
+DEPENDS []
+CLASSES {
+  EventObserver -> Observer {
+    methods: [update(event: Event): void]
+    concretes: [EmailObserver, SmsObserver]
+  }
+}

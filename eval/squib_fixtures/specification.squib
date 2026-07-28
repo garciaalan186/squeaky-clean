@@ -1,0 +1,9 @@
+MODULE Catalog
+LAYER Domain
+EXPORTS [InStockSpec]
+DEPENDS []
+CLASSES {
+  InStockSpec -> Specification {
+    methods: [is_satisfied_by(product: Product): bool]
+  }
+}
