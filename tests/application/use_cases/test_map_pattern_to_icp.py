@@ -34,13 +34,21 @@ def test_simple_class_maps_to_python_simple_class_icp() -> None:
     )
 
 
-def test_unknown_pattern_falls_back_to_simple_class() -> None:
+def test_catalog_patterns_map_to_dedicated_icps() -> None:
+    # Every GoF/DDD catalog pattern now resolves to its own ICP, never
+    # silently degrading to SimpleClass.
+    assert MapPatternToICP().map("Facade", _PY) == "python/structural/FacadeICP"
+    assert MapPatternToICP().map("Observer", _PY) == "python/behavioral/ObserverICP"
     assert (
-        MapPatternToICP().map("Facade", _PY)
-        == "python/ddd_clean/SimpleClassICP"
+        MapPatternToICP().map("AbstractFactory", _PY)
+        == "python/creational/AbstractFactoryICP"
     )
+
+
+def test_unrecognized_pattern_falls_back_to_simple_class() -> None:
+    # Only a genuinely unknown pattern name uses the escape hatch.
     assert (
-        MapPatternToICP().map("Observer", _PY)
+        MapPatternToICP().map("NotARealPattern", _PY)
         == "python/ddd_clean/SimpleClassICP"
     )
 
@@ -103,14 +111,15 @@ def test_repository_in_infrastructure_with_blob_methods_routes_tier_c() -> None:
     assert icp == "python/infrastructure/BlobStorageAdapterICP"
 
 
-def test_repository_falls_back_when_infra_mode_manual() -> None:
-    """Backwards compatibility: --infra=manual disables the Tier C path."""
+def test_repository_uses_catalog_icp_when_infra_mode_manual() -> None:
+    """--infra=manual disables the Tier C path; Repository resolves to its
+    dedicated catalog port ICP, not the SimpleClass escape hatch."""
     icp = MapPatternToICP().map_with_layer(
         "Repository", _PY, LayerType.INFRASTRUCTURE,
         ("put_blob", "get_blob", "delete_blob"),
         infrastructure_mode="manual",
     )
-    assert icp == "python/ddd_clean/SimpleClassICP"
+    assert icp == "python/ddd_clean/RepositoryICP"
 
 
 def test_repository_in_domain_layer_never_routes_tier_c() -> None:
@@ -119,7 +128,7 @@ def test_repository_in_domain_layer_never_routes_tier_c() -> None:
         ("put_blob", "get_blob"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/ddd_clean/SimpleClassICP"
+    assert icp == "python/ddd_clean/RepositoryICP"
 
 
 def test_application_gateway_maps_to_gateway_icp() -> None:
@@ -130,6 +139,7 @@ def test_application_gateway_maps_to_gateway_icp() -> None:
     assert MapPatternToICP().map("Gateway", _JAVA) == "java/ddd_clean/GatewayICP"
 
 
-def test_gateway_falls_back_to_simpleclass_without_a_spec() -> None:
-    # Go has no GatewayICP yet, so it keeps the SimpleClass fallback.
-    assert MapPatternToICP().map("Gateway", _GO) == "go/ddd_clean/SimpleClassICP"
+def test_gateway_resolves_for_all_languages() -> None:
+    # GatewayICP now exists for every supported language.
+    assert MapPatternToICP().map("Gateway", _GO) == "go/ddd_clean/GatewayICP"
+    assert MapPatternToICP().map("Gateway", _RUST) == "rust/ddd_clean/GatewayICP"

@@ -6,14 +6,58 @@ from squeaky_clean.application.use_cases.infrastructure_category_inference impor
 )
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 
-_DDD_CLEAN: frozenset[str] = frozenset({"Entity", "ValueObject", "SimpleClass"})
-_BEHAVIORAL: frozenset[str] = frozenset({"Strategy"})
-_INFRA_PATTERNS: frozenset[str] = frozenset({"Repository", "Gateway", "Adapter"})
-# Languages with a dedicated GatewayICP (abstract port: TS/Java interface,
-# Python ABC). Others keep the SimpleClass fallback until a spec exists.
-_GATEWAY_LANGS: frozenset[str] = frozenset({"python", "typescript", "java"})
+# Full GoF + DDD/Clean catalog → category directory under icps/<lang>/.
+# Every PatternName in domain.value_objects.pattern_name has a dedicated ICP
+# spec in every supported language; test_pattern_icp_resolution enforces that
+# invariant against the files on disk. SimpleClassICP is the ONLY fallback and
+# is reserved for genuinely unrecognized pattern names — it is never a silent
+# stand-in for a catalog pattern that lacks a spec.
+_PATTERN_CATEGORY: dict[str, str] = {
+    # Creational
+    "AbstractFactory": "creational",
+    "Builder": "creational",
+    "FactoryMethod": "creational",
+    "Singleton": "creational",
+    "Prototype": "creational",
+    # Structural
+    "Adapter": "structural",
+    "Bridge": "structural",
+    "Composite": "structural",
+    "Decorator": "structural",
+    "Facade": "structural",
+    "Flyweight": "structural",
+    "Proxy": "structural",
+    # Behavioral
+    "ChainOfResponsibility": "behavioral",
+    "Command": "behavioral",
+    "Interpreter": "behavioral",
+    "Iterator": "behavioral",
+    "Mediator": "behavioral",
+    "Memento": "behavioral",
+    "Observer": "behavioral",
+    "State": "behavioral",
+    "Strategy": "behavioral",
+    "TemplateMethod": "behavioral",
+    "Visitor": "behavioral",
+    # DDD / Clean
+    "Entity": "ddd_clean",
+    "ValueObject": "ddd_clean",
+    "Aggregate": "ddd_clean",
+    "DomainEvent": "ddd_clean",
+    "Specification": "ddd_clean",
+    "Repository": "ddd_clean",
+    "Gateway": "ddd_clean",
+    "Presenter": "ddd_clean",
+    "UseCase": "ddd_clean",
+    "DTOMapper": "ddd_clean",
+    "SimpleClass": "ddd_clean",
+}
 _FALLBACK_NAME: str = "SimpleClassICP"
 _FALLBACK_CATEGORY: str = "ddd_clean"
+
+# Patterns whose Infrastructure/Interface-layer instances may route to a
+# concrete Tier C adapter ICP instead of their catalog spec (see map_with_layer).
+_INFRA_PATTERNS: frozenset[str] = frozenset({"Repository", "Gateway", "Adapter"})
 
 # H1+H3+H5a+H5b heuristic: TechSpec category → Tier C ICP spec name.
 _CATEGORY_TO_ICP: dict[str, str] = {
@@ -48,18 +92,16 @@ class MapPatternToICP:
     """Maps a pattern name to the slash-qualified ICP spec path to load."""
 
     def map(self, pattern: str, toolkit: LanguageToolkit) -> str:
-        """Return ``<lang>/<category>/<Pattern>ICP`` for dedicated ICPs.
+        """Return ``<lang>/<category>/<Pattern>ICP`` for any catalog pattern.
 
-        Backwards-compatible legacy path: pattern-only routing. Unknown
-        patterns fall back to ``<lang>/ddd_clean/SimpleClassICP``.
+        Every recognized GoF/DDD PatternName resolves to its dedicated ICP
+        spec. Only a genuinely unrecognized pattern name falls back to
+        ``<lang>/ddd_clean/SimpleClassICP``.
         """
         library = toolkit.icp_library
-        if pattern in _DDD_CLEAN:
-            return f"{library}/ddd_clean/{pattern}ICP"
-        if pattern in _BEHAVIORAL:
-            return f"{library}/behavioral/{pattern}ICP"
-        if pattern == "Gateway" and library in _GATEWAY_LANGS:
-            return f"{library}/ddd_clean/GatewayICP"
+        category = _PATTERN_CATEGORY.get(pattern)
+        if category is not None:
+            return f"{library}/{category}/{pattern}ICP"
         return f"{library}/{_FALLBACK_CATEGORY}/{_FALLBACK_NAME}"
 
     def map_with_layer(
@@ -72,7 +114,7 @@ class MapPatternToICP:
 
         H5a: routes blob_storage/kv_cache/rest_client/relational_db/
         document_db/message_queue_{producer,consumer}/stream_processor when
-        ``--infra=auto``. Other inputs fall back to the legacy ``map`` route.
+        ``--infra=auto``. Other inputs fall back to the catalog ``map`` route.
 
         When ``declared_categories`` is non-empty (passed from the
         ProblemSpec's explicit ``infrastructure_choices``) and the verb

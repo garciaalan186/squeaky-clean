@@ -57,7 +57,7 @@ def test_assign_all_returns_one_per_class() -> None:
     )
     assert (
         by_name["CalculatorService"].icp_spec_name
-        == "python/ddd_clean/SimpleClassICP"
+        == "python/structural/FacadeICP"
     )
     assert by_name["CalculatorService"].file_path.endswith(
         "/src/domain/calculator/calculator_service.py"

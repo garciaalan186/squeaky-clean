@@ -77,7 +77,7 @@ def test_h5a_categories_fall_back_when_manual() -> None:
         ("save", "find_by_id"),
         infrastructure_mode="manual",
     )
-    assert icp == "python/ddd_clean/SimpleClassICP"
+    assert icp == "python/ddd_clean/RepositoryICP"
 
 
 def test_blob_storage_still_wins_over_rdb_for_blob_methods() -> None:
