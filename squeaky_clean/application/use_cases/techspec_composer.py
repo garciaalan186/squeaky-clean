@@ -69,7 +69,7 @@ class TechSpecComposer:
     ) -> InstantiatedICPPrompt:
         rendered = replace(assignment, tech_spec=tech_spec)
         return InstantiatedICPPrompt(
-            system_prompt=self._loader.load(assignment.icp_spec_name),
+            system_prompt=self._loader.load(assignment.emitter_spec_name),
             user_prompt=ClassAssignmentFormatter(assignment.toolkit).format(rendered),
             model_tier=ModelTier.ICP,
         )

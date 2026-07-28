@@ -40,7 +40,7 @@ def test_load_invalid_json_raises(tmp_path: Path) -> None:
 
 def test_load_non_object_top_level_raises(tmp_path: Path) -> None:
     p = tmp_path / "list.json"
-    p.write_text(json.dumps([{"name": "X", "icp_spec_name": "Y"}]))
+    p.write_text(json.dumps([{"name": "X", "emitter_spec_name": "Y"}]))
     with pytest.raises(CustomPatternManifestError):
         LoadCustomPatterns().load(p)
 
@@ -54,9 +54,9 @@ def test_load_patterns_not_list_raises(tmp_path: Path) -> None:
 
 def test_entry_empty_name_raises() -> None:
     with pytest.raises(ValueError, match="name"):
-        CustomPatternManifestEntry(name="", icp_spec_name="ok")
+        CustomPatternManifestEntry(name="", emitter_spec_name="ok")
 
 
 def test_entry_empty_icp_raises() -> None:
-    with pytest.raises(ValueError, match="icp_spec_name"):
-        CustomPatternManifestEntry(name="OK", icp_spec_name="")
+    with pytest.raises(ValueError, match="emitter_spec_name"):
+        CustomPatternManifestEntry(name="OK", emitter_spec_name="")

@@ -12,8 +12,8 @@ What's missing is **architectural discipline**: the discipline that says domain 
 
 Squeaky Clean splits the codegen problem into three layers, each with its own constraints:
 
-1. **PrincipalArchitect (Architect tier)** — reads a `ProblemSpec`, emits a structured `ArchitectureSpec` in Squib. Decides bounded contexts, classes per context, layer assignment, dep edges. Deterministic by default.
-2. **ImplementClass (ICP tier)** — for each class in the architecture, runs a parallelizable Implements-Clean-Pattern agent. Each ICP specializes in exactly one GoF/DDD pattern (or a Tier C infrastructure category). One file in, one file out.
+1. **RequirementCompiler (Architect tier)** — reads a `ProblemSpec`, emits a structured `ArchitectureSpec` in Squib. Decides bounded contexts, classes per context, layer assignment, dep edges. Deterministic by default.
+2. **ImplementClass (ICP tier)** — for each class in the architecture, runs a parallelizable Implements-Clean-Pattern agent. Each ICP specializes in exactly one GoF/DDD pattern (or a Tier C infrastructure category); all 34 patterns have a dedicated, language-idiomatic spec in every supported language. One file in, one file out.
 3. **IntegrateModule + ValidateArchitecture** — assembles the per-class outputs into a runnable project, validates dependency rules, runs the generated test suite, computes metrics.
 
 The Squib between tiers is the **instruction set architecture**. It's compact (~200 chars per class), unambiguous (validated against a frozen grammar), and the architect's mistakes get caught at the spec layer rather than after generation.

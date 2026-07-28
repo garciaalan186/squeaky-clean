@@ -6,7 +6,7 @@ _SEARCH_DIRS: tuple[str, ...] = (
     "architects",
     "managers",
 )
-_QUALIFIED_ROOTS: tuple[str, ...] = ("icps", "architects")
+_QUALIFIED_ROOTS: tuple[str, ...] = ("emitters", "architects")
 
 
 class LoadAgentSpec:

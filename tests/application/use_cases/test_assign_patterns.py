@@ -48,7 +48,7 @@ def test_assign_all_returns_one_per_class() -> None:
     assignments = assigner.assign_all(module)
     assert len(assignments) == 2
     by_name = {a.class_spec.name: a for a in assignments}
-    assert by_name["Operand"].icp_spec_name == "python/ddd_clean/ValueObjectICP"
+    assert by_name["Operand"].emitter_spec_name == "python/ddd_clean/ValueObjectEmitter"
     assert by_name["Operand"].file_path == (
         "/tmp/out/src/domain/calculator/operand.py"
     )
@@ -56,8 +56,8 @@ def test_assign_all_returns_one_per_class() -> None:
         "/tmp/out/tests/domain/calculator/test_operand.py"
     )
     assert (
-        by_name["CalculatorService"].icp_spec_name
-        == "python/structural/FacadeICP"
+        by_name["CalculatorService"].emitter_spec_name
+        == "python/structural/FacadeEmitter"
     )
     assert by_name["CalculatorService"].file_path.endswith(
         "/src/domain/calculator/calculator_service.py"

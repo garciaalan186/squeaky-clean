@@ -26,7 +26,7 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 _FIXTURES = Path(__file__).resolve().parents[2] / "eval" / "squib_fixtures"
 _ICPS_ROOT = (
-    Path(squeaky_clean.__file__).parent / "interface" / "agent_specs" / "icps"
+    Path(squeaky_clean.__file__).parent / "interface" / "agent_specs" / "emitters"
 )
 _MANIFEST: dict[str, dict[str, str]] = json.loads(
     (_FIXTURES / "manifest.json").read_text()
@@ -59,16 +59,16 @@ def test_golden_squib_routes_focal_class_to_dedicated_icp(
     )
     focal = next(a for a in assignments if a.class_spec.name == info["focal"])
 
-    expected = f"{toolkit.icp_library}/{info['category']}/{pattern}ICP"
-    assert focal.icp_spec_name == expected, (
+    expected = f"{toolkit.icp_library}/{info['category']}/{pattern}Emitter"
+    assert focal.emitter_spec_name == expected, (
         f"{pattern} focal class {info['focal']} ({language.value}) routed to "
-        f"{focal.icp_spec_name}, expected {expected}"
+        f"{focal.emitter_spec_name}, expected {expected}"
     )
-    assert not focal.icp_spec_name.endswith("SimpleClassICP"), (
+    assert not focal.emitter_spec_name.endswith("SimpleClassEmitter"), (
         f"{pattern} ({language.value}) degraded to the SimpleClass escape hatch"
     )
-    assert (_ICPS_ROOT / f"{focal.icp_spec_name}.md").is_file(), (
-        f"routed spec {focal.icp_spec_name} has no file on disk"
+    assert (_ICPS_ROOT / f"{focal.emitter_spec_name}.md").is_file(), (
+        f"routed spec {focal.emitter_spec_name} has no file on disk"
     )
 
 

@@ -48,7 +48,7 @@ def _assignment() -> ClassAssignment:
                      depends=(), classes=(spec,), invariants=())
     return ClassAssignment(
         class_spec=spec, module=mod, toolkit=_TOOLKIT,
-        icp_spec_name="python/ddd_clean/ValueObjectICP",
+        emitter_spec_name="python/ddd_clean/ValueObjectEmitter",
         file_path="/tmp/p0/src/operand.py",
         test_file_path="/tmp/p0/tests/test_operand.py")
 

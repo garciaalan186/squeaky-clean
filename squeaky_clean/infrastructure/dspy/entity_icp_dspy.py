@@ -1,6 +1,6 @@
-"""DSPy wrapper for the EntityICP agent (milestone D1 proof-of-concept).
+"""DSPy wrapper for the EntityEmitter agent (milestone D1 proof-of-concept).
 
-Wraps the hand-written EntityICP behaviour as a `dspy.Module` so MIPROv2 /
+Wraps the hand-written EntityEmitter behaviour as a `dspy.Module` so MIPROv2 /
 BootstrapFewShot can optimise the prompt. The module talks to Anthropic
 directly via DSPy's own LM interface; it does NOT reuse the framework's
 LLMGateway. See `eval/per_agent/optimize_entity_icp.py` for the harness.
@@ -36,7 +36,7 @@ def configure_lm(model: str = _MODEL) -> None:
 class EntityICPSignature(dspy.Signature):
     """Generate one Python Entity dataclass file from a ClassSpec.
 
-    Output rules (condensed from EntityICP.md):
+    Output rules (condensed from EntityEmitter.md):
     1. Output is exactly ONE python fenced block (```python ... ```), no
        prose outside the fence.
     2. First import is `from __future__ import annotations`.

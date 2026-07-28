@@ -35,7 +35,7 @@ def _assign(module: ModuleSpec, focal: str) -> ClassAssignment:
     spec = next(c for c in module.classes if c.name == focal)
     return ClassAssignment(
         class_spec=spec, module=module, toolkit=_TOOLKIT,
-        icp_spec_name="EntityICP",
+        emitter_spec_name="EntityEmitter",
         file_path=f"/tmp/out/src/{focal.lower()}.py",
         test_file_path=f"/tmp/out/tests/test_{focal.lower()}.py",
     )
@@ -72,7 +72,7 @@ def test_formatter_lists_empty_fields_and_methods_for_sibling() -> None:
     out = ClassAssignmentFormatter(_TOOLKIT).format(
         ClassAssignment(
             class_spec=a, module=module, toolkit=_TOOLKIT,
-            icp_spec_name="SimpleClassICP",
+            emitter_spec_name="SimpleClassEmitter",
             file_path="/tmp/a.py", test_file_path="/tmp/test_a.py",
         )
     )
@@ -106,7 +106,7 @@ def test_formatter_emits_invariants_line_when_present() -> None:
             class_spec=_title_module().classes[0],
             module=_title_module(),
             toolkit=_TOOLKIT,
-            icp_spec_name="ValueObjectICP",
+            emitter_spec_name="ValueObjectEmitter",
             file_path="/tmp/todo_title.py",
             test_file_path="/tmp/test_todo_title.py",
         )

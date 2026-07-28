@@ -24,6 +24,15 @@ A walkthrough + best practices for authoring a `ProblemSpec` JSON.
 
 Six required fields: `id`, `description`, `acceptance_criteria`, `required_patterns`, `target_language`, plus `tier` + `slug` for the eval-harness-friendly file path.
 
+## Two halves: behavior and structure
+
+The JSON above is flat, and stays that way — flat fields are the construction surface. In code, a `ProblemSpec` exposes two read-only views over them:
+
+- **`.behavior`** → `BehaviorSpec`: `acceptance_criteria`, `produces_contracts`, `consumes_contracts`, `data_classification`, `expected_outcomes`. This is the acceptance oracle — the part of the problem a Squib cannot express, and what the OracleCompiler compiles tests from. Always yours to author.
+- **`.structural_hints`** → `StructuralHints`: `required_patterns`, `required_bounded_contexts`, `expected_module_count`, `expected_class_count`. This is the half a Squib already encodes.
+
+The practical consequence: on the greenfield path the structural fields are *hints* to the architect, so treat them as guardrails rather than targets (see the anti-patterns table). On the squib-first (`--squib-file`) and recovery paths the architecture already exists, so the same values are derived from it by `derive_structural_hints_from_squib` — deterministic, no LLM call — and only the behavioral half needs supplying.
+
 ## Best practices
 
 ### 1. Acceptance criteria are Gherkin-shaped
@@ -95,7 +104,7 @@ The framework's contract registry persists the producer's declaration on disk. T
 ]
 ```
 
-Sensitivity tags ground the SecurityArchitect's concern generation in declared sensitivity rather than name-guessing. Fields tagged `credential` cannot be exposed via getters; `session_token` fields are stored opaquely.
+Sensitivity tags ground the ThreatAnalyzer's concern generation in declared sensitivity rather than name-guessing. Fields tagged `credential` cannot be exposed via getters; `session_token` fields are stored opaquely.
 
 ## Anti-patterns
 
@@ -124,7 +133,7 @@ Spec is at `examples/twitter_clone/twitter_problem.json`. Notable decisions:
 - `required_bounded_contexts: ["Auth", "Posts", "Timeline"]` — three contexts, the architect produces ~6-9 modules across them.
 - `domain_conventions: ["timeline_includes_self", "follow_asymmetric"]` — without these, the architect would produce a "tweets-by-followees only" timeline that excludes the user's own posts (real Twitter includes them).
 - `query_semantics: [{"use_case": "GetTimelineUseCase", "shape": "self_plus_followees"}]` — the architect picks a `find_by_authors([self_id, ...followee_ids])` repository method.
-- `data_classification: [{"field_ref": "User.password_hash", "sensitivity": "credential"}]` — SecurityArchitect's concerns ground here.
+- `data_classification: [{"field_ref": "User.password_hash", "sensitivity": "credential"}]` — the ThreatAnalyzer's concerns ground here.
 
 Cost: ~$0.40. ACS ≈ 16. Yields a working Flask app with port/adapter discipline preserved.
 
@@ -135,3 +144,4 @@ Cost: ~$0.40. ACS ≈ 16. Yields a working Flask app with port/adapter disciplin
 - [`squib.md`](squib.md) — Squib grammar reference
 - [`extending.md`](extending.md) — custom-pattern hooks
 - `examples/` — three runnable sample ProblemSpecs
+- `eval/problems/` — the built-in benchmark specs (`P0`–`P9`), selectable by id with `--problem` / `--problems`. `p6_stock_monitor` (Observer), `p7_order_lifecycle` (State), `p8_text_editor` (Command + Memento) and `p9_drawing_canvas` (Composite + Visitor) are compact specs whose criteria pin one structural pattern each — useful templates when the behaviour you're specifying is pattern-shaped.

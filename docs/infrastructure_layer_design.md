@@ -25,7 +25,7 @@
 
 ### 1.1 What this design covers
 
-This design describes how Squeaky Clean should generate **concrete infrastructure adapter implementations** for the *user's* generated project. Today the framework's existing pattern library (e.g. `RepositoryICP.md`, `GatewayICP.md`, `AdapterICP.md` once those land — see Section 2.4) is *technology-agnostic*: it knows how to produce a class that fits the GoF/DDD shape, but it has no information about which SDK to import, how that SDK constructs its client, what error types it raises, or what authentication model it uses. As a result, when the architecture spec says "MODULE Persistence has class `OrderRepository -> Repository`", the framework can produce a *port* and a *trivial in-memory adapter*, but cannot produce a working adapter against `boto3`, `psycopg2`, `confluent-kafka`, or `azure-storage-blob`.
+This design describes how Squeaky Clean should generate **concrete infrastructure adapter implementations** for the *user's* generated project. Today the framework's existing pattern library (e.g. `RepositoryICP.md`, `GatewayICP.md`, `AdapterICP.md` — see Section 2.4) is *technology-agnostic*: it knows how to produce a class that fits the GoF/DDD shape, but it has no information about which SDK to import, how that SDK constructs its client, what error types it raises, or what authentication model it uses. As a result, when the architecture spec says "MODULE Persistence has class `OrderRepository -> Repository`", the framework can produce a *port* and a *trivial in-memory adapter*, but cannot produce a working adapter against `boto3`, `psycopg2`, `confluent-kafka`, or `azure-storage-blob`.
 
 The user's role today is to **hand-write all real infrastructure adapters after generation**, exactly as we did during the Twitter-clone v2 build, where SQLite repositories were the orchestrator's responsibility and not the framework's. That gap is the subject of this document.
 
@@ -225,8 +225,8 @@ Tier B agents are **Manager-tier** model selections (mid-parameter). They are no
 | `MapPatternToICP` (`squeaky_clean/application/use_cases/map_pattern_to_icp.py`) | dispatches by pattern | extended to consider *layer* + *category* when the assigned pattern is one of `Repository`/`Gateway`/`Adapter` AND the module's `LAYER` is `Infrastructure` |
 | ICP file tree | `icps/<lang>/{ddd_clean,behavioral,structural,...}/` | adds `icps/<lang>/infrastructure/` directory containing the Tier C specs |
 | `ProblemSpec` DTO | unchanged from F5 schema (domain_conventions, query_semantics, etc.) | adds `infrastructure_choices: tuple[InfrastructureChoice, ...]` |
-| `RunEval` use case | runs PrincipalArchitect → TestArchitect → ICPs → integrate | inserts Tier B steps between architect and ICPs when infrastructure modules are present |
-| Per-run cost | dominated by ICPs + test architect | adds modest overhead from TechSpecComposer (one Manager call per infrastructure ICP); see Section 8 |
+| `RunEval` use case | runs RequirementCompiler → OracleCompiler → ICPs → integrate | inserts Tier B steps between architect and ICPs when infrastructure modules are present |
+| Per-run cost | dominated by ICPs + OracleCompiler | adds modest overhead from TechSpecComposer (one Manager call per infrastructure ICP); see Section 8 |
 | Static framework size | ~400 source files | grows by ~13 Tier C specs × N languages (~50 new spec files) + bridge code (~10 new use cases). TechSpec catalog grows independently. |
 
 ---
@@ -572,7 +572,7 @@ Each has a corresponding deps DTO and follows the existing use-case conventions 
 
 ```
 1. ProblemSpec loaded                                     [existing]
-2. PrincipalArchitect → ArchitectureSpec                  [existing]
+2. RequirementCompiler → ArchitectureSpec                 [existing]
 3. F5 spec-conformance validation                         [existing]
 4. derive_required_categories(arch) → set[Category]       [NEW]
 5. select_infrastructure_choices(problem) → tuple[Choice] [NEW; see 3.4]
@@ -895,9 +895,9 @@ For technologies with mature test doubles (moto for AWS, fakeredis for Redis, te
 
 ### 7.5 Wiring in the interface layer
 
-The Interface layer's `create_app` (or equivalent) is the composition root. It instantiates concrete adapters and injects them into use cases. The framework already knows how to generate the Interface layer (`InterfaceArchitect.md`). After this design lands, the Interface ICPs need a small extension: when a constructor argument is a port whose concrete adapter is in `src/infrastructure/`, import the concrete adapter and instantiate it with config drawn from env vars (the env var names come from the TechSpec's `auth.env_vars` and `client_construction.dependencies`).
+The Interface layer's `create_app` (or equivalent) is the composition root. It instantiates concrete adapters and injects them into use cases. The framework already knows how to generate the Interface layer (`InterfaceVerifier.md`). After this design lands, the Interface ICPs need a small extension: when a constructor argument is a port whose concrete adapter is in `src/infrastructure/`, import the concrete adapter and instantiate it with config drawn from env vars (the env var names come from the TechSpec's `auth.env_vars` and `client_construction.dependencies`).
 
-This is a 10–20 line addition to the Interface layer's wiring template and is specified in the existing `InterfaceArchitect.md` as part of this milestone's delivery.
+This is a 10–20 line addition to the Interface layer's wiring template and is specified in the existing `InterfaceVerifier.md` as part of this milestone's delivery.
 
 ### 7.6 Boundary with framework's own infrastructure
 
@@ -913,9 +913,9 @@ A representative high-complexity problem (P3-style: ~6 modules, ~60 classes, wit
 
 | Stage | Calls | Tier | Avg in-toks | Avg out-toks | Cost @ Anthropic 2026 prices |
 |---|---:|---|---:|---:|---:|
-| PrincipalArchitect | 1 | Architect | 2,000 | 2,000 | ~$0.04 |
-| Layer Architects | 4 | Manager | 1,500 | 200 | ~$0.02 |
-| TestArchitect | 6 | Manager | 5,000 | 4,000 | ~$0.40 |
+| RequirementCompiler | 1 | Architect | 2,000 | 2,000 | ~$0.04 |
+| Layer verifiers | 4 | Manager | 1,500 | 200 | ~$0.02 |
+| OracleCompiler | 6 | Manager | 5,000 | 4,000 | ~$0.40 |
 | **InfrastructureChoiceArchitect** (NEW) | 0–4 | Manager | 800 | 80 | $0–$0.05 |
 | **TechSpecComposer Manager fallback** (NEW) | 0–2 | Manager | 1,200 | 200 | $0–$0.04 |
 | ICPs (regular) | 60 | ICP | 1,500 | 700 | ~$0.30 |
@@ -930,7 +930,7 @@ The TechSpecComposer Manager call only fires on validation failure; in the happy
 
 ### 8.2 Interaction with E3 (CostBudget)
 
-E3 (just landed) introduces `--max-cost-usd` with graceful partial-results exit. The new agents in this design respect the budget the same way every other call site does: each call goes through `BudgetedGateway.complete`, which records spend and triggers `BudgetExceededError` when the cap is crossed. Because the InfrastructureChoiceArchitect runs *early* (after layer architects, before ICPs), a budget exit there leaves a complete architecture but no generated adapter code — a useful partial-result state.
+E3 (just landed) introduces `--max-cost-usd` with graceful partial-results exit. The new agents in this design respect the budget the same way every other call site does: each call goes through `BudgetedGateway.complete`, which records spend and triggers `BudgetExceededError` when the cap is crossed. Because the InfrastructureChoiceArchitect runs *early* (after the layer verifiers, before ICPs), a budget exit there leaves a complete architecture but no generated adapter code — a useful partial-result state.
 
 The `BUDGET_EXIT.txt` from E3 should mention which infrastructure category was being processed when the budget tripped, to help users decide whether to raise the cap or simplify the architecture.
 

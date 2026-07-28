@@ -1,6 +1,6 @@
 # Squib — Grammar Reference
 
-Squib is the compact text format the PrincipalArchitect emits and ICPs consume. It is the framework's instruction set architecture.
+Squib is the compact text format the RequirementCompiler emits and ICPs consume. It is the framework's instruction set architecture.
 
 ## Top-level structure
 
@@ -88,12 +88,12 @@ The `ProblemSpec` JSON drives the architect. Beyond `id`, `description`, `accept
 | `domain_conventions: ["timeline_includes_self", ...]` | Tags map to canonical INVARIANTs the architect MUST surface verbatim | `timeline_includes_self` → `"a user's timeline must include the user's own posts"` |
 | `query_semantics: [{"use_case": "...", "shape": "..."}]` | Declares the query shape per use case | `{"shape": "self_plus_followees"}` |
 | `entity_lifecycle: [{"entity": "...", "transitions": [...]}]` | Explicit state machine declarations | Tweet status: `draft → published → deleted` |
-| `data_classification: [{"field_ref": "User.password_hash", "sensitivity": "credential"}]` | Sensitivity tags for the SecurityArchitect | `credential` / `pii` / `session_token` |
+| `data_classification: [{"field_ref": "User.password_hash", "sensitivity": "credential"}]` | Sensitivity tags for the ThreatAnalyzer | `credential` / `pii` / `session_token` |
 | `produces_contracts: [{name, transport, fields: [...]}]` | Cross-service contract this service emits | Kafka topic + JSON envelope |
 | `consumes_contracts: [{contract_name, role: "consumes"}]` | Cross-service contract this service reads | Resolved from the contract registry |
 | `infrastructure_choices: [{category, technology, version_pin}]` | Pin specific SDKs (boto3, spring-kafka, ...) | Drives Tier C ICP routing |
 
-When any of these is present in the user prompt, the architect's spec includes a strict constraint to honor it (constraint #18-#22 in `PrincipalArchitect.md`).
+When any of these is present in the user prompt, the architect's spec includes a strict constraint to honor it (constraint #18-#22 in `RequirementCompiler.md`).
 
 ## Validators that run on Squib
 

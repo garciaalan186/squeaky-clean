@@ -14,7 +14,7 @@ A ModuleImplementation DTO containing every ImplementedClass produced by the dis
 
 ## Constraints
 1. One class per file — every ClassSpec yields exactly one ICP dispatch.
-2. Map each ClassSpec.pattern to its ICP spec name via the MapPatternToICP rule. Unknown patterns route to SimpleClassICP.
+2. Map each ClassSpec.pattern to its ICP spec name via the MapPatternToEmitter rule. Unknown patterns route to SimpleClassEmitter.
 3. Dispatch ICPs in parallel (thread pool, max 4 workers) because LLM calls are I/O-bound.
 4. File paths follow `<output_root>/src/<class_file_name>.<ext>` and `<output_root>/tests/<test_prefix><class_file_name><test_suffix>`, where file name, extension, prefix, and suffix come from the active LanguageToolkit. The EM is language-agnostic — it does not choose these conventions itself.
 5. Sum `cost_usd` and `duration_ms` across all ICP LLM responses.

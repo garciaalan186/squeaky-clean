@@ -1,6 +1,6 @@
 # Extending Squeaky Clean
 
-Two extension hooks for users who need patterns or technologies the bundled catalog doesn't cover.
+Two extension hooks for users who need patterns or technologies the bundled catalog doesn't cover. The bundled pattern catalog is the full 34-pattern GoF + DDD/Clean set in all six languages; the custom-pattern hook is for domain-specific patterns beyond it.
 
 ## Custom patterns (Milestone F4)
 
@@ -40,7 +40,7 @@ squeaky generate \
     --infra=auto
 ```
 
-When the architect produces `MyAggregate -> EventSourcedAggregate`, the framework routes to your custom ICP. The bundled library still resolves all other patterns (Entity, ValueObject, ...).
+When the architect produces `MyAggregate -> EventSourcedAggregate`, the framework routes to your custom ICP. The bundled library still resolves every other pattern to its own dedicated ICP — all 34 recognized patterns are covered in each of the six languages, so a custom manifest is only needed for patterns outside that catalog.
 
 See `eval/custom_patterns/example_event_sourced_aggregate.json` + the matching `EventSourcedAggregateICP.md` for a worked example.
 
@@ -85,7 +85,7 @@ Drop a JSON file at `eval/tech_specs/<category>/<technology>/<version>.json` mat
 Validate against the schema before shipping:
 
 ```bash
-python -c "from src.infrastructure.techspec.jsonschema_techspec_validator import JSONSchemaTechSpecValidator; from pathlib import Path; print(JSONSchemaTechSpecValidator(Path('eval/tech_specs/_schema.v1.json')).validate(__import__('json').loads(Path('your-spec.json').read_text())))"
+python -c "from squeaky_clean.infrastructure.techspec.jsonschema_techspec_validator import JSONSchemaTechSpecValidator; from pathlib import Path; print(JSONSchemaTechSpecValidator(Path('eval/tech_specs/_schema.v1.json')).validate(__import__('json').loads(Path('your-spec.json').read_text())))"
 ```
 
 ### Configure a private MCP server

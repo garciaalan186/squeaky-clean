@@ -11,7 +11,7 @@ class CustomPattern:
     """One externally-supplied pattern: name + ICP spec stem."""
 
     name: str
-    icp_spec_name: str
+    emitter_spec_name: str
 
 
 class CustomPatternRegistry:

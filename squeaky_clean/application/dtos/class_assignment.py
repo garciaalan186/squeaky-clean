@@ -13,8 +13,8 @@ from squeaky_clean.domain.entities.module_spec import ModuleSpec
 class ClassAssignment:
     """Immutable record bundling a ClassSpec with its ICP + output paths.
 
-    `icp_spec_name` is the markdown spec name (without .md) that
-    LoadAgentSpec resolves (e.g., ``ValueObjectICP``). `file_path` is the
+    `emitter_spec_name` is the markdown spec name (without .md) that
+    LoadAgentSpec resolves (e.g., ``ValueObjectEmitter``). `file_path` is the
     production file the ICP will emit (e.g., ``src/calculator/operand.py``)
     and `test_file_path` is the sibling pytest file. `module` carries the
     focal ModuleSpec so the formatter can expose intra-module sibling
@@ -27,7 +27,7 @@ class ClassAssignment:
     class_spec: ClassSpec
     module: ModuleSpec
     toolkit: LanguageToolkit
-    icp_spec_name: str
+    emitter_spec_name: str
     file_path: str
     test_file_path: str
     architecture: ArchitectureSpec | None = None

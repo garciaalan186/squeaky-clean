@@ -86,7 +86,7 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 
 - **Clean Architecture, top to bottom.** SOLID, GoF, and DDD patterns are the shared vocabulary between agent tiers. The Dependency Rule is enforced by a real validator: domain imports nothing, application imports only domain, infrastructure implements domain ports. The framework's own source obeys every constraint it enforces on generated code.
 
-- **Parallelized agents at compact-tier cost.** Architects emit a multi-MODULE plan via the DSL, deploying one pattern-specialized atomic agent per file. By routing the vast majority of token volume to compact models — and reserving the larger tier strictly for architectural decisions — the framework builds distributed architectures in a single, high-velocity, low-cost parallel sweep.
+- **Parallelized agents at compact-tier cost.** Architects emit a multi-MODULE plan via the DSL, deploying one pattern-specialized atomic agent per file. Every one of the 34 GoF + DDD/Clean patterns has its own agent in each supported language, so no class is handed to a generic implementer. By routing the vast majority of token volume to compact models — and reserving the larger tier strictly for architectural decisions — the framework builds distributed architectures in a single, high-velocity, low-cost parallel sweep.
 
 - **Cross-service contract fidelity.** Two services produce/consume the same Kafka topic? The Contract Registry enforces field-shape agreement across language boundaries with case-tolerant validation. The consumer's `ConsumedEvent` carries the producer's contract field names verbatim.
 
@@ -96,7 +96,10 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 
 | Category | Python | Java | Go | Rust | JS | TS |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| ddd_clean (Entity, ValueObject, SimpleClass, Strategy) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| creational (AbstractFactory, Builder, FactoryMethod, Singleton, Prototype) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| structural (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| behavioral (ChainOfResponsibility, Command, Interpreter, Iterator, Mediator, Memento, Observer, State, Strategy, TemplateMethod, Visitor) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ddd_clean (Entity, ValueObject, Aggregate, DomainEvent, Specification, Repository, Gateway, Presenter, UseCase, DTOMapper, SimpleClass) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | security agents (5 categories) | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ |
 | blob_storage | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | kv_cache | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -110,7 +113,7 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 | secrets_provider | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | search | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-`✅` = full Tier C atomic agent + ≥2 TechSpec snapshots + e2e build available. `⏳` = on the roadmap.
+`✅` = full Tier C atomic agent + ≥2 TechSpec snapshots + e2e build available. `⏳` = on the roadmap. The four pattern rows are the complete 34-pattern GoF + DDD/Clean catalog; every entry is a dedicated, language-idiomatic ICP spec.
 
 ## Benchmarks & Meta-Evaluation
 
@@ -126,7 +129,7 @@ Every figure on the [Benchmarks page](https://docs.squeakyclean.ai/benchmarks/) 
 ProblemSpec (JSON)
        │
        ▼
-PrincipalArchitect ──► Squib ModuleSpec (text)
+RequirementCompiler ──► Squib ModuleSpec (text)
        │                   │
        │                   ▼
        │            ArchitectureSpec (multi-MODULE, validated DAG)
@@ -149,7 +152,7 @@ Three model tiers: Architect (high-parameter), Manager (mid), atomic agent (comp
 
 ## Known gaps
 
-- **TestArchitect verb hallucination.** When the architect's emitted Squib doesn't declare a verb the acceptance criteria reference, the generated test calls `pytest.fail("verb X not in ModuleSpec")` rather than inventing methods. K5's per-module criterion filtering bounds this; remaining residue is genuine impl/test mismatches.
+- **OracleCompiler verb hallucination.** When the architect's emitted Squib doesn't declare a verb the acceptance criteria reference, the generated test calls `pytest.fail("verb X not in ModuleSpec")` rather than inventing methods. K5's per-module criterion filtering bounds this; remaining residue is genuine impl/test mismatches.
 - **Not a one-shot LLM call.** Squeaky orchestrates dozens of LLM calls per run, parallelized, with prompt caching and a strict per-tier cost budget.
 - **Not a substitute for understanding your domain.** Garbage spec → garbage generation. The framework asks you to declare your bounded contexts and acceptance criteria.
 
@@ -214,4 +217,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). The framework eats its own dog food: e
 
 ## Project status
 
-**Active development.** 60 Tier C atomic agents across 15 infrastructure categories; six target languages. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.
+**Active development.** The full 34-pattern GoF + DDD/Clean ICP catalog across all six target languages; 60 Tier C atomic agents across 15 infrastructure categories. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.

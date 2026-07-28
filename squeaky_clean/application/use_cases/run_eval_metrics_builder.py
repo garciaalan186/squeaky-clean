@@ -63,7 +63,7 @@ class RunEvalMetricsBuilder:
             + inputs.security_architect_cost_usd
             + inputs.fixer_cost_usd
         )
-        m.total_wall_clock_ms = impl.total_duration_ms
+        m.total_wall_clock_ms = inputs.wall_clock_ms or impl.total_duration_ms
         m.parallelism_limit = _PARALLELISM_LIMIT
         m.peak_parallelism = min(len(impl.implemented_classes), _PARALLELISM_LIMIT)
         m.classes_per_module = [len(impl.module.classes)]

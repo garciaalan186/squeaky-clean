@@ -130,6 +130,8 @@ From existing data (rough — exact values populate after a one-pass calibration
 | Event-pipeline producer | 4 | 8 | 5 | ~7 (Kafka + Express) | ~11 |
 | Event-pipeline persister | 4 | 8 | 5 | ~7 (Kafka + blob) | ~11 |
 
+The pattern-focused problems P6 `stock_monitor` (Observer), P7 `order_lifecycle` (State), P8 `text_editor` (Command + Memento) and P9 `drawing_canvas` (Composite + Visitor) are deliberately small — 1–3 modules, 4–14 classes, 5–6 acceptance criteria each — and exist to test whether the architect *selects* the right pattern, not to stress architectural breadth. They have no ACS figures yet; they enter the table after the calibration pass in §8.
+
 ## 6. Normalization metrics
 
 Once ACS is computed, derived metrics give fair cross-problem comparisons:
@@ -242,7 +244,7 @@ The existing `HtmlDashboardWriter` (G4) plots metrics per run over time. Add `ac
 ## 8. Calibration procedure
 
 1. Implement the scorer.
-2. Run all 6 canonical ProblemSpecs (P0–P5) once each on Python with `--deterministic`. Compute raw ACS for each.
+2. Run the canonical ProblemSpecs (P0–P9) once each on Python with `--deterministic`. Compute raw ACS for each.
 3. Compute `ACS_baseline = ACS(P0 Calculator)`. The normalization is applied uniformly.
 4. Inspect: do the relative numbers match intuition? P3 Chat should be ~10–15× P0; Twitter should be ~12–18× P0; Calculator/2 (a hypothetical P-0.5) would be < 1.0.
 5. If a problem's ACS feels off, adjust α / β / γ weights and re-baseline.

@@ -66,7 +66,7 @@ class ImplementClass:
             prompt = self._composer.compose(assignment, assignment.tech_spec)
             sys_p, usr_p = prompt.system_prompt, prompt.user_prompt
         else:
-            sys_p = self._loader.load(assignment.icp_spec_name)
+            sys_p = self._loader.load(assignment.emitter_spec_name)
             usr_p = ClassAssignmentFormatter(assignment.toolkit).format(assignment)
         return LLMRequest(
             model=self._deps.router.route(ModelTier.ICP),

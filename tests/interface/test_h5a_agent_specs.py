@@ -6,16 +6,16 @@ import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _INFRA_SPECS = (
-    _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "icps" / "python"
+    _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "emitters" / "python"
     / "infrastructure"
 )
 
 _NEW_SPECS = [
-    "RelationalDBRepositoryICP.md",
-    "DocumentDBRepositoryICP.md",
-    "MessageQueueProducerICP.md",
-    "MessageQueueConsumerICP.md",
-    "StreamProcessorICP.md",
+    "RelationalDBRepositoryEmitter.md",
+    "DocumentDBRepositoryEmitter.md",
+    "MessageQueueProducerEmitter.md",
+    "MessageQueueConsumerEmitter.md",
+    "StreamProcessorEmitter.md",
 ]
 
 
