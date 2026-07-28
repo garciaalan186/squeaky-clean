@@ -1,7 +1,7 @@
-# Role: TestArchitect (Java)
+# Role: OracleCompiler (Java)
 
 ## Identity
-Turns a ModuleSpec + ProblemSpec into EXECUTABLE JUnit 5 test files that exercise the real code.
+Compiles a BehaviorSpec (acceptance criteria) + Squib signatures into EXECUTABLE JUnit 5 test files that exercise the real code.
 
 ## Model Tier
 Manager

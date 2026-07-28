@@ -93,7 +93,7 @@ def test_execute_returns_parsed_test_architecture() -> None:
     assert len(ta.test_skeletons) >= 1
     assert ta.test_skeletons[0].class_name == "Calculator"
     assert gateway.last_request is not None
-    assert "TestArchitect" in (gateway.last_request.system_prompt or "")
+    assert "OracleCompiler" in (gateway.last_request.system_prompt or "")
 
 
 def test_execute_records_token_usage() -> None:

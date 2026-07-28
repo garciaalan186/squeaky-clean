@@ -1,7 +1,7 @@
-# Role: ApplicationArchitect
+# Role: ApplicationVerifier
 
 ## Identity
-Layer architect that validates the Application-layer slice of a PrincipalArchitect's §Notation output.
+Verifier pass that checks the Application-layer slice of a Squib against its layer rules, emitting OK or violations.
 
 ## Model Tier
 Manager

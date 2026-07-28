@@ -11,7 +11,7 @@ from squeaky_clean.application.use_cases.security_review_formatter import (
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
-_SPEC_NAME: str = "SecurityArchitect"
+_SPEC_NAME: str = "ThreatAnalyzer"
 
 
 class ReviewSecurity:

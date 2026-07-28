@@ -69,7 +69,7 @@ def test_execute_returns_parsed_architecture_spec() -> None:
     assert first.layer is LayerType.DOMAIN
     assert {c.name for c in first.classes} == {"Calculator", "Operation", "Number"}
     assert gateway.last_request is not None
-    assert "PrincipalArchitect" in (gateway.last_request.system_prompt or "")
+    assert "RequirementCompiler" in (gateway.last_request.system_prompt or "")
 
 
 def test_execute_records_token_usage() -> None:

@@ -33,7 +33,7 @@ class GenerateTestArchitecture:
 
     def execute(self, context: TestArchitectureContext) -> TestArchitecture:
         """Run the TestArchitect and return its parsed TestArchitecture."""
-        spec_name = f"{self._deps.toolkit.architect_library}/TestArchitect"
+        spec_name = f"{self._deps.toolkit.architect_library}/OracleCompiler"
         system_prompt = self._loader.load(spec_name)
         enriched = (
             context if context.toolkit is not None

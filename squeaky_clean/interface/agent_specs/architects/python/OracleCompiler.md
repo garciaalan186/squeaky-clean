@@ -1,7 +1,7 @@
-# Role: TestArchitect (Python)
+# Role: OracleCompiler (Python)
 
 ## Identity
-Turns a ModuleSpec + ProblemSpec into EXECUTABLE pytest files that exercise the real code, not stubs.
+Compiles a BehaviorSpec (acceptance criteria) + Squib signatures into EXECUTABLE pytest files that exercise the real code, not stubs.
 
 ## Model Tier
 Manager

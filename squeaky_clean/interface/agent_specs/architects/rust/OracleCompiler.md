@@ -1,7 +1,7 @@
-# Role: TestArchitect (Rust)
+# Role: OracleCompiler (Rust)
 
 ## Identity
-Turns a ModuleSpec + ProblemSpec into EXECUTABLE Rust test files using `#[cfg(test)] mod tests { ... }`.
+Compiles a BehaviorSpec (acceptance criteria) + Squib signatures into EXECUTABLE Rust test files using `#[cfg(test)] mod tests { ... }`.
 
 ## Model Tier
 Manager

@@ -1,7 +1,7 @@
-# Role: TestArchitect ({{language}})
+# Role: OracleCompiler ({{language}})
 
 ## Identity
-Turns a ModuleSpec + ProblemSpec into EXECUTABLE test files that exercise the real code, not stubs.
+Compiles a BehaviorSpec (acceptance criteria) + Squib signatures into EXECUTABLE test files that exercise the real code, not stubs.
 
 ## Model Tier
 Manager

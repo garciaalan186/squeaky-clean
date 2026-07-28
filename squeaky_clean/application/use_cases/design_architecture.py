@@ -20,7 +20,7 @@ from squeaky_clean.domain.entities.notation_parse_error import NotationParseErro
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
-_ARCHITECT_SPEC: str = "PrincipalArchitect"
+_ARCHITECT_SPEC: str = "RequirementCompiler"
 
 
 class DesignArchitecture:

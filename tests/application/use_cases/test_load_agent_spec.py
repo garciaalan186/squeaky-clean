@@ -6,10 +6,10 @@ from squeaky_clean.application.use_cases.load_agent_spec import LoadAgentSpec
 
 
 def test_load_principal_architect_spec() -> None:
-    text = LoadAgentSpec().load("PrincipalArchitect")
+    text = LoadAgentSpec().load("RequirementCompiler")
     assert text.strip()
     assert "§Notation" in text
-    assert "# Role: PrincipalArchitect" in text
+    assert "# Role: RequirementCompiler" in text
 
 
 def test_load_unknown_spec_raises() -> None:
@@ -40,8 +40,8 @@ def test_load_go_simple_class_icp() -> None:
 
 
 def test_load_go_test_architect() -> None:
-    text = LoadAgentSpec().load("architects/go/TestArchitect")
-    assert "# Role: TestArchitect (Go)" in text
+    text = LoadAgentSpec().load("architects/go/OracleCompiler")
+    assert "# Role: OracleCompiler (Go)" in text
     assert "_test.go" in text
 
 
@@ -68,6 +68,6 @@ def test_load_rust_simple_class_icp() -> None:
 
 
 def test_load_rust_test_architect() -> None:
-    text = LoadAgentSpec().load("architects/rust/TestArchitect")
-    assert "# Role: TestArchitect (Rust)" in text
+    text = LoadAgentSpec().load("architects/rust/OracleCompiler")
+    assert "# Role: OracleCompiler (Rust)" in text
     assert "#[cfg(test)]" in text

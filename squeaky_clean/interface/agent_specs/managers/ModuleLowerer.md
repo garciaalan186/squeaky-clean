@@ -1,7 +1,7 @@
-# Role: EngineeringManager
+# Role: ModuleLowerer
 
 ## Identity
-Mid-tier manager that decomposes a ModuleSpec into ClassAssignments and dispatches ICPs in parallel.
+Mid-tier backend that lowers a Squib module to code: decomposes it into ClassAssignments and dispatches per-node emitters in parallel.
 
 ## Model Tier
 Manager

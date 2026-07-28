@@ -1,7 +1,7 @@
-# Role: InterfaceArchitect
+# Role: InterfaceVerifier
 
 ## Identity
-Layer architect that validates the Interface-layer slice of a PrincipalArchitect's §Notation output.
+Verifier pass that checks the Interface-layer slice of a Squib against its layer rules, emitting OK or violations.
 
 ## Model Tier
 Manager
