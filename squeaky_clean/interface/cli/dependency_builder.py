@@ -5,6 +5,7 @@ from pathlib import Path
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.use_cases.assign_patterns import AssignPatterns
 from squeaky_clean.application.use_cases.budgeted_gateway import BudgetedGateway
+from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cost
 from squeaky_clean.application.use_cases.cost_gate import CostGate
 from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
 from squeaky_clean.application.use_cases.fix_failing_classes import FixFailingClasses
@@ -85,6 +86,7 @@ class DependencyBuilder:
         gateway: LLMGateway = BudgetedGateway(
             CachingLLMGateway(self._select_inner_gateway(rc), cache_dir),
             cost_gate,
+            estimator=estimate_request_cost,
         )
         fs = LocalFileSystem()
         toolkit = LanguageToolkitFactory().for_language(problem.target_language)

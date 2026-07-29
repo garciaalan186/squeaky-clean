@@ -27,6 +27,38 @@ def _req() -> LLMRequest:
     return LLMRequest(model="m", system_prompt="s", user_prompt="u")
 
 
+def test_preflight_refuses_over_cap_before_calling_inner() -> None:
+    gate = CostGate(CostBudget(max_cost_usd=1.0))
+    inner = _CostStub(0.1)
+    g = BudgetedGateway(inner, gate, estimator=lambda _r: 5.0)
+    with pytest.raises(BudgetExceededError):
+        g.complete(_req())
+    assert inner.calls == 0  # refused BEFORE spending
+    assert gate.spent_usd() == 0.0
+
+
+def test_preflight_reconciles_to_actual_cost() -> None:
+    gate = CostGate(CostBudget(max_cost_usd=10.0))
+    inner = _CostStub(0.2)  # actual far below the 5.0 estimate
+    g = BudgetedGateway(inner, gate, estimator=lambda _r: 5.0)
+    g.complete(_req())
+    assert inner.calls == 1
+    assert gate.spent_usd() == 0.2  # reservation released, actual recorded
+
+
+def test_reservation_released_when_inner_raises() -> None:
+    class _Boom(LLMGateway):
+        def complete(self, request: LLMRequest) -> LLMResponse:
+            raise RuntimeError("boom")
+
+    gate = CostGate(CostBudget(max_cost_usd=10.0))
+    g = BudgetedGateway(_Boom(), gate, estimator=lambda _r: 5.0)
+    with pytest.raises(RuntimeError):
+        g.complete(_req())
+    assert gate.spent_usd() == 0.0
+    assert not gate.would_exceed(9.9)  # reservation was released
+
+
 def test_records_each_call() -> None:
     gate = CostGate(CostBudget(max_cost_usd=10.0))
     g = BudgetedGateway(_CostStub(1.5), gate)

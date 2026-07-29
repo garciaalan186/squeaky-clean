@@ -62,3 +62,52 @@ def test_negative_record_clamped_to_zero() -> None:
 def test_default_constructor_uses_default_budget() -> None:
     g = CostGate()
     assert g.budget().is_unlimited()
+
+
+def _budget(cap: float):
+    from squeaky_clean.application.dtos.cost_budget import CostBudget
+    return CostBudget(max_cost_usd=cap)
+
+
+def test_seed_carries_prior_spend() -> None:
+    from squeaky_clean.application.use_cases.cost_gate import CostGate
+    gate = CostGate(_budget(5.0))
+    gate.seed(4.0)
+    assert gate.spent_usd() == 4.0
+    assert gate.would_exceed(1.5)  # only $1 of headroom remains
+
+
+def test_reserve_blocks_parallel_overshoot() -> None:
+    """Concurrent reservers can never collectively exceed the cap."""
+    import threading
+
+    from squeaky_clean.application.use_cases.cost_gate import (
+        BudgetExceededError, CostGate,
+    )
+    gate = CostGate(_budget(10.0))  # 10 slots of $1
+    granted = []
+    lock = threading.Lock()
+
+    def worker() -> None:
+        try:
+            gate.reserve(1.0)
+            with lock:
+                granted.append(1)
+        except BudgetExceededError:
+            pass
+
+    threads = [threading.Thread(target=worker) for _ in range(50)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(granted) == 10  # exactly cap/est, never more
+
+
+def test_settle_reconciles_reservation() -> None:
+    from squeaky_clean.application.use_cases.cost_gate import CostGate
+    gate = CostGate(_budget(10.0))
+    reserved = gate.reserve(5.0)
+    gate.settle(reserved, 0.3)
+    assert gate.spent_usd() == 0.3
+    assert not gate.would_exceed(9.0)  # reservation freed

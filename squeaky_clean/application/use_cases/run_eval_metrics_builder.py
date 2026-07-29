@@ -80,6 +80,7 @@ class RunEvalMetricsBuilder:
         m.cache_creation_input_tokens = inputs.cache_creation_input_tokens
         m.cache_read_input_tokens = inputs.cache_read_input_tokens
         m.llm_timeouts = inputs.llm_timeouts
+        m.agent_hangs = inputs.llm_timeouts
         m.replicate_id = inputs.replicate_id
         m.spec_conformance_violations = inputs.spec_conformance_violations
         m.composer_validation_failures = inputs.composer_validation_failures

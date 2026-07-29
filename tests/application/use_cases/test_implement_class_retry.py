@@ -75,3 +75,21 @@ def test_no_retry_when_first_call_succeeds() -> None:
     result = uc.execute(_assignment())
     assert result.retries == 0
     assert gw.calls == 1
+
+
+def test_retry_handler_treats_timeout_as_retryable() -> None:
+    """A timed-out (empty) response must trigger a retry, not be parsed as-is."""
+    from squeaky_clean.application.use_cases.icp_retry_handler import ICPRetryHandler
+    from squeaky_clean.application.use_cases.parse_implemented_class import (
+        ParseImplementedClass,
+    )
+    gw = _SequencedGateway([_GOOD])  # the retry call returns valid code
+    handler = ICPRetryHandler(gw, RetryPolicy(max_icp_retries=1), ParseImplementedClass())
+    timed = LLMResponse(
+        content="", input_tokens=0, output_tokens=0, cost_usd=0.0,
+        duration_ms=1, timed_out=True,
+    )
+    req = LLMRequest(model="m", system_prompt="s", user_prompt="u", tier="icp")
+    response, retries = handler.run(req, "Operand", timed)
+    assert retries == 1
+    assert "class Operand" in response.content

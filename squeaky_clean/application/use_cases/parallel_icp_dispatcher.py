@@ -1,27 +1,50 @@
 """ParallelICPDispatcher: run ImplementClass across many assignments via threads."""
 
-from concurrent.futures import ThreadPoolExecutor
+import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
 from squeaky_clean.application.dtos.implemented_class import ImplementedClass
 from squeaky_clean.application.use_cases.implement_class import ImplementClass
 
+_LOG = logging.getLogger(__name__)
 _MAX_WORKERS: int = 4
 
 
 class ParallelICPDispatcher:
     """Runs ImplementClass over a list of assignments using a thread pool."""
 
-    def __init__(self, implement_class: ImplementClass) -> None:
+    def __init__(
+        self, implement_class: ImplementClass, max_workers: int = _MAX_WORKERS,
+    ) -> None:
         self._implement: ImplementClass = implement_class
+        self._max_workers: int = max_workers
 
     def dispatch(
         self,
         assignments: tuple[ClassAssignment, ...],
     ) -> tuple[ImplementedClass, ...]:
-        """Run every assignment in parallel; return results in input order."""
+        """Run every assignment in parallel; return successes in input order.
+
+        A failing assignment is logged and skipped so its siblings' completed
+        work survives (partial results) — unlike ``pool.map``, whose first
+        raised exception cancels the batch and discards everything.
+        """
         if not assignments:
             return ()
-        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as pool:
-            results = list(pool.map(self._implement.execute, assignments))
-        return tuple(results)
+        results: dict[int, ImplementedClass] = {}
+        with ThreadPoolExecutor(max_workers=self._max_workers) as pool:
+            futures = {
+                pool.submit(self._implement.execute, assignment): index
+                for index, assignment in enumerate(assignments)
+            }
+            for future in as_completed(futures):
+                index = futures[future]
+                try:
+                    results[index] = future.result()
+                except Exception as exc:  # noqa: BLE001
+                    _LOG.warning(
+                        "ICP failed for %s: %s",
+                        assignments[index].class_spec.name, exc,
+                    )
+        return tuple(results[i] for i in sorted(results))
