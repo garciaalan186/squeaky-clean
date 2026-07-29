@@ -8,7 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 _CHECKPOINT_FILENAME = "CHECKPOINT.json"
 
@@ -21,8 +21,8 @@ class CheckpointWriter:
     fails (per G3 contract).
     """
 
-    def __init__(self) -> None:
-        self._logger: JSONLogger = JSONLogger()
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._logger: RunLogger = logger or NullRunLogger()
 
     def write(self, checkpoint: RunCheckpoint, run_dir: Path) -> None:
         """Serialize ``checkpoint`` as JSON to ``<run_dir>/CHECKPOINT.json``."""

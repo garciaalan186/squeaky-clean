@@ -50,6 +50,7 @@ from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cos
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
+from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
 from squeaky_clean.infrastructure.techspec.allowlist_loader import (
     load_allowlist_registry,
@@ -149,6 +150,7 @@ class DependencyBuilder:
             cost_gate=cost_gate,
             sast_runner=BanditSastRunner() if rc.enable_sast else None,
             model_router=router,
+            run_logger=JSONLogger(),
             tech_spec_resolver=self._tech_spec_resolver(rc),
             infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
             dependency_installer=adapters.dependency_installer,

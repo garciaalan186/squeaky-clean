@@ -44,6 +44,7 @@ from squeaky_clean.application.use_cases.run_eval import RunEval
 from squeaky_clean.application.use_cases.run_sweep import RunSweep
 from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
@@ -189,7 +190,7 @@ class SqueakyCleanCLI:
             dependency_builder=DependencyBuilder(),
             router=router,  # type: ignore[arg-type]
         )
-        result = RunSweep(deps).execute(SweepRequest(
+        result = RunSweep(deps, JSONLogger()).execute(SweepRequest(
             problems=problems, max_parallel=args.max_parallel,
         ))
         print(f"[squeaky] sweep complete: {result.run_dir}")

@@ -17,7 +17,7 @@ from squeaky_clean.application.use_cases.run_eval import RunEval
 from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
 from squeaky_clean.application.use_cases.sweep_failure_bundle import SweepFailureBundle
 from squeaky_clean.application.use_cases.sweep_summary_writer import SweepSummaryWriter
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 _FRAMEWORK_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_RUN_ROOT = _FRAMEWORK_ROOT.parent / "meta-evaluation-results"
@@ -26,11 +26,11 @@ _DEFAULT_RUN_ROOT = _FRAMEWORK_ROOT.parent / "meta-evaluation-results"
 class RunSweep:
     """Allocates one run dir, dispatches N problems via a thread pool."""
 
-    def __init__(self, deps: RunSweepDeps) -> None:
+    def __init__(self, deps: RunSweepDeps, logger: RunLogger | None = None) -> None:
         self._deps: RunSweepDeps = deps
         self._summary: SweepSummaryWriter = SweepSummaryWriter()
         self._failure: SweepFailureBundle = SweepFailureBundle()
-        self._logger: JSONLogger = JSONLogger()
+        self._logger: RunLogger = logger or NullRunLogger()
         self._dashboard: DashboardGenerator = DashboardGenerator()
         self._resume: ResumeHelper = ResumeHelper()
 

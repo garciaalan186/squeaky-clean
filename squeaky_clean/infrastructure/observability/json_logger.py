@@ -8,8 +8,10 @@ import time
 from collections.abc import Mapping
 from typing import IO
 
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 
-class JSONLogger:
+
+class JSONLogger(RunLogger):
     """Lightweight structured logger; one JSON object per line."""
 
     def __init__(self, stream: IO[str] | None = None) -> None:

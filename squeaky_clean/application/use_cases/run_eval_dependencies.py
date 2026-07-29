@@ -28,6 +28,7 @@ from squeaky_clean.domain.interfaces.metric_collector import MetricCollector
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
 from squeaky_clean.infrastructure.testing.test_runner import TestRunner
@@ -61,6 +62,7 @@ class RunEvalDependencies:
     cost_gate: CostGate | None = None
     sast_runner: SastRunner | None = None
     secret_path_scanner: SecretPathScanner = field(default_factory=SecretPathScanner)
+    run_logger: RunLogger = field(default_factory=NullRunLogger)
     tech_spec_resolver: TechSpecResolver | None = None
     infrastructure_choice_architect: InfrastructureChoiceArchitect | None = None
     dependency_installer: DependencyInstaller | None = None

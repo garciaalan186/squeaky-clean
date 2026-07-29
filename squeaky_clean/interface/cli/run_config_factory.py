@@ -5,7 +5,7 @@ from squeaky_clean.application.dtos.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.application.dtos.retry_policy import RetryPolicy
 from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.temperature_policy import (
+from squeaky_clean.domain.value_objects.temperature_policy import (
     TemperaturePolicy,
     TierSampling,
 )

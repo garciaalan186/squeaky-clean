@@ -124,8 +124,8 @@ from squeaky_clean.application.use_cases.validate_http_conventions import (
 from squeaky_clean.application.use_cases.wiring_generator import WiringGenerator
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
     LifecycleTimestampLog,
 )
@@ -157,7 +157,7 @@ class RunEvalPipeline:
         self._security: SecurityScanStage = SecurityScanStage(
             deps.secret_path_scanner, deps.sast_runner,
         )
-        self._logger: JSONLogger = JSONLogger()
+        self._logger: RunLogger = deps.run_logger
         self._contracts: ContractRegistry = ContractRegistry()
         self._wiring: WiringGenerator = WiringGenerator()
         self._build_manifest: BuildManifestGenerator = BuildManifestGenerator()

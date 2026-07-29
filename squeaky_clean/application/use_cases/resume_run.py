@@ -15,16 +15,16 @@ from squeaky_clean.application.use_cases.checkpoint_reader import CheckpointRead
 from squeaky_clean.application.use_cases.resume_run_executor import ResumeRunExecutor
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 
 class ResumeRun:
     """Top-level resume entry point: read checkpoint, dispatch executor."""
 
-    def __init__(self) -> None:
-        self._reader: CheckpointReader = CheckpointReader()
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._logger: RunLogger = logger or NullRunLogger()
+        self._reader: CheckpointReader = CheckpointReader(self._logger)
         self._checksum: CheckpointChecksum = CheckpointChecksum()
-        self._logger: JSONLogger = JSONLogger()
 
     def resume(
         self, run_dir: Path, problem: ProblemSpec, deps: RunEvalDependencies,
