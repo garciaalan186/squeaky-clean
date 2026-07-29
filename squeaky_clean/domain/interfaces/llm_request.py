@@ -33,7 +33,17 @@ class LLMRequest:
     max_tokens: int | None = None
 
     def cache_key(self) -> str:
-        """Stable content-addressed key for caching (model+prompts+sampling)."""
+        """Stable content-addressed key for caching (model + prompts + replicate).
+
+        ``temperature`` and ``seed`` are deliberately EXCLUDED (R3.3): neither
+        gateway forwards them to the wire — the SDK omits them (current models
+        deprecate the temperature param and reject seed) and the CLI has no such
+        flags — so including them would only fragment the cache, giving a
+        ``--deterministic`` (temperature=0.0) run a different key from a default
+        (temperature=None) run for a byte-identical request. The warm cache IS
+        the reproducibility contract; ``replicate_id`` still distinguishes
+        intentionally-repeated samples.
+        """
         h = hashlib.sha256()
         h.update(self.model.encode("utf-8"))
         h.update(b"\x00")
@@ -41,13 +51,7 @@ class LLMRequest:
         h.update(b"\x00")
         h.update(self.user_prompt.encode("utf-8"))
         h.update(b"\x00")
-        temp_str = "" if self.temperature is None else f"{self.temperature:.4f}"
-        h.update(temp_str.encode("utf-8"))
-        h.update(b"\x00")
         h.update(str(self.replicate_id).encode("utf-8"))
-        h.update(b"\x00")
-        seed_str = "" if self.seed is None else str(self.seed)
-        h.update(seed_str.encode("utf-8"))
         return h.hexdigest()
 
     def cacheable_prefix_hash(self) -> str:
