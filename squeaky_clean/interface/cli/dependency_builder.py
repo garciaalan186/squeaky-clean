@@ -19,9 +19,6 @@ from squeaky_clean.application.use_cases.infrastructure_choice_architect import 
     InfrastructureChoiceArchitect,
 )
 from squeaky_clean.application.use_cases.integrate_module import IntegrateModule
-from squeaky_clean.application.use_cases.language_compiler_factory import (
-    LanguageCompilerFactory,
-)
 from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
 from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
 from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
@@ -69,6 +66,9 @@ from squeaky_clean.infrastructure.techspec.webfetch_tech_doc_fetcher import (
     WebFetchTechDocFetcher,
 )
 from squeaky_clean.interface.cli.language_adapter_selector import LanguageAdapterSelector
+from squeaky_clean.interface.cli.language_compiler_factory import (
+    LanguageCompilerFactory,
+)
 
 
 class DependencyBuilder:

@@ -31,7 +31,7 @@ from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSyste
 from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
-from squeaky_clean.infrastructure.testing.test_runner import TestRunner
+from squeaky_clean.domain.interfaces.test_runner import TestRunner
 
 
 @dataclass(frozen=True)

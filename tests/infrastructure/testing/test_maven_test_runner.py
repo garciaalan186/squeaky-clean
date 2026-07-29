@@ -71,9 +71,9 @@ def test_returns_zero_when_no_surefire_dir(tmp_path: Path) -> None:
 
 
 def test_factory_returns_maven_runner_for_java() -> None:
-    from squeaky_clean.application.use_cases.language_test_runner_factory import (
+    from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+    from squeaky_clean.interface.cli.language_test_runner_factory import (
         LanguageTestRunnerFactory,
     )
-    from squeaky_clean.domain.value_objects.target_language import TargetLanguage
     runner = LanguageTestRunnerFactory().for_language(TargetLanguage.JAVA)
     assert isinstance(runner, MavenTestRunner)

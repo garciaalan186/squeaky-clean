@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
 class TestRunner(ABC):

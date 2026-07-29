@@ -13,7 +13,6 @@ from squeaky_clean.application.dtos.integration_result import IntegrationResult
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
 from squeaky_clean.application.dtos.security_review import SecurityReview
 from squeaky_clean.application.dtos.test_architecture import TestArchitecture
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.dtos.validation_report import ValidationReport
 from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
 from squeaky_clean.application.use_cases.generate_security_tests import (
@@ -32,10 +31,11 @@ from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.interfaces.test_runner import TestRunner
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
-from squeaky_clean.infrastructure.testing.test_runner import TestRunner
 
 
 def _impl() -> ModuleImplementation:

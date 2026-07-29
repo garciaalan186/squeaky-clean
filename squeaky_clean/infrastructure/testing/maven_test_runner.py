@@ -8,9 +8,9 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
+from squeaky_clean.domain.interfaces.test_runner import TestRunner
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
-from squeaky_clean.infrastructure.testing.test_runner import TestRunner
 
 _TIMEOUT_SECONDS: int = 300
 _MAX_OUTPUT: int = 8000

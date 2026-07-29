@@ -18,7 +18,6 @@ from squeaky_clean.application.dtos.security_review_context import SecurityRevie
 from squeaky_clean.application.dtos.security_test_context import SecurityTestContext
 from squeaky_clean.application.dtos.test_architecture import TestArchitecture
 from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.use_cases.architectural_complexity_scorer import (
     ArchitecturalComplexityScorer,
 )
@@ -126,6 +125,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
     LifecycleTimestampLog,
 )

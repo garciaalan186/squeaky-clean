@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.dtos.validation_report import ValidationReport
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
 @dataclass(frozen=True)

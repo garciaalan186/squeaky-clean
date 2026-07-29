@@ -1,9 +1,6 @@
 [
   "LayerDependency|squeaky_clean/application/use_cases/cache_savings_calculator.py|application/ imports from infrastructure/ (outer layer)",
-  "LayerDependency|squeaky_clean/application/use_cases/language_compiler_factory.py|application/ imports from infrastructure/ (outer layer)",
-  "LayerDependency|squeaky_clean/application/use_cases/language_test_runner_factory.py|application/ imports from infrastructure/ (outer layer)",
   "LayerDependency|squeaky_clean/application/use_cases/recovery/llm_pattern_tiebreaker.py|application/ imports from infrastructure/ (outer layer)",
-  "LayerDependency|squeaky_clean/application/use_cases/run_eval_dependencies.py|application/ imports from infrastructure/ (outer layer)",
   "LayerDependency|squeaky_clean/application/use_cases/run_eval_pipeline.py|application/ imports from infrastructure/ (outer layer)",
   "LayerDependency|squeaky_clean/application/use_cases/techspec_composer.py|application/ imports from infrastructure/ (outer layer)",
   "PythonGranularityRule|squeaky_clean/application/dtos/custom_pattern_manifest.py|file declares # classes (>#)",
