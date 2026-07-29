@@ -17,7 +17,14 @@ def test_run_eval_writes_all_artifacts(tmp_path: Path) -> None:
     assert (ps_dir / "eval_report.json").exists()
     metrics = json.loads((run_dir / "metrics.json").read_text())
     assert metrics["estimated_cost_usd"] == 0.12
-    assert metrics["total_wall_clock_ms"] == 3400
+    # total_wall_clock_ms is now real elapsed time derived from the squib
+    # lifecycle timestamps (parse_start -> tests_complete), not the summed
+    # ICP durations; a stubbed run completes near-instantly.
+    assert isinstance(metrics["total_wall_clock_ms"], int)
+    assert metrics["total_wall_clock_ms"] >= 0
+    lifecycle = (ps_dir / "squib_lifecycle.jsonl").read_text().splitlines()
+    events = [json.loads(line)["event"] for line in lifecycle]
+    assert events == ["squib_parse_start", "build_complete", "tests_complete"]
     assert abs(metrics["tests_pass"] - (2 / 3)) < 1e-9
     assert metrics["total_tokens_input"] == 111
     assert metrics["total_tokens_output"] == 222

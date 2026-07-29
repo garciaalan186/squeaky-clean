@@ -73,4 +73,5 @@ class MetricsInputsAssembler:
             fixer_model=self._router.route(ModelTier.FIXER),
             composer_validation_failures=outputs.composer_stats.validation_failures,
             composer_manager_fallback_calls=outputs.composer_stats.manager_fallback_calls,
+            wall_clock_ms=outputs.wall_clock_ms,
         )

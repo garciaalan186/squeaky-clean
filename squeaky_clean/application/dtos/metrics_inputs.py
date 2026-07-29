@@ -67,3 +67,4 @@ class MetricsInputs:
     fixer_model: str = ""
     composer_validation_failures: int = 0
     composer_manager_fallback_calls: int = 0
+    wall_clock_ms: int = 0

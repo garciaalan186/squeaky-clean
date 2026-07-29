@@ -21,3 +21,4 @@ class PipelineOutputs:
     security_architecture: TestArchitecture
     fix_stats: FixerStageResult
     composer_stats: ComposerStats = ComposerStats()
+    wall_clock_ms: int = 0
