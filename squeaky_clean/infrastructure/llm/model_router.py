@@ -1,5 +1,6 @@
 """ModelRouter: maps a ModelTier to a concrete model identifier string."""
 
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.infrastructure.llm.model_catalog import ModelId
 
@@ -15,7 +16,7 @@ DEFAULT_MAPPING: dict[ModelTier, str] = {
 _DEFAULT_MAPPING = DEFAULT_MAPPING  # backward-compatible alias
 
 
-class ModelRouter:
+class ModelRouter(ModelRoutingPolicy):
     """Routes a ModelTier to the configured concrete model identifier."""
 
     def __init__(self, mapping: dict[ModelTier, str] | None = None) -> None:

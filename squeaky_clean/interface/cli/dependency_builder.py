@@ -103,7 +103,8 @@ class DependencyBuilder:
         )
         icp_router = self._icp_router(router, problem.target_language)
         composer = (
-            TechSpecComposer(gateway) if rc.infrastructure_mode == "auto" else None
+            TechSpecComposer(gateway, router)
+            if rc.infrastructure_mode == "auto" else None
         )
         parser = ParseImplementedClass(adapters.parser)
         orchestrator = OrchestrateModule(
@@ -149,7 +150,7 @@ class DependencyBuilder:
             sast_runner=BanditSastRunner() if rc.enable_sast else None,
             model_router=router,
             tech_spec_resolver=self._tech_spec_resolver(rc),
-            infrastructure_choice_architect=self._infra_choice_architect(rc, gateway),
+            infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
             dependency_installer=adapters.dependency_installer,
             project_compiler=LanguageCompilerFactory().for_language(
                 problem.target_language
@@ -160,7 +161,7 @@ class DependencyBuilder:
 
     @staticmethod
     def _infra_choice_architect(
-        rc: RunConfig, gateway: LLMGateway,
+        rc: RunConfig, call_deps: LLMCallDeps,
     ) -> InfrastructureChoiceArchitect | None:
         if rc.infrastructure_mode != "auto" or not rc.infer_infrastructure:
             return None
@@ -170,7 +171,8 @@ class DependencyBuilder:
         if not scores_root.is_dir():
             return None
         return InfrastructureChoiceArchitect(
-            gateway, MCDARegistry(scores_root), MCDAScorer(),
+            call_deps.gateway, MCDARegistry(scores_root), MCDAScorer(),
+            call_deps.router,
         )
 
     @staticmethod

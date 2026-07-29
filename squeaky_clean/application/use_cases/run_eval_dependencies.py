@@ -25,11 +25,11 @@ from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathSc
 from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
 from squeaky_clean.domain.interfaces.metric_collector import MetricCollector
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.testing.test_runner import TestRunner
 
 
@@ -53,6 +53,7 @@ class RunEvalDependencies:
     llm_usage_recorder: LLMUsageRecorder
     review_security: ReviewSecurity
     generate_security_tests: GenerateSecurityTests
+    model_router: ModelRoutingPolicy
     functional_test_runner: TestRunner | None = None
     fix_failing_classes: FixFailingClasses | None = None
     file_system: ProjectFileSystem | None = None
@@ -60,7 +61,6 @@ class RunEvalDependencies:
     cost_gate: CostGate | None = None
     sast_runner: SastRunner | None = None
     secret_path_scanner: SecretPathScanner = field(default_factory=SecretPathScanner)
-    model_router: ModelRouter = field(default_factory=ModelRouter)
     tech_spec_resolver: TechSpecResolver | None = None
     infrastructure_choice_architect: InfrastructureChoiceArchitect | None = None
     dependency_installer: DependencyInstaller | None = None

@@ -18,6 +18,7 @@ from squeaky_clean.application.use_cases.techspec_composer_validator import (
     validate_composition,
 )
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
@@ -26,12 +27,10 @@ from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuil
 class TechSpecComposer:
     """Bridge from (ClassAssignment, TechSpec) to a ready-to-dispatch prompt."""
 
-    def __init__(
-        self, gateway: LLMGateway, loader: LoadAgentSpec | None = None,
-    ) -> None:
-        self._loader = loader or LoadAgentSpec()
+    def __init__(self, gateway: LLMGateway, routing: ModelRoutingPolicy) -> None:
+        self._loader = LoadAgentSpec()
         self._builder = TechSpecBuilder()
-        self._manager = TechSpecComposerManagerCall(gateway)
+        self._manager = TechSpecComposerManagerCall(gateway, routing)
         self.stats: ComposerStats = ComposerStats()
 
     def compose(

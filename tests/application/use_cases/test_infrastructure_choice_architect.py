@@ -15,6 +15,7 @@ from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCORES_ROOT = _REPO_ROOT / "eval" / "mcda_scores"
@@ -44,7 +45,7 @@ def _problem() -> ProblemSpec:
 
 def test_decide_returns_winner_with_rationale() -> None:
     arch = InfrastructureChoiceArchitect(
-        _StubGateway(), MCDARegistry(_SCORES_ROOT), MCDAScorer(),
+        _StubGateway(), MCDARegistry(_SCORES_ROOT), MCDAScorer(), ModelRouter(),
     )
     choice = arch.decide(_problem(), "blob_storage")
     # bundled blob_storage scores: s3 wins (4.05) under default weights
@@ -57,7 +58,7 @@ def test_decide_returns_winner_with_rationale() -> None:
 def test_rationale_truncated_to_50_words() -> None:
     long = "word " * 80
     arch = InfrastructureChoiceArchitect(
-        _StubGateway(long), MCDARegistry(_SCORES_ROOT), MCDAScorer(),
+        _StubGateway(long), MCDARegistry(_SCORES_ROOT), MCDAScorer(), ModelRouter(),
     )
     choice = arch.decide(_problem(), "blob_storage")
     assert len(choice.rationale.split()) == 50
@@ -65,8 +66,8 @@ def test_rationale_truncated_to_50_words() -> None:
 
 def test_decide_is_deterministic_with_stub_gateway() -> None:
     g1 = _StubGateway("rationale text"); g2 = _StubGateway("rationale text")
-    a = InfrastructureChoiceArchitect(g1, MCDARegistry(_SCORES_ROOT), MCDAScorer()).decide(_problem(), "blob_storage")
-    b = InfrastructureChoiceArchitect(g2, MCDARegistry(_SCORES_ROOT), MCDAScorer()).decide(_problem(), "blob_storage")
+    a = InfrastructureChoiceArchitect(g1, MCDARegistry(_SCORES_ROOT), MCDAScorer(), ModelRouter()).decide(_problem(), "blob_storage")
+    b = InfrastructureChoiceArchitect(g2, MCDARegistry(_SCORES_ROOT), MCDAScorer(), ModelRouter()).decide(_problem(), "blob_storage")
     assert a == b
 
 
@@ -75,7 +76,7 @@ def test_no_candidates_raises(tmp_path: Path) -> None:
         '{"category": "ghost", "candidates": []}',
     )
     arch = InfrastructureChoiceArchitect(
-        _StubGateway(), MCDARegistry(tmp_path), MCDAScorer(),
+        _StubGateway(), MCDARegistry(tmp_path), MCDAScorer(), ModelRouter(),
     )
     with pytest.raises(NoCandidatesAvailableError):
         arch.decide(_problem(), "ghost")

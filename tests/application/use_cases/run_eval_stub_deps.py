@@ -33,6 +33,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
 from squeaky_clean.infrastructure.testing.test_runner import TestRunner
 
@@ -85,4 +86,5 @@ def build_stub_deps() -> RunEvalDependencies:
         llm_usage_recorder=LLMUsageRecorder(),
         review_security=cast(ReviewSecurity, sec_review),
         generate_security_tests=cast(GenerateSecurityTests, sec_tests),
+        model_router=ModelRouter(),
     )

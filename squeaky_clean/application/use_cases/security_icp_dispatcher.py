@@ -17,8 +17,8 @@ from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _MAX_WORKERS: int = 4
 
@@ -27,11 +27,11 @@ class SecurityICPDispatcher:
     """Dispatches Security ICP calls in parallel and assembles results."""
 
     def __init__(
-        self, gateway: LLMGateway, router: ModelRouter,
+        self, gateway: LLMGateway, router: ModelRoutingPolicy,
         run_config: RunConfig | None = None,
     ) -> None:
         self._gateway: LLMGateway = gateway
-        self._router: ModelRouter = router
+        self._router: ModelRoutingPolicy = router
         self._run_config: RunConfig = run_config or RunConfig()
         self._loader: LoadAgentSpec = LoadAgentSpec()
         self._mapper: MapConcernToSecurityEmitter = MapConcernToSecurityEmitter()

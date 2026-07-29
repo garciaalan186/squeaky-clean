@@ -14,15 +14,15 @@ from squeaky_clean.application.use_cases.techspec_composer import TechSpecCompos
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 
 class ImplementClass:
     """Runs an ICP call and retries up to ``RetryPolicy.max_icp_retries``."""
 
     def __init__(
-        self, gateway: LLMGateway, router: ModelRouter,
+        self, gateway: LLMGateway, router: ModelRoutingPolicy,
         run_config: RunConfig | None = None,
         composer: TechSpecComposer | None = None,
         parser: ParseImplementedClass | None = None,
