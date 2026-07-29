@@ -71,3 +71,34 @@ def test_all_success_preserves_order() -> None:
     dispatcher = ParallelICPDispatcher(_FlakyImplement(fail_on="none"))  # type: ignore[arg-type]
     results = dispatcher.dispatch(assignments)
     assert [r.class_name for r in results] == ["A", "B", "C"]
+
+
+class _BarrierImplement:
+    """Blocks each call on a barrier so all run concurrently (peak gauge test)."""
+
+    def __init__(self, parties: int) -> None:
+        import threading
+        self._barrier = threading.Barrier(parties, timeout=5)
+
+    def execute(self, assignment: ClassAssignment) -> ImplementedClass:
+        self._barrier.wait()
+        return _impl(assignment.class_spec.name)
+
+
+def test_peak_parallelism_is_measured() -> None:
+    assignments = tuple(_assignment(n) for n in ("A", "B", "C", "D"))
+    dispatcher = ParallelICPDispatcher(
+        _BarrierImplement(4), max_workers=4,  # type: ignore[arg-type]
+    )
+    dispatcher.dispatch(assignments)
+    # All four are forced to rendezvous at the barrier → peak is exactly 4.
+    assert dispatcher.peak_parallelism == 4
+
+
+def test_peak_parallelism_never_exceeds_workers() -> None:
+    assignments = tuple(_assignment(n) for n in ("A", "B", "C"))
+    dispatcher = ParallelICPDispatcher(
+        _FlakyImplement(fail_on="none"), max_workers=2,  # type: ignore[arg-type]
+    )
+    dispatcher.dispatch(assignments)
+    assert 1 <= dispatcher.peak_parallelism <= 2
