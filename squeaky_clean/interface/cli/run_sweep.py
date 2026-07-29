@@ -14,10 +14,10 @@ from squeaky_clean.application.use_cases.dashboard_generator import DashboardGen
 from squeaky_clean.application.use_cases.meta_eval_paths import MetaEvalPaths
 from squeaky_clean.application.use_cases.resume_helper import ResumeHelper
 from squeaky_clean.application.use_cases.run_eval import RunEval
-from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
 from squeaky_clean.application.use_cases.sweep_failure_bundle import SweepFailureBundle
 from squeaky_clean.application.use_cases.sweep_summary_writer import SweepSummaryWriter
 from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
+from squeaky_clean.interface.cli.run_sweep_deps import RunSweepDeps
 
 _FRAMEWORK_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_RUN_ROOT = _FRAMEWORK_ROOT.parent / "meta-evaluation-results"

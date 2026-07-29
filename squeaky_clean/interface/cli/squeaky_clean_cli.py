@@ -38,18 +38,18 @@ from squeaky_clean.application.use_cases.recovery.supplied_architecture_designer
 from squeaky_clean.application.use_cases.recovery.violation_report_deserializer import (
     ViolationReportDeserializer,
 )
-from squeaky_clean.application.use_cases.replicate_runner import ReplicateRunner
-from squeaky_clean.application.use_cases.resume_dispatch import ResumeDispatch
 from squeaky_clean.application.use_cases.run_eval import RunEval
-from squeaky_clean.application.use_cases.run_sweep import RunSweep
-from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
+from squeaky_clean.interface.cli.replicate_runner import ReplicateRunner
+from squeaky_clean.interface.cli.resume_dispatch import ResumeDispatch
 from squeaky_clean.interface.cli.router_factory import RouterFactory
 from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
+from squeaky_clean.interface.cli.run_sweep import RunSweep
+from squeaky_clean.interface.cli.run_sweep_deps import RunSweepDeps
 
 _LOG = logging.getLogger(__name__)
 

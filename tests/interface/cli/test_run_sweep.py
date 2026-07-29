@@ -11,12 +11,12 @@ from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.sweep_request import SweepRequest
 from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.dtos.validation_report import ValidationReport
-from squeaky_clean.application.use_cases.run_sweep import RunSweep
-from squeaky_clean.application.use_cases.run_sweep_deps import RunSweepDeps
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.run_sweep import RunSweep
+from squeaky_clean.interface.cli.run_sweep_deps import RunSweepDeps
 
 
 def _problem(pid: str, tier: int) -> ProblemSpec:
