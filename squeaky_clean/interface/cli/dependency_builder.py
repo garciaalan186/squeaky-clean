@@ -37,6 +37,7 @@ from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.rule import Rule
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
 from squeaky_clean.domain.rules.dependency_rule import DependencyRule
+from squeaky_clean.domain.rules.pattern_conformance import PatternConformanceRule
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
@@ -124,7 +125,11 @@ class DependencyBuilder:
         )
         rules: tuple[Rule, ...] = (adapters.granularity_rule,)
         if problem.target_language is TargetLanguage.PYTHON:
-            rules = (adapters.granularity_rule, DependencyRule())
+            rules = (
+                adapters.granularity_rule,
+                DependencyRule(),
+                PatternConformanceRule(),
+            )
         rule_runner = RuleRunner(rules, toolkit.file_extension)
         fixer = FixFailingClasses(FixFailingClassesDeps(
             gateway=gateway, router=router, recorder=recorder, toolkit=toolkit,
