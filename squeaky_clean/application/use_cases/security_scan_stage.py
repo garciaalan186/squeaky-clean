@@ -12,6 +12,7 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.sast_report import SastReport
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathScanner
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 
@@ -48,11 +49,12 @@ class SecurityScanStage:
         metrics.sast_medium_findings = report.severity_count("MEDIUM")
         metrics.sast_failed = report.has_high_high()
         try:
-            (output_dir / "sast_report.json").write_text(
+            atomic_write_text(
+                output_dir / "sast_report.json",
                 json.dumps(
                     {"findings": [asdict(f) for f in report.findings]},
                     indent=2,
-                )
+                ),
             )
         except OSError:
             pass

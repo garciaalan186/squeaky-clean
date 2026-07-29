@@ -46,6 +46,7 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
 from squeaky_clean.infrastructure.llm.caching_llm_gateway import CachingLLMGateway
+from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.llm.claude_cli_gateway import ClaudeCLIGateway
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
@@ -84,7 +85,12 @@ class DependencyBuilder:
         cache_dir = framework_root.parent / "meta-evaluation-results" / "cache"
         cost_gate = CostGate(rc.cost_budget)
         gateway: LLMGateway = BudgetedGateway(
-            CachingLLMGateway(self._select_inner_gateway(rc), cache_dir),
+            CachingLLMGateway(
+                RetryingGateway(
+                    self._select_inner_gateway(rc), rc.retry_policy,
+                ),
+                cache_dir,
+            ),
             cost_gate,
             estimator=estimate_request_cost,
         )

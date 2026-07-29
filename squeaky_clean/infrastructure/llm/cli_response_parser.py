@@ -14,9 +14,11 @@ class CLIResponseParser:
         try:
             payload = json.loads(raw_stdout)
         except json.JSONDecodeError as exc:
-            raise LLMGatewayError(f"invalid CLI JSON: {exc}") from exc
+            raise LLMGatewayError(
+                f"invalid CLI JSON: {exc}", retryable=True,
+            ) from exc
         if not isinstance(payload, dict):
-            raise LLMGatewayError("CLI JSON was not an object")
+            raise LLMGatewayError("CLI JSON was not an object", retryable=True)
         if payload.get("is_error") is True:
             raise LLMGatewayError(
                 f"claude CLI returned error: {payload.get('result', '')}"

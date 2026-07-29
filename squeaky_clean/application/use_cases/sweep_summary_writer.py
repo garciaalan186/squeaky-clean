@@ -5,6 +5,7 @@ from dataclasses import asdict
 
 from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.sweep_result import SweepResult
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 from squeaky_clean.application.use_cases.cache_summary_renderer import CacheSummaryRenderer
 
 
@@ -38,7 +39,7 @@ class SweepSummaryWriter:
         lines.extend(self._totals(result))
         lines.extend(self._cache_renderer.render(self._aggregate_metrics(result)))
         lines.extend(self._errors(result))
-        (result.run_dir / "SUMMARY.md").write_text("\n".join(lines))
+        atomic_write_text(result.run_dir / "SUMMARY.md", "\n".join(lines))
         self._write_metrics(result)
 
     def _aggregate_metrics(self, result: SweepResult) -> EvalMetrics:
@@ -97,6 +98,7 @@ class SweepSummaryWriter:
                 for b in result.bundles
             ],
         }
-        (result.run_dir / "metrics.json").write_text(
-            json.dumps(payload, indent=2, default=str)
+        atomic_write_text(
+            result.run_dir / "metrics.json",
+            json.dumps(payload, indent=2, default=str),
         )

@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from squeaky_clean.infrastructure.llm.model_pricing import estimate_cost_usd
+from squeaky_clean.infrastructure.llm.model_pricing import (
+    estimate_cost_usd,
+    is_priced,
+)
 
 _CACHE_READ_DISCOUNT: float = 0.9
 _CACHE_CREATE_PREMIUM: float = 0.25
@@ -37,6 +40,10 @@ class CacheSavingsCalculator:
         Net savings = read * input_rate * 0.9 - create * input_rate * 0.25.
         """
         if not tier.model or (tier.create_tokens + tier.read_tokens) == 0:
+            return 0.0
+        if not is_priced(tier.model):
+            # Reporting stays honest: no guessed savings for an unpriced model
+            # (the conservative budget fallback lives in estimate_cost_usd).
             return 0.0
         # USD per 1M input tokens for the tier's model, then per-token rate.
         per_mtok = estimate_cost_usd(

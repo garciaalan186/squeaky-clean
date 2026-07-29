@@ -9,11 +9,15 @@ and Opus 4.0/4.1).
 from __future__ import annotations
 
 import json
+import logging
 import time
 import urllib.request
 from pathlib import Path
 
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 from squeaky_clean.infrastructure.llm.model_catalog import ModelId
+
+_LOG = logging.getLogger(__name__)
 
 _FALLBACK: dict[str, tuple[float, float, float, float]] = {
     # Current models — keyed off the ModelId single source of truth.
@@ -54,8 +58,7 @@ def _live_rates() -> dict[str, tuple[float, float, float, float]]:
             req = urllib.request.Request(_URL, headers={"User-Agent": "squeaky-clean"})
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode())
-            _CACHE.parent.mkdir(parents=True, exist_ok=True)
-            _CACHE.write_text(json.dumps(data))
+            atomic_write_text(_CACHE, json.dumps(data))
         except (OSError, json.JSONDecodeError, ValueError):
             data = _load_cached()
     rates: dict[str, tuple[float, float, float, float]] = {}
@@ -73,6 +76,42 @@ def _live_rates() -> dict[str, tuple[float, float, float, float]]:
     return rates
 
 
+def _resolve_rates(model: str) -> tuple[float, float, float, float]:
+    """Known rate for ``model``, else a conservative family fallback.
+
+    An unknown model MUST NOT price at $0 — that silently defeats budget
+    accounting (R0.10). We infer the family from the id substring and use its
+    rates, defaulting to the most expensive tier (Opus) so an unrecognised
+    future model over-estimates rather than under-charges. Always warns loudly.
+    """
+    rates = _live_rates().get(model) or _FALLBACK.get(model)
+    if rates is not None:
+        return rates
+    lower = model.lower()
+    if "haiku" in lower:
+        family, fallback = "haiku", _FALLBACK[ModelId.HAIKU]
+    elif "sonnet" in lower:
+        family, fallback = "sonnet", _FALLBACK[ModelId.SONNET]
+    else:
+        family, fallback = "opus (conservative default)", _FALLBACK[ModelId.OPUS]
+    _LOG.warning(
+        "unknown model %r for pricing; using %s-family rates to avoid $0 "
+        "budget accounting", model, family,
+    )
+    return fallback
+
+
+def is_priced(model: str) -> bool:
+    """True iff ``model`` has an exact rate (no family fallback).
+
+    Budget accounting wants a conservative estimate for unknown models
+    (``estimate_cost_usd``), but reporting paths (e.g. cache-savings) prefer
+    an honest $0 over a guessed rate — this predicate lets them tell the two
+    situations apart.
+    """
+    return (_live_rates().get(model) or _FALLBACK.get(model)) is not None
+
+
 def estimate_cost_usd(
     model: str,
     input_tokens: int,
@@ -81,11 +120,9 @@ def estimate_cost_usd(
     cache_read_tokens: int = 0,
 ) -> float:
     """USD cost from token counts. Tuple is (in, out, cache_write,
-    cache_read) per-MTok. Returns 0.0 for unknown models."""
-    rates = _live_rates().get(model) or _FALLBACK.get(model)
-    if rates is None:
-        return 0.0
-    in_r, out_r, cw_r, cr_r = rates
+    cache_read) per-MTok. Unknown models fall back to a conservative
+    same-family rate (never a silent $0) — see ``_resolve_rates``."""
+    in_r, out_r, cw_r, cr_r = _resolve_rates(model)
     plain_in = max(0, input_tokens - cache_creation_tokens - cache_read_tokens)
     return (
         plain_in * in_r

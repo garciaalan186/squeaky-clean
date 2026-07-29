@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 from squeaky_clean.application.use_cases.spec_version_stamp import SpecVersionStamp
 
 
@@ -35,8 +36,9 @@ class RunManifest:
             "spec_hashes": self._hash_spec_dirs(spec_dirs),
         }
         target = run_dir / "manifest.json"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(manifest, indent=2, sort_keys=True))
+        atomic_write_text(
+            target, json.dumps(manifest, indent=2, sort_keys=True),
+        )
         return target
 
     def _stamp(self, spec_dirs: Sequence[Path]) -> str:

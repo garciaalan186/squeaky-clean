@@ -9,6 +9,7 @@ from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.sweep_request import SweepRequest
 from squeaky_clean.application.dtos.sweep_result import SweepResult
+from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError
 from squeaky_clean.application.use_cases.dashboard_generator import DashboardGenerator
 from squeaky_clean.application.use_cases.meta_eval_paths import MetaEvalPaths
 from squeaky_clean.application.use_cases.resume_helper import ResumeHelper
@@ -89,6 +90,13 @@ class RunSweep:
                                tests_pass=bundle.metrics.tests_pass,
                                cost_usd=bundle.metrics.estimated_cost_usd)
             return bundle
+        except BudgetExceededError:
+            # A budget breach is fatal to the whole sweep, not one problem:
+            # the shared cap is spent, so remaining problems would only fail
+            # or overspend. Log and propagate to abort the run loudly.
+            self._logger.event("sweep_budget_exceeded", problem=problem.id,
+                               error=traceback.format_exc().splitlines()[-1])
+            raise
         except Exception:  # noqa: BLE001
             tb = traceback.format_exc()
             self._logger.event("problem_failed", problem=problem.id,

@@ -1,5 +1,6 @@
 """SqueakyCleanCLI: top-level CLI wiring that invokes RunEval or RunSweep."""
 
+import logging
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -49,6 +50,8 @@ from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
 from squeaky_clean.interface.cli.router_factory import RouterFactory
 from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
 
+_LOG = logging.getLogger(__name__)
+
 
 class SqueakyCleanCLI:
     """Top-level CLI entry point — single-problem RunEval or parallel RunSweep."""
@@ -82,6 +85,9 @@ class SqueakyCleanCLI:
                 return self._single(router, args.problem_ids[0], args)
             return self._sweep(router, args)
         except Exception as exc:  # noqa: BLE001
+            # Keep the 1-line stderr UX, but preserve the full traceback in the
+            # log so failures are diagnosable instead of silently discarded.
+            _LOG.exception("CLI run failed")
             print(f"[squeaky] FAILED: {type(exc).__name__}: {exc}",
                   file=sys.stderr)
             return 1

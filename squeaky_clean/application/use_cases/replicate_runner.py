@@ -9,6 +9,7 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.eval_result_dto import EvalResult
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 from squeaky_clean.application.use_cases.run_eval import RunEval
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.interface.cli.cli_args import CLIArgs
@@ -72,5 +73,5 @@ class ReplicateRunner:
             "cost_stdev": statistics.stdev(costs) if len(costs) > 1 else 0.0,
             "reports": [str(r.report_path) for r in results],
         }
-        summary_path.write_text(json.dumps(payload, indent=2))
+        atomic_write_text(summary_path, json.dumps(payload, indent=2))
         return ReplicateSummary(summary_path=summary_path, runs=len(results))

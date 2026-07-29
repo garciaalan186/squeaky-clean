@@ -8,6 +8,7 @@ from typing import cast
 
 from squeaky_clean.application.dtos.contract import Contract
 from squeaky_clean.application.dtos.contract_field import ContractField
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 
 _REPO_ROOT: Path = Path(__file__).resolve().parents[3]
 _DEFAULT_ROOT: Path = _REPO_ROOT / "eval" / "contracts"
@@ -32,9 +33,8 @@ class ContractRegistry:
 
     def register(self, contract: Contract) -> Path:
         """Write ``contract`` to disk and return the resulting JSON path."""
-        self._root.mkdir(parents=True, exist_ok=True)
         path = self._path_for(contract.name)
-        path.write_text(json.dumps(self._dump(contract), indent=2))
+        atomic_write_text(path, json.dumps(self._dump(contract), indent=2))
         return path
 
     def all_contracts(self) -> tuple[Contract, ...]:

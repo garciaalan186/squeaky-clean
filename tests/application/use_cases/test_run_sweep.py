@@ -79,3 +79,30 @@ def test_execute_runs_problems_in_parallel(tmp_run_root: Path) -> None:
     assert result.total_cost_usd == 1.0
     assert (result.run_dir / "SUMMARY.md").is_file()
     assert (result.run_dir / "metrics.json").is_file()
+
+
+def test_budget_exceeded_aborts_whole_sweep(tmp_run_root: Path) -> None:
+    from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError
+
+    builder = Mock(spec=DependencyBuilder)
+    builder.build.return_value = Mock()
+    deps = RunSweepDeps(
+        dependency_builder=cast(DependencyBuilder, builder),
+        router=ModelRouter(), run_root=tmp_run_root,
+    )
+    sweep = RunSweep(deps)
+
+    def boom(self: object, problem: ProblemSpec, run_dir: Path) -> EvalReportBundle:  # noqa: ARG001
+        raise BudgetExceededError("cap reached")
+
+    from squeaky_clean.application.use_cases import run_eval as run_eval_module
+
+    monkey = run_eval_module.RunEval.execute_in
+    run_eval_module.RunEval.execute_in = boom  # type: ignore[method-assign]
+    try:
+        with pytest.raises(BudgetExceededError):
+            sweep.execute(SweepRequest(
+                problems=(_problem("P0", 0),), max_parallel=1,
+            ))
+    finally:
+        run_eval_module.RunEval.execute_in = monkey  # type: ignore[method-assign]

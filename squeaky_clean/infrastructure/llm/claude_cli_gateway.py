@@ -1,6 +1,8 @@
 """ClaudeCLIGateway: LLMGateway adapter that shells out to `claude -p`."""
 
 import logging
+import os
+import signal
 import subprocess
 
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
@@ -33,13 +35,7 @@ class ClaudeCLIGateway(LLMGateway):
         self._warn_if_unsupported(request)
         argv = self._builder.build(request)
         try:
-            completed = subprocess.run(
-                argv,
-                capture_output=True,
-                text=True,
-                timeout=self._timeout,
-                check=False,
-            )
+            stdout, returncode = self._run(argv)
         except subprocess.TimeoutExpired as exc:
             if self._graceful:
                 return LLMResponse(
@@ -50,14 +46,51 @@ class ClaudeCLIGateway(LLMGateway):
                     duration_ms=self._timeout * 1000,
                     timed_out=True,
                 )
-            raise LLMGatewayError(f"claude CLI timed out: {exc}") from exc
-        except OSError as exc:
-            raise LLMGatewayError(f"failed to invoke claude CLI: {exc}") from exc
-        if completed.returncode != 0:
             raise LLMGatewayError(
-                f"claude CLI exit {completed.returncode}: {completed.stderr}"
+                f"claude CLI timed out: {exc}", retryable=True,
+            ) from exc
+        except OSError as exc:
+            raise LLMGatewayError(
+                f"failed to invoke claude CLI: {exc}", retryable=True,
+            ) from exc
+        if returncode != 0:
+            # An empty exit is a transient hiccup worth retrying; a non-empty
+            # one carries a genuine diagnostic and should surface immediately.
+            raise LLMGatewayError(
+                f"claude CLI exit {returncode}: {stdout[:500]}",
+                retryable=not stdout.strip(),
             )
-        return self._parser.parse(completed.stdout)
+        return self._parser.parse(stdout)
+
+    def _run(self, argv: list[str]) -> tuple[str, int]:
+        """Spawn the CLI in its own session; kill the group on timeout.
+
+        ``subprocess.run`` only signals the direct child, orphaning any
+        grandchildren the CLI spawns. Starting a new session and killing the
+        whole process group on timeout prevents leaked workers.
+        """
+        proc = subprocess.Popen(
+            argv,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            start_new_session=True,
+        )
+        try:
+            stdout, _stderr = proc.communicate(timeout=self._timeout)
+        except subprocess.TimeoutExpired:
+            self._kill_group(proc)
+            proc.communicate()
+            raise
+        return stdout, proc.returncode
+
+    @staticmethod
+    def _kill_group(proc: "subprocess.Popen[str]") -> None:
+        """Best-effort SIGKILL of the child's process group."""
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            proc.kill()
 
     @staticmethod
     def _warn_if_unsupported(request: LLMRequest) -> None:
