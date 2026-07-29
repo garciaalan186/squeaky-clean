@@ -19,15 +19,20 @@ def _module() -> ModuleSpec:
         fields=("value: str",),
         invariants=("title must be non-empty",),
     )
+    owner = ClassSpec(
+        name="Owner", pattern="ValueObject", implements=None,
+        methods=(), depends=(), concretes=(),
+        fields=("name: str",),
+    )
     todo = ClassSpec(
         name="Todo", pattern="Entity", implements=None,
         methods=("mark_complete(): None",),
-        depends=("TodoTitle",), concretes=(),
+        depends=("TodoTitle", "Owner"), concretes=(),
         fields=("id: int", "title: TodoTitle"),
     )
     return ModuleSpec(
         name="Todo", layer=LayerType.DOMAIN, exports=(),
-        depends=(), classes=(title, todo), invariants=(),
+        depends=(), classes=(title, owner, todo), invariants=(),
     )
 
 
@@ -39,9 +44,10 @@ def test_formatter_includes_invariants_for_siblings() -> None:
 
 
 def test_formatter_emits_empty_invariants_when_none() -> None:
+    # Todo depends on Owner (a ValueObject with no invariants) → invariants=[].
     fmt = SiblingInterfaceFormatter(_TOOLKIT)
-    out = fmt.format(_module(), focal_name="TodoTitle")
-    assert "Todo (Entity" in out
+    out = fmt.format(_module(), focal_name="Todo")
+    assert "Owner (ValueObject" in out
     assert "invariants=[]" in out
 
 
@@ -49,6 +55,14 @@ def test_formatter_excludes_focal_class() -> None:
     fmt = SiblingInterfaceFormatter(_TOOLKIT)
     out = fmt.format(_module(), focal_name="Todo")
     assert "Todo (Entity" not in out
+
+
+def test_no_declared_deps_yields_empty_block() -> None:
+    # R3.2: a class with no declared dependencies must NOT pull in the whole
+    # module — its sibling block is just the header.
+    fmt = SiblingInterfaceFormatter(_TOOLKIT)
+    out = fmt.format(_module(), focal_name="TodoTitle")
+    assert out == "SIBLING_INTERFACES"
 
 
 def test_formatter_includes_dotted_path_for_python() -> None:

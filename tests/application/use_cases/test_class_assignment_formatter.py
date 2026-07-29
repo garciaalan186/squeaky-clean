@@ -64,7 +64,7 @@ def test_formatter_emits_sibling_interfaces_block() -> None:
 
 def test_formatter_lists_empty_fields_and_methods_for_sibling() -> None:
     a = ClassSpec(name="A", pattern="SimpleClass", implements=None,
-                  methods=(), depends=(), concretes=())
+                  methods=(), depends=("B",), concretes=())
     b = ClassSpec(name="B", pattern="SimpleClass", implements=None,
                   methods=(), depends=(), concretes=())
     module = ModuleSpec(name="M", layer=LayerType.DOMAIN, exports=(),
