@@ -13,6 +13,13 @@ class LLMRequest:
     can decide whether to attach Anthropic ``cache_control`` blocks.
     It is not part of ``cache_key`` because the model already determines
     the tier in the canonical routing.
+
+    ``max_tokens`` overrides the gateway's default output-token cap for calls
+    that emit verbose output (e.g. multi-file Java test skeletons that overflow
+    the 4096 default and truncate). It is a capacity knob, not semantic content,
+    so it is deliberately EXCLUDED from ``cache_key`` — a fuller response is
+    always a valid replacement for a truncated one, and including it would
+    fragment the cache on a value that does not change request identity.
     """
 
     model: str
@@ -23,6 +30,7 @@ class LLMRequest:
     seed: int | None = None
     tier: str | None = None
     cacheable_user_prefix: str | None = None
+    max_tokens: int | None = None
 
     def cache_key(self) -> str:
         """Stable content-addressed key for caching (model+prompts+sampling)."""

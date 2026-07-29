@@ -69,21 +69,17 @@ class AnthropicSDKGateway(LLMGateway):
         """Call messages.create with optional cache_control blocks."""
         self._limiter.acquire()
         start = time.monotonic()
-        temperature = (
-            request.temperature if request.temperature is not None
-            else _DEFAULT_TEMPERATURE
-        )
         if request.seed is not None:
             _LOG.debug(
-                "Anthropic API does not accept seed=%s; relying on temperature"
-                "=%s for determinism", request.seed, temperature,
+                "Anthropic API does not accept seed=%s; current models also "
+                "deprecate the temperature param, so sampling knobs are "
+                "omitted and the model default is used", request.seed,
             )
         cache_on = self._cache_enabled_for(request)
         try:
             msg = self._client.messages.create(
                 model=request.model,
-                max_tokens=self._max_tokens,
-                temperature=temperature,
+                max_tokens=request.max_tokens or self._max_tokens,
                 system=self._build_system(request, cache_on),
                 messages=self._build_messages(request, cache_on),
             )
@@ -157,6 +153,7 @@ class AnthropicSDKGateway(LLMGateway):
             duration_ms=int((time.monotonic() - start) * 1000),
             cache_creation_input_tokens=cache_create,
             cache_read_input_tokens=cache_read,
+            truncated=(getattr(msg, "stop_reason", None) == "max_tokens"),
         )
 
     def _extract_text(self, msg: anthropic.types.Message) -> str:

@@ -36,9 +36,9 @@ Decompose into MULTIPLE MODULE blocks **only when** the ProblemSpec spans more t
 ## Constraints
 1. Emit ONLY §Notation. No leading/trailing English. No ``` fences.
 2. Module name is a bounded context (e.g. `Calculator`, `Chat`).
-3. Every class must use exactly one pattern from: SimpleClass, ValueObject, Entity, Aggregate, Repository, Gateway, UseCase, Facade, Strategy, Factory, Observer, Command, Adapter, Builder, Decorator, Composite, DTOMapper, Singleton.
+3. Every class must use exactly one pattern from this catalog (all 34 are selectable): SimpleClass, ValueObject, Entity, Aggregate, DomainEvent, Specification, Repository, Gateway, Presenter, UseCase, DTOMapper, Strategy, State, Observer, Command, Visitor, Mediator, Memento, Iterator, TemplateMethod, ChainOfResponsibility, Interpreter, AbstractFactory, FactoryMethod, Builder, Singleton, Prototype, Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy. Use these names EXACTLY — there is no bare `Factory` (use `FactoryMethod` or `AbstractFactory`). See §Pattern selection for choosing among the commonly-confused ones.
 4. **Single Responsibility Principle + ≤5 method cap.** Each class should have ONE reason to change. Prefer small, cohesive classes. Hard cap: ≤5 public methods per class. ≥6 methods is a structural smell — decompose via Strategy (per-operation classes), Facade (orchestrator + split delegates), or extract a collaborator. A Calculator with 4 arithmetic methods stays as one class. A ChatService with create_user, create_room, and join_room stays as one class if all manage the same aggregate; if the responsibility grows past 5 methods, split.
-5. **Prefer few arguments, but accept natural groupings.** Methods with 0-2 args are ideal. Methods with 3 naturally cohesive args (e.g. `sendMessage(sender, room, content)`) are acceptable. Only bundle into a Command/DTO when the args represent an independent concept, not to satisfy a threshold. Avoid >4 args.
+5. **≤2 arguments per method (hard rule).** Methods take 0-2 args. When an operation needs ≥3 related values, bundle them into a ValueObject or Command and pass that — e.g. `add_item(item: CartItem)` NOT `add_item(name, price, quantity)`; `send(message: Message)` NOT `send(sender, room, content)`. The granularity validator flags ≥3 args as a violation, so design signatures to it; do not emit 3-arg methods expecting them to pass.
 6. **One class per file.**
 7. Dependency Rule: Domain imports nothing; Application imports only Domain; Infrastructure imports Domain+Application; Interface imports all.
 8. Acceptance criteria must be realisable by the declared classes.
@@ -74,6 +74,26 @@ Decompose into MULTIPLE MODULE blocks **only when** the ProblemSpec spans more t
     - HTTP **path parameters** that are scalar → declare each as a separate `str` argument (e.g. `get_user(user_id: str)`), not as a `dict`.
     - HTTP **status code** as a return → `int`.
     Every method on a class implementing a `rest_server_handler` / `rest_client` / `grpc_*` infrastructure category MUST use these types when the parameter semantics fit. The architect can deviate ONLY when the use case genuinely needs a different shape (e.g. multi-value headers from a single key would warrant `dict[str, list[str]]`) — in which case the deviation must be obvious from the acceptance criteria, not chosen for terseness.
+
+## Pattern selection
+Default to the simplest fit: SimpleClass for plain services, ValueObject/Entity
+for data, UseCase for one application operation. Reach for a GoF pattern only
+when the criteria demand its structure. Discriminators for the confusable ones:
+- **State vs Strategy** — if an object *transitions between behaviors at runtime*
+  and its allowed operations change with an internal status field (e.g. an order
+  moving Pending→Paid→Shipped, illegal transitions rejected) → **State**. If the
+  algorithm is chosen once by the caller/config and never self-transitions
+  (e.g. a discount rule) → **Strategy**.
+- **Visitor vs Strategy** — if a NEW operation must run across a FIXED set of
+  element types without editing them (e.g. computing area over a shape tree) →
+  **Visitor**. One interchangeable algorithm over one type → **Strategy**.
+- **Command vs UseCase** — a reified action that can be queued/undone/logged →
+  **Command**; an application-service interactor orchestrating one operation →
+  **UseCase**.
+- **Aggregate vs Entity** — an entity that OWNS and guards a collection of child
+  entities/VOs behind invariants → **Aggregate**; a standalone identity → **Entity**.
+- **Observer** — one subject notifying many subscribers on change (pub/sub).
+- **Composite** — part-whole trees where leaves and groups share one interface.
 
 ## Failure Modes
 - Empty ProblemSpec: emit a minimal one-module §Notation with one SimpleClass.

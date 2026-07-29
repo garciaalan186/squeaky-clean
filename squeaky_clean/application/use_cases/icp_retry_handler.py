@@ -62,6 +62,7 @@ class ICPRetryHandler:
             replicate_id=request.replicate_id,
             tier=request.tier,
             cacheable_user_prefix=request.cacheable_user_prefix,
+            max_tokens=request.max_tokens,
         )
 
     def _sleep(self, attempt: int) -> None:

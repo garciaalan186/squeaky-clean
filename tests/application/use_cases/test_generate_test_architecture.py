@@ -96,6 +96,67 @@ def test_execute_returns_parsed_test_architecture() -> None:
     assert "OracleCompiler" in (gateway.last_request.system_prompt or "")
 
 
+class _SeqGateway(LLMGateway):
+    """Returns queued responses in order; records every request."""
+
+    def __init__(self, responses: list[LLMResponse]) -> None:
+        self._responses = responses
+        self.requests: list[LLMRequest] = []
+
+    def complete(self, request: LLMRequest) -> LLMResponse:
+        self.requests.append(request)
+        return self._responses[min(len(self.requests) - 1, len(self._responses) - 1)]
+
+
+def _resp(content: str, truncated: bool = False) -> LLMResponse:
+    return LLMResponse(content, 1, 1, 0.0, 1, truncated=truncated)
+
+
+def _ctx() -> TestArchitectureContext:
+    return TestArchitectureContext(module=_p0_module(), problem=P0)
+
+
+def test_execute_requests_raised_max_tokens() -> None:
+    gateway = _SeqGateway([_resp(_CANNED)])
+    GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    assert gateway.requests[0].max_tokens == 8192
+
+
+def test_execute_retries_on_truncation_then_succeeds() -> None:
+    gateway = _SeqGateway([_resp("", truncated=True), _resp(_CANNED)])
+    ta = GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    assert len(ta.test_skeletons) >= 1
+    assert len(gateway.requests) == 2
+    assert "RETRY" in (gateway.requests[1].user_prompt)
+
+
+def test_execute_retries_on_parse_error_then_succeeds() -> None:
+    gateway = _SeqGateway([_resp("garbage, no sections"), _resp(_CANNED)])
+    ta = GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    assert len(ta.gherkin_scenarios) >= 1
+    assert len(gateway.requests) == 2
+
+
+def test_execute_raises_after_exhausting_retries() -> None:
+    import pytest
+
+    from squeaky_clean.application.use_cases.generate_test_architecture_error import (
+        GenerateTestArchitectureError,
+    )
+    gateway = _SeqGateway([_resp("still broken")])
+    with pytest.raises(GenerateTestArchitectureError):
+        GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    assert len(gateway.requests) == 3  # initial + 2 retries
+
+
+def test_max_tokens_excluded_from_cache_key() -> None:
+    base = LLMRequest(model="m", system_prompt="s", user_prompt="u")
+    bumped = LLMRequest(
+        model="m", system_prompt="s", user_prompt="u", max_tokens=8192,
+    )
+    assert base.cache_key() == bumped.cache_key()
+
+
 def test_execute_records_token_usage() -> None:
     gateway = _StubGateway(_CANNED)
     toolkit = LanguageToolkitFactory().for_language(TargetLanguage.PYTHON)
