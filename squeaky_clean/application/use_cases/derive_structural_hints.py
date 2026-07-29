@@ -15,7 +15,7 @@ def derive_structural_hints_from_squib(
     """Derive the structural expectations a Squib already encodes."""
     modules = architecture.modules
     classes = [c for m in modules for c in m.classes]
-    patterns = sorted({c.pattern for c in classes})
+    patterns: list[str] = sorted({c.pattern for c in classes})
     contexts = [m.name for m in modules]
     return StructuralHints(
         required_bounded_contexts=contexts,

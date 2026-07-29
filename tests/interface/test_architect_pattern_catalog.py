@@ -6,7 +6,6 @@ greenfield path — the exact defect that caused P7 (State) and P9 (Visitor) to
 be emitted as Strategy. This test fails the build if they ever diverge.
 """
 
-import re
 from pathlib import Path
 
 import squeaky_clean

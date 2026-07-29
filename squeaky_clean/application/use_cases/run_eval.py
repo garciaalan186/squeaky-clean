@@ -13,9 +13,9 @@ from squeaky_clean.application.use_cases.meta_eval_paths import MetaEvalPaths
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_pipeline import RunEvalPipeline
 from squeaky_clean.application.use_cases.run_eval_report_writer import RunEvalReportWriter
-from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.application.use_cases.run_eval_summary_writer import RunEvalSummaryWriter
 from squeaky_clean.application.use_cases.run_manifest import RunManifest
+from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
 _LOG = logging.getLogger(__name__)
 

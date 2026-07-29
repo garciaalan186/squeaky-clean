@@ -82,7 +82,8 @@ def test_reserve_blocks_parallel_overshoot() -> None:
     import threading
 
     from squeaky_clean.application.use_cases.cost_gate import (
-        BudgetExceededError, CostGate,
+        BudgetExceededError,
+        CostGate,
     )
     gate = CostGate(_budget(10.0))  # 10 slots of $1
     granted = []

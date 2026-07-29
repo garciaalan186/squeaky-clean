@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install (dev extras)
+        run: pip install -e '.[dev]'
+
+      - name: Lint (ruff)
+        run: ruff check squeaky_clean tests
+
+      - name: Type-check (mypy --strict)
+        run: mypy --strict squeaky_clean
+
+      # Fast-failing guards first: pattern/spec drift + the self-conformance
+      # ratchet. These are also part of the full suite below, but running them
+      # up front gives a clear signal when a spec or the framework's own
+      # architecture regresses.
+      - name: Drift guards + self-conformance ratchet
+        run: |
+          pytest -q \
+            tests/self_conformance \
+            tests/interface/test_architect_pattern_catalog.py \
+            tests/application/use_cases/test_pattern_emitter_resolution.py \
+            tests/eval/test_golden_squib_routing.py
+
+      # Full unit suite. Live LLM tests (marker: integration) are excluded by
+      # the default addopts in pyproject.toml and stay opt-in.
+      - name: Unit test suite
+        run: pytest -q

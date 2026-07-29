@@ -38,13 +38,14 @@ _URL = "https://models.dev/api.json"
 _LIVE: dict[str, tuple[float, float, float, float]] | None = None
 
 
-def _load_cached() -> dict | None:
+def _load_cached() -> dict[str, object] | None:
     if not _CACHE.exists():
         return None
     try:
-        return json.loads(_CACHE.read_text())
+        loaded = json.loads(_CACHE.read_text())
     except (OSError, json.JSONDecodeError):
         return None
+    return loaded if isinstance(loaded, dict) else None
 
 
 def _live_rates() -> dict[str, tuple[float, float, float, float]]:
@@ -62,11 +63,15 @@ def _live_rates() -> dict[str, tuple[float, float, float, float]]:
         except (OSError, json.JSONDecodeError, ValueError):
             data = _load_cached()
     rates: dict[str, tuple[float, float, float, float]] = {}
-    if data is not None:
-        for mid, m in data.get("anthropic", {}).get("models", {}).items():
-            c = m.get("cost") or {}
+    anthropic = data.get("anthropic") if data is not None else None
+    models = anthropic.get("models") if isinstance(anthropic, dict) else None
+    if isinstance(models, dict):
+        for mid, m in models.items():
+            c = m.get("cost") if isinstance(m, dict) else None
+            if not isinstance(c, dict):
+                continue
             try:
-                rates[mid] = (
+                rates[str(mid)] = (
                     float(c.get("input", 0.0)), float(c.get("output", 0.0)),
                     float(c.get("cache_write", 0.0)), float(c.get("cache_read", 0.0)),
                 )

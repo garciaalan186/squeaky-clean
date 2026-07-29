@@ -5,7 +5,6 @@ from pathlib import Path
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.use_cases.assign_patterns import AssignPatterns
 from squeaky_clean.application.use_cases.budgeted_gateway import BudgetedGateway
-from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cost
 from squeaky_clean.application.use_cases.cost_gate import CostGate
 from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
 from squeaky_clean.application.use_cases.fix_failing_classes import FixFailingClasses
@@ -46,9 +45,10 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
 from squeaky_clean.infrastructure.llm.caching_llm_gateway import CachingLLMGateway
-from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.llm.claude_cli_gateway import ClaudeCLIGateway
+from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cost
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
+from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
 from squeaky_clean.infrastructure.techspec.allowlist_loader import (
