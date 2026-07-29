@@ -1,13 +1,15 @@
 """RouterFactory: build a ModelRouter from optional CLI override arguments."""
 
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
+from squeaky_clean.infrastructure.llm.model_catalog import ModelId
+from squeaky_clean.infrastructure.llm.model_router import DEFAULT_MAPPING, ModelRouter
 
+# Phase-5 policy = the canonical DEFAULT_MAPPING with ARCHITECT demoted from
+# Opus to Sonnet for cost control (re-enabled in Phase 6). Derived from the
+# single source of truth so it cannot silently diverge on a model bump.
 _PHASE5_MAPPING: dict[ModelTier, str] = {
-    ModelTier.ARCHITECT: "claude-sonnet-4-6",
-    ModelTier.MANAGER: "claude-sonnet-4-6",
-    ModelTier.ICP: "claude-haiku-4-5-20251001",
-    ModelTier.FIXER: "claude-sonnet-4-6",
+    **DEFAULT_MAPPING,
+    ModelTier.ARCHITECT: ModelId.SONNET,
 }
 
 

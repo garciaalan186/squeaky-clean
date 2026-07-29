@@ -1,13 +1,18 @@
 """ModelRouter: maps a ModelTier to a concrete model identifier string."""
 
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.infrastructure.llm.model_catalog import ModelId
 
-_DEFAULT_MAPPING: dict[ModelTier, str] = {
-    ModelTier.ARCHITECT: "claude-opus-4-6",
-    ModelTier.MANAGER: "claude-sonnet-4-6",
-    ModelTier.ICP: "claude-haiku-4-5-20251001",
-    ModelTier.FIXER: "claude-sonnet-4-6",
+# Canonical tier -> model policy (full-quality default). This is the single
+# source of routing truth; RouterFactory derives its cost-tuned variant from
+# it rather than keeping a second table. Concrete strings come from ModelId.
+DEFAULT_MAPPING: dict[ModelTier, str] = {
+    ModelTier.ARCHITECT: ModelId.OPUS,
+    ModelTier.MANAGER: ModelId.SONNET,
+    ModelTier.ICP: ModelId.HAIKU,
+    ModelTier.FIXER: ModelId.SONNET,
 }
+_DEFAULT_MAPPING = DEFAULT_MAPPING  # backward-compatible alias
 
 
 class ModelRouter:

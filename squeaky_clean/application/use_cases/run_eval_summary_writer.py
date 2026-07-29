@@ -12,16 +12,23 @@ class RunEvalSummaryWriter:
     def __init__(self) -> None:
         self._cache_renderer: CacheSummaryRenderer = CacheSummaryRenderer()
 
-    def write(self, path: Path, bundle: EvalReportBundle) -> None:
-        """Render ``bundle`` to a Markdown summary at ``path``."""
+    def write(
+        self, path: Path, bundle: EvalReportBundle,
+        models: dict[str, str] | None = None,
+    ) -> None:
+        """Render ``bundle`` to a Markdown summary at ``path``.
+
+        ``models`` is the actual tier -> model mapping the run used (from the
+        router); its absence leaves the routing section empty rather than
+        risking a stale hardcoded list.
+        """
         m = bundle.metrics
         lines: list[str] = []
         lines.append(f"# Meta-Evaluation Summary — {path.parent.name}")
         lines.append("")
         lines.append("## Model Routing")
-        lines.append("- ARCHITECT  -> claude-sonnet-4-6 (Phase 5 cost override)")
-        lines.append("- MANAGER    -> claude-sonnet-4-6")
-        lines.append("- ICP        -> claude-haiku-4-5-20251001")
+        for tier, model in (models or {}).items():
+            lines.append(f"- {tier.upper():10} -> {model}")
         lines.append("")
         lines.append("## Per-Problem Results")
         lines.append("")

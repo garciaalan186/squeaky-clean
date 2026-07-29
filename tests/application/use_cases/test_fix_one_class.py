@@ -13,6 +13,7 @@ from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.llm.model_catalog import ModelId
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _TOOLKIT = LanguageToolkitFactory().for_language(TargetLanguage.PYTHON)
@@ -73,7 +74,7 @@ def test_execute_routes_to_fixer_sonnet_tier() -> None:
     gw = _StubGateway(_FIXED_CODE)
     FixOneClass(gw, ModelRouter()).execute(_candidate())
     assert gw.last_request is not None
-    assert gw.last_request.model == "claude-sonnet-4-6"
+    assert gw.last_request.model == ModelId.SONNET
 
 
 def test_unparseable_response_preserves_original_code() -> None:

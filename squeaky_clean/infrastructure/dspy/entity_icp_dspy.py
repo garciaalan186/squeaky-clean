@@ -13,7 +13,9 @@ from typing import Any
 
 import dspy
 
-_MODEL: str = "anthropic/claude-haiku-4-5-20251001"
+from squeaky_clean.infrastructure.llm.model_catalog import ModelId
+
+_MODEL: str = f"anthropic/{ModelId.HAIKU}"
 _TEMPERATURE: float = 0.0
 _MAX_TOKENS: int = 2000
 

@@ -13,13 +13,19 @@ import time
 import urllib.request
 from pathlib import Path
 
+from squeaky_clean.infrastructure.llm.model_catalog import ModelId
+
 _FALLBACK: dict[str, tuple[float, float, float, float]] = {
-    "claude-haiku-4-5-20251001": (1.0, 5.0, 1.25, 0.10),
-    "claude-haiku-4-5":          (1.0, 5.0, 1.25, 0.10),
-    "claude-sonnet-4-6":         (3.0, 15.0, 3.75, 0.30),
-    "claude-sonnet-4-5":         (3.0, 15.0, 3.75, 0.30),
-    "claude-opus-4-7":           (5.0, 25.0, 6.25, 0.50),
-    "claude-opus-4-6":           (5.0, 25.0, 6.25, 0.50),
+    # Current models — keyed off the ModelId single source of truth.
+    ModelId.HAIKU:      (1.0, 5.0, 1.25, 0.10),
+    ModelId.SONNET:     (3.0, 15.0, 3.75, 0.30),
+    ModelId.OPUS:       (5.0, 25.0, 6.25, 0.50),
+    # Legacy models — retained only to price historical run manifests.
+    ModelId.HAIKU_4_5_ALIAS: (1.0, 5.0, 1.25, 0.10),
+    ModelId.SONNET_4_6:      (3.0, 15.0, 3.75, 0.30),
+    ModelId.SONNET_4_5:      (3.0, 15.0, 3.75, 0.30),
+    ModelId.OPUS_4_7:        (5.0, 25.0, 6.25, 0.50),
+    ModelId.OPUS_4_6:        (5.0, 25.0, 6.25, 0.50),
 }
 
 _CACHE = Path.home() / ".cache" / "squeaky-clean" / "models_dev.json"

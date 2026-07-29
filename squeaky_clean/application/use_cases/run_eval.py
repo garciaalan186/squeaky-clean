@@ -11,6 +11,7 @@ from squeaky_clean.application.use_cases.meta_eval_paths import MetaEvalPaths
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.run_eval_pipeline import RunEvalPipeline
 from squeaky_clean.application.use_cases.run_eval_report_writer import RunEvalReportWriter
+from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.application.use_cases.run_eval_summary_writer import RunEvalSummaryWriter
 from squeaky_clean.application.use_cases.run_manifest import RunManifest
 
@@ -30,16 +31,23 @@ class RunEval:
         run_root: Path | None = None,
     ) -> None:
         self._pipeline: RunEvalPipeline = RunEvalPipeline(deps)
+        self._router = deps.model_router
         self._paths: MetaEvalPaths = MetaEvalPaths(run_root or _DEFAULT_RUN_ROOT)
         self._report_writer: RunEvalReportWriter = RunEvalReportWriter()
         self._summary_writer: RunEvalSummaryWriter = RunEvalSummaryWriter()
         self._manifest: RunManifest = RunManifest()
 
+    def _models_by_tier(self) -> dict[str, str]:
+        """Resolve the concrete model each tier actually used, via the router."""
+        return {tier.value: self._router.route(tier) for tier in ModelTier}
+
     def execute(self, problem: ProblemSpec) -> EvalResult:
         """Run one problem in a freshly-allocated run dir; write all artifacts."""
         run_dir = self._paths.allocate()
         bundle = self._run_one(problem, run_dir)
-        self._summary_writer.write(run_dir / "SUMMARY.md", bundle)
+        self._summary_writer.write(
+            run_dir / "SUMMARY.md", bundle, self._models_by_tier(),
+        )
         (run_dir / "metrics.json").write_text(
             json.dumps(asdict(bundle.metrics), indent=2, default=str)
         )
@@ -67,11 +75,7 @@ class RunEval:
         try:
             self._manifest.write(
                 run_dir=run_dir,
-                models={
-                    "architect": "claude-sonnet-4-6",
-                    "icp": "claude-haiku-4-5-20251001",
-                    "fixer": "claude-sonnet-4-6",
-                },
+                models=self._models_by_tier(),
                 spec_dirs=_SPEC_DIRS,
                 replicate_id=0,
             )
