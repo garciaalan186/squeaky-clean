@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
@@ -15,6 +14,7 @@ from squeaky_clean.application.use_cases.checkpoint_checksum import CheckpointCh
 from squeaky_clean.application.use_cases.checkpoint_reader import CheckpointReader
 from squeaky_clean.application.use_cases.resume_run_executor import ResumeRunExecutor
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 
 

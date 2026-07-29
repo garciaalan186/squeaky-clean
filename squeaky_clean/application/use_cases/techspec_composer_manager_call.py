@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.llm.model_router import DEFAULT_MAPPING
 
 _MANAGER_MODEL = DEFAULT_MAPPING[ModelTier.MANAGER]

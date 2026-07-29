@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 def _is_pip_spec(spec: TechSpec) -> bool:

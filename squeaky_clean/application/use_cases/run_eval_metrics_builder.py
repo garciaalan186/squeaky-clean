@@ -1,6 +1,5 @@
 """RunEvalMetricsBuilder: compute EvalMetrics from pipeline outputs."""
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.metrics_inputs import MetricsInputs
 from squeaky_clean.application.use_cases.cache_savings_calculator import (
     CacheSavingsCalculator,
@@ -8,6 +7,7 @@ from squeaky_clean.application.use_cases.cache_savings_calculator import (
 )
 from squeaky_clean.application.use_cases.run_eval_token_mapper import RunEvalTokenMapper
 from squeaky_clean.application.use_cases.run_eval_velocity import RunEvalVelocity
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 _PARALLELISM_LIMIT: int = 4
 

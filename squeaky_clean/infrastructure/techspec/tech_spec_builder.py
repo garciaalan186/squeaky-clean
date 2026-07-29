@@ -2,8 +2,8 @@
 
 from typing import cast
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
-from squeaky_clean.application.dtos.tech_spec_operation import TechSpecOperation
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
 
 
 class TechSpecBuilder:

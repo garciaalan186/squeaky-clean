@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.application.dtos.infrastructure_category import (
+from squeaky_clean.domain.value_objects.infrastructure_category import (
     ALL_INFRASTRUCTURE_CATEGORIES,
 )
-from squeaky_clean.application.dtos.tech_spec_operation import TechSpecOperation
+from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
 
 _VALID_LANGUAGES: frozenset[str] = frozenset(
     {"python", "javascript", "typescript", "java", "go", "rust"}

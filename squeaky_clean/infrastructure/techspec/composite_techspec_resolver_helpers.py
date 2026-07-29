@@ -4,11 +4,11 @@ import json
 from dataclasses import dataclass
 from typing import cast
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.tech_spec_html_extractor import (
     TechSpecHTMLExtractor,
 )
 from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidator
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
 
 AllowlistRegistry = dict[tuple[str, str], tuple[str, ...]]

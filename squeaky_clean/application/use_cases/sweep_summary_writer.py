@@ -3,10 +3,10 @@
 import json
 from dataclasses import asdict
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.sweep_result import SweepResult
 from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 from squeaky_clean.application.use_cases.cache_summary_renderer import CacheSummaryRenderer
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class SweepSummaryWriter:

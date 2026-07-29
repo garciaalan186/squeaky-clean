@@ -3,7 +3,6 @@
 import logging
 from pathlib import Path
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.tech_doc_sanitizer import TechDocPoisonedError, sanitize
 from squeaky_clean.application.use_cases.tech_spec_html_extractor import (
     TechDocFormatUnknownError,
@@ -12,6 +11,7 @@ from squeaky_clean.application.use_cases.tech_spec_html_extractor import (
 from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetcher, TechDocFetchError
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecUnresolvableError
 from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidator
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.techspec.composite_techspec_resolver_helpers import (
     FetchAttempt,
     build_from_payload,

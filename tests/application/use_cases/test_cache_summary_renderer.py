@@ -1,7 +1,7 @@
 """Unit tests for CacheSummaryRenderer."""
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.use_cases.cache_summary_renderer import CacheSummaryRenderer
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 def test_renders_zero_activity_message() -> None:

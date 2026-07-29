@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from squeaky_clean.application.dtos.install_result import InstallResult
+from squeaky_clean.domain.value_objects.install_result import InstallResult
 
 
 class DependencyInstaller(ABC):

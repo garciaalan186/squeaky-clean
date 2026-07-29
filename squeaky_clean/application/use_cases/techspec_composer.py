@@ -7,7 +7,6 @@ from dataclasses import replace
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
 from squeaky_clean.application.dtos.composer_stats import ComposerStats
 from squeaky_clean.application.dtos.instantiated_icp_prompt import InstantiatedICPPrompt
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.class_assignment_formatter import (
     ClassAssignmentFormatter,
 )
@@ -20,6 +19,7 @@ from squeaky_clean.application.use_cases.techspec_composer_validator import (
 )
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
 
 

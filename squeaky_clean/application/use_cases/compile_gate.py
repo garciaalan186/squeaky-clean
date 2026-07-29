@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from squeaky_clean.application.dtos.compile_result import CompileResult
 from squeaky_clean.application.dtos.fix_request import FixRequest
 from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
@@ -18,6 +17,7 @@ from squeaky_clean.application.use_cases.repair_test_file import (
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
+from squeaky_clean.domain.value_objects.compile_result import CompileResult
 
 
 @dataclass(frozen=True)

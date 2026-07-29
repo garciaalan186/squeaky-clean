@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.build_manifest_helpers import (
     is_spring_technology,
     parse_install_package,
@@ -20,6 +19,7 @@ from squeaky_clean.application.use_cases.build_manifest_templates import (
     SPRING_BUILD,
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class BuildManifestGenerator:

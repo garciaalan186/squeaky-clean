@@ -13,9 +13,14 @@ here to silence the test is the wrong move; fix the code instead.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-from tests.self_conformance.conformance_scan import scan_violation_keys
+# Allow running as a plain script (python tests/self_conformance/...): put the
+# repo root on sys.path so the first-party `tests` package resolves.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from tests.self_conformance.conformance_scan import scan_violation_keys  # noqa: E402
 
 _BASELINE = Path(__file__).with_name("baseline.json")
 

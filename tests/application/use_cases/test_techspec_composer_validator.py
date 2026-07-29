@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
-from squeaky_clean.application.dtos.tech_spec_operation import TechSpecOperation
 from squeaky_clean.application.use_cases.techspec_composer_validator import (
     validate_composition,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
 
 
 def _spec(

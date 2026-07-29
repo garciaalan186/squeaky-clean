@@ -9,13 +9,13 @@ import subprocess
 from pathlib import Path
 from typing import cast
 
-from squeaky_clean.application.dtos.sast_report import (
+from squeaky_clean.domain.interfaces.sast_runner import SastRunner
+from squeaky_clean.domain.value_objects.sast_report import (
     Confidence,
     SastFinding,
     SastReport,
     Severity,
 )
-from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 
 _log = logging.getLogger(__name__)
 _TIMEOUT_S: int = 120

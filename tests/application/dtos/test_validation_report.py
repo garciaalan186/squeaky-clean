@@ -5,7 +5,7 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from squeaky_clean.application.dtos.validation_report import ValidationReport
-from squeaky_clean.application.dtos.violation import Violation
+from squeaky_clean.domain.value_objects.violation import Violation
 
 
 def test_validation_report_is_valid_when_empty() -> None:

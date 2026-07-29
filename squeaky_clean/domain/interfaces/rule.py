@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from squeaky_clean.application.dtos.violation import Violation
+from squeaky_clean.domain.value_objects.violation import Violation
 
 
 class Rule(ABC):

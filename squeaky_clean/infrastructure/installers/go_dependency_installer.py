@@ -6,8 +6,8 @@ import subprocess
 import time
 from pathlib import Path
 
-from squeaky_clean.application.dtos.install_result import InstallResult
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
+from squeaky_clean.domain.value_objects.install_result import InstallResult
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 
 _TIMEOUT_SECONDS: int = 300

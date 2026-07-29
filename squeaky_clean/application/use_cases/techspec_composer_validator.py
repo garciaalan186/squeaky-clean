@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 from typing import cast
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 _GENERIC_VERBS: frozenset[str] = frozenset({
     "save", "put", "get", "delete", "find", "publish",

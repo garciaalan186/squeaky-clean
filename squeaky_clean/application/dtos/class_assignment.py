@@ -3,10 +3,10 @@
 from dataclasses import dataclass
 
 from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 @dataclass(frozen=True)

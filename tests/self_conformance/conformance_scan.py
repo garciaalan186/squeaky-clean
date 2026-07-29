@@ -16,8 +16,8 @@ import ast
 import re
 from pathlib import Path
 
-from squeaky_clean.application.dtos.violation import Violation
 from squeaky_clean.domain.rules.python_granularity_rule import PythonGranularityRule
+from squeaky_clean.domain.value_objects.violation import Violation
 
 _PACKAGE = "squeaky_clean"
 _LAYER_ORDER: dict[str, int] = {

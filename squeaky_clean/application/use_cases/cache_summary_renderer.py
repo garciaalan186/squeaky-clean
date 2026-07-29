@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 _TIERS: tuple[str, ...] = ("architect", "manager", "icp", "fixer")
 

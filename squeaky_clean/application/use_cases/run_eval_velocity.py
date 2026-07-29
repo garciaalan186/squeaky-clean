@@ -1,6 +1,6 @@
 """RunEvalVelocity: compute token velocity metrics on a populated EvalMetrics."""
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class RunEvalVelocity:

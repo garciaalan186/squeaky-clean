@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from squeaky_clean.domain.entities.metric import Metric
 
 if TYPE_CHECKING:
-    from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
+    from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class MetricCollector(ABC):

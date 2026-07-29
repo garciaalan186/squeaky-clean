@@ -2,13 +2,13 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.dtos.validation_report import ValidationReport
 from squeaky_clean.application.use_cases.budget_exit_writer import BudgetExitWriter
 from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError, CostGate
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class BudgetExitHandler:

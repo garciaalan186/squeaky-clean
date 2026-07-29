@@ -9,7 +9,7 @@ integration / metrics / test-run.
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.dtos.fix_request import FixRequest
 from squeaky_clean.application.dtos.integration_request import IntegrationRequest
@@ -17,7 +17,7 @@ from squeaky_clean.application.dtos.module_implementation import ModuleImplement
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.security_review_context import SecurityReviewContext
 from squeaky_clean.application.dtos.security_test_context import SecurityTestContext
-from squeaky_clean.application.dtos.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.application.dtos.test_architecture import TestArchitecture
 from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
 from squeaky_clean.application.dtos.test_run_result import TestRunResult

@@ -4,7 +4,6 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
 from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.assign_patterns_paths import AssignPatternsPaths
 from squeaky_clean.application.use_cases.custom_pattern_registry import (
     CustomPatternRegistry,
@@ -13,6 +12,7 @@ from squeaky_clean.application.use_cases.map_pattern_to_emitter import MapPatter
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 def _method_names(c: ClassSpec) -> tuple[str, ...]:

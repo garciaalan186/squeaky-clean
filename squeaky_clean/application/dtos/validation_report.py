@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from squeaky_clean.application.dtos.violation import Violation
+from squeaky_clean.domain.value_objects.violation import Violation
 
 
 @dataclass(frozen=True)

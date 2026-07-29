@@ -4,9 +4,9 @@ from dataclasses import replace
 from pathlib import Path
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.install_result import InstallResult
 from squeaky_clean.application.use_cases.run_eval_pipeline import RunEvalPipeline
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
+from squeaky_clean.domain.value_objects.install_result import InstallResult
 from tests.application.use_cases.run_eval_stub_deps import build_stub_deps
 
 

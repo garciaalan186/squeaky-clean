@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class TechSpecUnresolvableError(RuntimeError):

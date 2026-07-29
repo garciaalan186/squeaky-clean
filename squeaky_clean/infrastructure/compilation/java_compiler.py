@@ -5,8 +5,8 @@ import re
 import subprocess
 from pathlib import Path
 
-from squeaky_clean.application.dtos.compile_result import CompileResult
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
+from squeaky_clean.domain.value_objects.compile_result import CompileResult
 from squeaky_clean.infrastructure.testing.maven_test_runner import _resolve_java_home
 
 _TIMEOUT_SECONDS: int = 300

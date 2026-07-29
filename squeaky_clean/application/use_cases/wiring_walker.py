@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import cast
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.infrastructure_category_inference import (
     infer_category,
 )
@@ -12,6 +11,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 INBOUND_CATEGORIES: frozenset[str] = frozenset({
     "rest_server_handler", "grpc_server_handler",

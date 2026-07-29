@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-from squeaky_clean.application.dtos.violation import Violation
 from squeaky_clean.domain.interfaces.rule import Rule
+from squeaky_clean.domain.value_objects.violation import Violation
 
 _PUB_FN: re.Pattern[str] = re.compile(
     r"^\s*pub\s+fn\s+([a-z_]\w*)\s*\(([^)]*)\)", re.MULTILINE,
