@@ -10,6 +10,7 @@ from squeaky_clean.application.shared.mcda.entity_lifecycle import EntityLifecyc
 from squeaky_clean.application.shared.mcda.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.shared.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.shared.problem.behavior_spec import BehaviorSpec
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.structural_hints import StructuralHints
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -44,6 +45,8 @@ class ProblemSpec:
     produces_contracts: tuple[Contract, ...] = ()
     consumes_contracts: tuple[ContractRef, ...] = ()
     expected_outcomes: tuple[ExpectedOutcome, ...] = ()
+    # R5.2: routing-stamped N>=3 baseline; None = uncalibrated (no gating).
+    golden_metrics: GoldenMetrics | None = None
 
     @property
     def behavior(self) -> BehaviorSpec:

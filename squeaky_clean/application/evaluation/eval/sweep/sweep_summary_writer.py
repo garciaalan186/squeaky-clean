@@ -43,6 +43,7 @@ class SweepSummaryWriter:
             "> single sample per problem (N=1) — exploratory; fix/regression "
             "claims require N>=3 replicates (`--replicates 3`)."
         )
+        lines.extend(self._regression_gate(result))
         lines.extend(self._totals(result))
         lines.extend(self._cache_renderer.render(self._aggregate_metrics(result)))
         lines.extend(self._errors(result))
@@ -85,6 +86,13 @@ class SweepSummaryWriter:
             f"- total cost USD: {result.total_cost_usd:.4f}",
             f"- total wall-clock ms: {result.total_duration_ms}",
         ]
+
+    def _regression_gate(self, result: SweepResult) -> list[str]:
+        if not result.regression_verdicts:
+            return []
+        out = ["", "## Regression Gate (vs routing-stamped goldens)"]
+        out.extend(f"- {v}" for v in result.regression_verdicts)
+        return out
 
     def _errors(self, result: SweepResult) -> list[str]:
         failed = [b for b in result.bundles if b.error]
