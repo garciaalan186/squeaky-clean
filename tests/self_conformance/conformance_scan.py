@@ -87,6 +87,32 @@ def _key(v: Violation, root: Path) -> str:
     return f"{v.rule_name}|{rel}|{message}"
 
 
+def _missing_mirror_keys(root: Path) -> set[str]:
+    """Keys for source modules lacking a mirror ``test_<name>.py`` (R2.6).
+
+    Basename match (a test named ``test_<name>.py`` anywhere under ``tests/``)
+    keeps the check robust to test-tree reorganisation. Ratcheted like the rest:
+    the current 195-module gap is the floor, and no NEW untested module may be
+    added — coverage can only improve.
+    """
+    tests_root = root.parent / "tests"
+    have = {p.name for p in tests_root.rglob("test_*.py")}
+    keys: set[str] = set()
+    for path in _iter_py_files(root):
+        if path.name == "__init__.py":
+            continue
+        stem = path.stem
+        # A module is covered by test_<stem>.py OR any test_<stem>_*.py
+        # (modules often split coverage across _cache/_timeout suffixes).
+        covered = f"test_{stem}.py" in have or any(
+            name.startswith(f"test_{stem}_") for name in have
+        )
+        if not covered:
+            rel = path.relative_to(root.parent)
+            keys.add(f"MissingMirrorTest|{rel}|no mirror test file")
+    return keys
+
+
 def scan_violation_keys() -> set[str]:
     """Return the set of normalized self-conformance violation keys."""
     root = package_root()
@@ -97,4 +123,5 @@ def scan_violation_keys() -> set[str]:
             keys.add(_key(v, root))
         for v in _layer_violations(path, root):
             keys.add(_key(v, root))
+    keys |= _missing_mirror_keys(root)
     return keys
