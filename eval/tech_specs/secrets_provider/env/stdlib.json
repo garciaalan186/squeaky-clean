@@ -1,0 +1,49 @@
+{
+  "schema_version": "v1",
+  "category": "secrets_provider",
+  "technology": "env",
+  "version_pin": "stdlib",
+  "language": "python",
+  "install": {"manager": "stdlib", "package": "os"},
+  "imports": {
+    "primary": "import os",
+    "types":   []
+  },
+  "client_construction": {
+    "code": "self._prefix = prefix",
+    "is_async": false,
+    "thread_safe": true,
+    "dependencies": ["prefix"]
+  },
+  "primary_operations": [
+    {
+      "name": "get_secret",
+      "signature": "(name: str) -> str",
+      "sdk_call": "return os.environ[self._prefix + name]",
+      "error_types": ["KeyError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    },
+    {
+      "name": "put_secret",
+      "signature": "(name: str, value: str) -> None",
+      "sdk_call": "os.environ[self._prefix + name] = value",
+      "error_types": ["OSError"],
+      "idempotency": "idempotent",
+      "retry_policy": "none"
+    }
+  ],
+  "auth": {
+    "method": "none"
+  },
+  "observability_hooks": [],
+  "rate_limit_defaults": {"rps": 0, "burst": 0},
+  "code_style_notes": [
+    "os.environ writes mutate the parent process and are visible to subprocesses; avoid in production.",
+    "Prefer a real secrets store; this adapter exists for tests, local dev, and bootstrap.",
+    "KeyError is the canonical 'missing secret' signal — let callers translate to a domain error."
+  ],
+  "allowed_doc_origins": [
+    "https://docs.python.org/3/library/os.html"
+  ]
+}

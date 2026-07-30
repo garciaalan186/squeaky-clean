@@ -35,12 +35,15 @@ class NodeTestRunner(TestRunner):
         return self._parse(output, elapsed_ms)
 
     def _invoke(self, project_dir: Path) -> subprocess.CompletedProcess[str]:
-        cmd = ["node", "--test"]
+        # ``--test-reporter=tap`` pins the output format: Node 22+ defaults the
+        # reporter to ``spec`` when stdout is not a TTY, which our ``# pass`` /
+        # ``# fail`` parser cannot read. Passing no positional path uses Node's
+        # built-in default test-file glob, which behaves identically on Node
+        # 20/22/24; a bare ``tests/`` directory argument is treated as a module
+        # to load by Node 22+ and fails with MODULE_NOT_FOUND.
+        cmd = ["node", "--test", "--test-reporter=tap"]
         if self._exclude_glob is not None:
-            files = self._filtered_files(project_dir)
-            cmd.extend(files if files else ["tests/"])
-        else:
-            cmd.append("tests/")
+            cmd.extend(self._filtered_files(project_dir))
         return subprocess.run(
             cmd,
             cwd=str(project_dir),

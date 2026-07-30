@@ -17,7 +17,7 @@ htmlcov/
 .tox/
 .venv/
 venv/
-env/
+/env/
 
 # IDE
 .vscode/
