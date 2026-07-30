@@ -6,7 +6,7 @@ from squeaky_clean.application.dtos.cost_budget import CostBudget
 from squeaky_clean.application.dtos.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.application.dtos.retry_policy import RetryPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.temperature_policy import (
+from squeaky_clean.domain.value_objects.temperature_policy import (
     TemperaturePolicy,
     TierSampling,
 )
@@ -32,6 +32,10 @@ class RunConfig:
     # Auto-generated security tests are unanchored to the spec and flaky;
     # off by default so the generated suite is the acceptance contract.
     enable_security_tests: bool = False
+    # Opt-in Manager-tier per-layer Verifier pass (the *Verifier.md specs) on
+    # top of the mechanical arch.validate()/DependencyRule checks; off by
+    # default (extra cost, unproven gain — enable to A/B via the eval harness).
+    verify_layers: bool = False
 
     def sampling_for(self, tier: ModelTier) -> TierSampling:
         """Return effective TierSampling for ``tier`` using this run's seed."""

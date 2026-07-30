@@ -16,3 +16,4 @@ class LLMResponse:
     cache_read_input_tokens: int = 0
     timed_out: bool = False
     cache_hit: bool = False
+    truncated: bool = False

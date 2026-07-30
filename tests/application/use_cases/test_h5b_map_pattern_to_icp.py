@@ -1,4 +1,4 @@
-"""H5b routing tests for MapPatternToICP and infrastructure_category_inference.
+"""H5b routing tests for MapPatternToEmitter and infrastructure_category_inference.
 
 Adds coverage for rest_server_handler, grpc_client, grpc_server_handler,
 websocket_server_handler, observability_logger, secrets_provider, and
@@ -11,7 +11,7 @@ from squeaky_clean.application.use_cases.infrastructure_category_inference impor
 from squeaky_clean.application.use_cases.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.map_pattern_to_icp import MapPatternToICP
+from squeaky_clean.application.use_cases.map_pattern_to_emitter import MapPatternToEmitter
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -20,113 +20,113 @@ _PY = LanguageToolkitFactory().for_language(TargetLanguage.PYTHON)
 
 def test_rest_server_handler_routes_when_handle_present() -> None:
     # rest_server_handler lives in INTERFACE layer (HTTP entry point).
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INTERFACE,
         ("handle",),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/RestServerHandlerICP"
+    assert icp == "python/infrastructure/RestServerHandlerEmitter"
 
 
 def test_rest_server_handler_routes_when_route_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INTERFACE,
         ("route",),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/RestServerHandlerICP"
+    assert icp == "python/infrastructure/RestServerHandlerEmitter"
 
 
 def test_grpc_client_routes_when_invoke_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INFRASTRUCTURE,
         ("invoke", "close"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/GrpcClientICP"
+    assert icp == "python/infrastructure/GrpcClientEmitter"
 
 
 def test_grpc_client_routes_when_call_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INFRASTRUCTURE,
         ("call", "close"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/GrpcClientICP"
+    assert icp == "python/infrastructure/GrpcClientEmitter"
 
 
 def test_grpc_server_handler_routes_when_serve_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INTERFACE,
         ("serve",),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/GrpcServerHandlerICP"
+    assert icp == "python/infrastructure/GrpcServerHandlerEmitter"
 
 
 def test_grpc_server_handler_routes_when_handle_request_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INTERFACE,
         ("handle_request",),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/GrpcServerHandlerICP"
+    assert icp == "python/infrastructure/GrpcServerHandlerEmitter"
 
 
 def test_websocket_server_routes_when_on_message_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Adapter", _PY, LayerType.INTERFACE,
         ("on_message", "accept_connection"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/WebSocketServerHandlerICP"
+    assert icp == "python/infrastructure/WebSocketServerHandlerEmitter"
 
 
 def test_observability_logger_routes_when_info_warn_error_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Gateway", _PY, LayerType.INFRASTRUCTURE,
         ("info", "warn", "error"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/ObservabilityLoggerICP"
+    assert icp == "python/infrastructure/ObservabilityLoggerEmitter"
 
 
 def test_secrets_provider_routes_when_get_secret_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Gateway", _PY, LayerType.INFRASTRUCTURE,
         ("get_secret", "put_secret"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/SecretsProviderICP"
+    assert icp == "python/infrastructure/SecretsProviderEmitter"
 
 
 def test_search_routes_when_index_query_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Gateway", _PY, LayerType.INFRASTRUCTURE,
         ("index", "query"),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/SearchICP"
+    assert icp == "python/infrastructure/SearchEmitter"
 
 
 def test_search_routes_when_search_method_present() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Gateway", _PY, LayerType.INFRASTRUCTURE,
         ("search",),
         infrastructure_mode="auto",
     )
-    assert icp == "python/infrastructure/SearchICP"
+    assert icp == "python/infrastructure/SearchEmitter"
 
 
 def test_h5b_categories_fall_back_when_manual() -> None:
-    icp = MapPatternToICP().map_with_layer(
+    icp = MapPatternToEmitter().map_with_layer(
         "Gateway", _PY, LayerType.INFRASTRUCTURE,
         ("get_secret",),
         infrastructure_mode="manual",
     )
     # Manual mode skips Tier C and falls back to the legacy map(), which
-    # routes an abstract Gateway port to the (interface-emitting) GatewayICP.
-    assert icp == "python/ddd_clean/GatewayICP"
+    # routes an abstract Gateway port to the (interface-emitting) GatewayEmitter.
+    assert icp == "python/ddd_clean/GatewayEmitter"
 
 
 def test_secrets_beats_search_get_when_get_secret_present() -> None:

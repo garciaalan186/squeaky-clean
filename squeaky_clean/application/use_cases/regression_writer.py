@@ -8,6 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from squeaky_clean.application.dtos.regression_record import RegressionRecord
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 
 
 class RegressionWriter:
@@ -17,7 +18,6 @@ class RegressionWriter:
         self, records: Sequence[RegressionRecord], target: Path,
     ) -> None:
         """Append the supplied records to ``target`` as a JSON array."""
-        target.parent.mkdir(parents=True, exist_ok=True)
         existing: list[dict[str, object]] = []
         if target.exists():
             try:
@@ -27,4 +27,4 @@ class RegressionWriter:
             except json.JSONDecodeError:
                 existing = []
         existing.extend(asdict(r) for r in records)
-        target.write_text(json.dumps(existing, indent=2))
+        atomic_write_text(target, json.dumps(existing, indent=2))

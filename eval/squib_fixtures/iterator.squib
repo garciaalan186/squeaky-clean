@@ -1,0 +1,10 @@
+MODULE History
+LAYER Domain
+EXPORTS [HistoryIterator]
+DEPENDS []
+CLASSES {
+  HistoryIterator -> Iterator {
+    fields: [items: Event]
+    methods: [next(): Event, has_next(): bool]
+  }
+}

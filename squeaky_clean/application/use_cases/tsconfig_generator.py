@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 def _has_typescript(tech_specs: dict[str, TechSpec]) -> bool:

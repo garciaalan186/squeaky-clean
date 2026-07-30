@@ -1,0 +1,10 @@
+MODULE Expressions
+LAYER Domain
+EXPORTS [Expression]
+DEPENDS []
+CLASSES {
+  Expression -> Interpreter {
+    methods: [interpret(context: Context): int]
+    concretes: [NumberExpr, AddExpr]
+  }
+}

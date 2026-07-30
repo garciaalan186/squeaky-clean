@@ -19,9 +19,6 @@ from squeaky_clean.application.use_cases.infrastructure_choice_architect import 
     InfrastructureChoiceArchitect,
 )
 from squeaky_clean.application.use_cases.integrate_module import IntegrateModule
-from squeaky_clean.application.use_cases.language_compiler_factory import (
-    LanguageCompilerFactory,
-)
 from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
 from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
 from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
@@ -36,18 +33,23 @@ from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.techspec_composer import TechSpecComposer
 from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
+from squeaky_clean.application.use_cases.verify_layer import VerifyLayer
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.rule import Rule
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
 from squeaky_clean.domain.rules.dependency_rule import DependencyRule
+from squeaky_clean.domain.rules.pattern_conformance import PatternConformanceRule
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
 from squeaky_clean.infrastructure.llm.caching_llm_gateway import CachingLLMGateway
 from squeaky_clean.infrastructure.llm.claude_cli_gateway import ClaudeCLIGateway
+from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cost
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
+from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
+from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
 from squeaky_clean.infrastructure.techspec.allowlist_loader import (
     load_allowlist_registry,
@@ -66,6 +68,9 @@ from squeaky_clean.infrastructure.techspec.webfetch_tech_doc_fetcher import (
     WebFetchTechDocFetcher,
 )
 from squeaky_clean.interface.cli.language_adapter_selector import LanguageAdapterSelector
+from squeaky_clean.interface.cli.language_compiler_factory import (
+    LanguageCompilerFactory,
+)
 
 
 class DependencyBuilder:
@@ -83,8 +88,14 @@ class DependencyBuilder:
         cache_dir = framework_root.parent / "meta-evaluation-results" / "cache"
         cost_gate = CostGate(rc.cost_budget)
         gateway: LLMGateway = BudgetedGateway(
-            CachingLLMGateway(self._select_inner_gateway(rc), cache_dir),
+            CachingLLMGateway(
+                RetryingGateway(
+                    self._select_inner_gateway(rc), rc.retry_policy,
+                ),
+                cache_dir,
+            ),
             cost_gate,
+            estimator=estimate_request_cost,
         )
         fs = LocalFileSystem()
         toolkit = LanguageToolkitFactory().for_language(problem.target_language)
@@ -95,7 +106,8 @@ class DependencyBuilder:
         )
         icp_router = self._icp_router(router, problem.target_language)
         composer = (
-            TechSpecComposer(gateway) if rc.infrastructure_mode == "auto" else None
+            TechSpecComposer(gateway, router)
+            if rc.infrastructure_mode == "auto" else None
         )
         parser = ParseImplementedClass(adapters.parser)
         orchestrator = OrchestrateModule(
@@ -114,7 +126,11 @@ class DependencyBuilder:
         )
         rules: tuple[Rule, ...] = (adapters.granularity_rule,)
         if problem.target_language is TargetLanguage.PYTHON:
-            rules = (adapters.granularity_rule, DependencyRule())
+            rules = (
+                adapters.granularity_rule,
+                DependencyRule(),
+                PatternConformanceRule(),
+            )
         rule_runner = RuleRunner(rules, toolkit.file_extension)
         fixer = FixFailingClasses(FixFailingClassesDeps(
             gateway=gateway, router=router, recorder=recorder, toolkit=toolkit,
@@ -140,8 +156,10 @@ class DependencyBuilder:
             cost_gate=cost_gate,
             sast_runner=BanditSastRunner() if rc.enable_sast else None,
             model_router=router,
+            run_logger=JSONLogger(),
+            verify_layer=VerifyLayer(call_deps) if rc.verify_layers else None,
             tech_spec_resolver=self._tech_spec_resolver(rc),
-            infrastructure_choice_architect=self._infra_choice_architect(rc, gateway),
+            infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
             dependency_installer=adapters.dependency_installer,
             project_compiler=LanguageCompilerFactory().for_language(
                 problem.target_language
@@ -152,7 +170,7 @@ class DependencyBuilder:
 
     @staticmethod
     def _infra_choice_architect(
-        rc: RunConfig, gateway: LLMGateway,
+        rc: RunConfig, call_deps: LLMCallDeps,
     ) -> InfrastructureChoiceArchitect | None:
         if rc.infrastructure_mode != "auto" or not rc.infer_infrastructure:
             return None
@@ -162,7 +180,8 @@ class DependencyBuilder:
         if not scores_root.is_dir():
             return None
         return InfrastructureChoiceArchitect(
-            gateway, MCDARegistry(scores_root), MCDAScorer(),
+            call_deps.gateway, MCDARegistry(scores_root), MCDAScorer(),
+            call_deps.router,
         )
 
     @staticmethod

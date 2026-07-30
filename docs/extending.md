@@ -1,17 +1,17 @@
 # Extending Squeaky Clean
 
-Two extension hooks for users who need patterns or technologies the bundled catalog doesn't cover.
+Two extension hooks for users who need patterns or technologies the bundled catalog doesn't cover. The bundled pattern catalog is the full 34-pattern GoF + DDD/Clean set in all six languages; the custom-pattern hook is for domain-specific patterns beyond it.
 
 ## Custom patterns (Milestone F4)
 
 Add domain-specific patterns (event-sourcing aggregate, CQRS handler, saga, etc.) without modifying the framework core.
 
-### 1. Author your custom ICP
+### 1. Author your custom emitter
 
-Write a Markdown spec at any path on your filesystem. Mirror the structure of `squeaky_clean/interface/agent_specs/icps/python/ddd_clean/EntityICP.md` (Identity / Model Tier / Input Contract / Output Contract / Constraints / Pattern Knowledge / Failure Modes).
+Write a Markdown spec at any path on your filesystem. Mirror the structure of `squeaky_clean/interface/agent_specs/emitters/python/ddd_clean/EntityEmitter.md` (Identity / Model Tier / Input Contract / Output Contract / Constraints / Pattern Knowledge / Failure Modes).
 
 ```
-~/my_specs/icps/python/custom/EventSourcedAggregateICP.md
+~/my_specs/emitters/python/custom/EventSourcedAggregateEmitter.md
 ```
 
 ### 2. Author a custom-pattern manifest
@@ -22,14 +22,14 @@ Write a Markdown spec at any path on your filesystem. Mirror the structure of `s
   "patterns": [
     {
       "name": "EventSourcedAggregate",
-      "icp_spec_name": "python/custom/EventSourcedAggregateICP"
+      "emitter_spec_name": "python/custom/EventSourcedAggregateEmitter"
     }
   ],
   "extra_spec_roots": ["~/my_specs/"]
 }
 ```
 
-`name` matches the Squib `pattern` field the architect emits. `icp_spec_name` is the spec lookup key. `extra_spec_roots` is the directory the framework's `LoadAgentSpec` searches IN ADDITION to its bundled library.
+`name` matches the Squib `pattern` field the architect emits. `emitter_spec_name` is the spec lookup key, resolved under `<extra_spec_root>/emitters/<lang>/<category>/<Name>Emitter.md`. `extra_spec_roots` is the directory the framework's `LoadAgentSpec` searches IN ADDITION to its bundled library.
 
 ### 3. Run with the manifest
 
@@ -40,9 +40,9 @@ squeaky generate \
     --infra=auto
 ```
 
-When the architect produces `MyAggregate -> EventSourcedAggregate`, the framework routes to your custom ICP. The bundled library still resolves all other patterns (Entity, ValueObject, ...).
+When the architect produces `MyAggregate -> EventSourcedAggregate`, the framework routes to your custom emitter. The bundled library still resolves every other pattern to its own dedicated emitter — all 34 recognized patterns are covered in each of the six languages, so a custom manifest is only needed for patterns outside that catalog.
 
-See `eval/custom_patterns/example_event_sourced_aggregate.json` + the matching `EventSourcedAggregateICP.md` for a worked example.
+See `eval/custom_patterns/example_event_sourced_aggregate.json` + the matching `eval/custom_patterns/specs/emitters/python/custom/EventSourcedAggregateEmitter.md` for a worked example.
 
 ## Custom Tier C technologies (Milestone H)
 
@@ -85,7 +85,7 @@ Drop a JSON file at `eval/tech_specs/<category>/<technology>/<version>.json` mat
 Validate against the schema before shipping:
 
 ```bash
-python -c "from src.infrastructure.techspec.jsonschema_techspec_validator import JSONSchemaTechSpecValidator; from pathlib import Path; print(JSONSchemaTechSpecValidator(Path('eval/tech_specs/_schema.v1.json')).validate(__import__('json').loads(Path('your-spec.json').read_text())))"
+python -c "from squeaky_clean.infrastructure.techspec.jsonschema_techspec_validator import JSONSchemaTechSpecValidator; from pathlib import Path; print(JSONSchemaTechSpecValidator(Path('eval/tech_specs/_schema.v1.json')).validate(__import__('json').loads(Path('your-spec.json').read_text())))"
 ```
 
 ### Configure a private MCP server
@@ -120,7 +120,7 @@ Scores 1–5 across 8 criteria (ops, cost, cold, thru, eco, reg, lic, team). Sta
 The framework's `LanguageAdapterRegistry` is registry-driven (Milestone K9). Adding a new language requires:
 
 1. Add a `TargetLanguage` enum value.
-2. Provide six adapters: ICP-spec library, integration bootstrap, granularity rule, test runner, dependency installer, implemented-class parser.
+2. Provide six adapters: emitter-spec library, integration bootstrap, granularity rule, test runner, dependency installer, implemented-class parser.
 3. Provide a `ProblemSpecFormatter` extension if the language has unusual identifier conventions (e.g. PowerShell verb-noun).
 4. Register everything in `language_adapter_registry.py`'s `REGISTRY` dict.
 5. Run `pytest tests/interface/cli/test_language_adapter_registry_coverage.py` — it asserts every enum value has a registered factory.

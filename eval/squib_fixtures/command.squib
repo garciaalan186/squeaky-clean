@@ -1,0 +1,10 @@
+MODULE Editor
+LAYER Application
+EXPORTS [EditCommand]
+DEPENDS []
+CLASSES {
+  EditCommand -> Command {
+    methods: [execute(): void]
+    concretes: [InsertCommand, DeleteCommand]
+  }
+}

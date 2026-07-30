@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.snake_case_converter import SnakeCaseConverter
 from squeaky_clean.application.use_cases.wiring_construction import (
     emit_inbound,
@@ -34,6 +33,7 @@ from squeaky_clean.application.use_cases.wiring_walker import (
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class WiringGenerator:

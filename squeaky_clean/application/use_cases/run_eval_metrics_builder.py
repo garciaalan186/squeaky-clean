@@ -1,6 +1,5 @@
 """RunEvalMetricsBuilder: compute EvalMetrics from pipeline outputs."""
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.metrics_inputs import MetricsInputs
 from squeaky_clean.application.use_cases.cache_savings_calculator import (
     CacheSavingsCalculator,
@@ -8,6 +7,7 @@ from squeaky_clean.application.use_cases.cache_savings_calculator import (
 )
 from squeaky_clean.application.use_cases.run_eval_token_mapper import RunEvalTokenMapper
 from squeaky_clean.application.use_cases.run_eval_velocity import RunEvalVelocity
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 _PARALLELISM_LIMIT: int = 4
 
@@ -63,7 +63,7 @@ class RunEvalMetricsBuilder:
             + inputs.security_architect_cost_usd
             + inputs.fixer_cost_usd
         )
-        m.total_wall_clock_ms = impl.total_duration_ms
+        m.total_wall_clock_ms = inputs.wall_clock_ms or impl.total_duration_ms
         m.parallelism_limit = _PARALLELISM_LIMIT
         m.peak_parallelism = min(len(impl.implemented_classes), _PARALLELISM_LIMIT)
         m.classes_per_module = [len(impl.module.classes)]
@@ -80,6 +80,7 @@ class RunEvalMetricsBuilder:
         m.cache_creation_input_tokens = inputs.cache_creation_input_tokens
         m.cache_read_input_tokens = inputs.cache_read_input_tokens
         m.llm_timeouts = inputs.llm_timeouts
+        m.agent_hangs = inputs.llm_timeouts
         m.replicate_id = inputs.replicate_id
         m.spec_conformance_violations = inputs.spec_conformance_violations
         m.composer_validation_failures = inputs.composer_validation_failures

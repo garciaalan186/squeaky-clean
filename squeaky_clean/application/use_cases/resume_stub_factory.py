@@ -37,7 +37,14 @@ class ResumeStubFactory:
         impls: tuple[ModuleImplementation, ...],
         prior_cost_usd: float,
     ) -> RunEvalDependencies:
-        """Return new deps where cached-stage components are replaced by stubs."""
+        """Return new deps where cached-stage components are replaced by stubs.
+
+        Seeds the CostGate with cost already spent before the checkpoint so the
+        resumed run's budget is not silently reset to $0 (which would let a run
+        resumed near its cap re-spend the entire budget and under-report cost).
+        """
+        if deps.cost_gate is not None:
+            deps.cost_gate.seed(prior_cost_usd)
         impls_by_name = {i.module.name: i for i in impls}
         return replace(
             deps,

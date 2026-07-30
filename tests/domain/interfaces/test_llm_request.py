@@ -25,9 +25,21 @@ def test_llm_request_seed_field_round_trips() -> None:
     assert req.temperature == 0.0
 
 
-def test_cache_key_changes_with_seed() -> None:
+def test_cache_key_ignores_seed_and_temperature() -> None:
+    # R3.3: seed/temperature never reach the wire, so they must not fragment
+    # the cache — identical prompts share a key regardless of these knobs.
     base = LLMRequest(model="m", system_prompt="s", user_prompt="u")
     seeded = LLMRequest(model="m", system_prompt="s", user_prompt="u", seed=1)
-    other_seed = LLMRequest(model="m", system_prompt="s", user_prompt="u", seed=2)
-    assert base.cache_key() != seeded.cache_key()
-    assert seeded.cache_key() != other_seed.cache_key()
+    tempy = LLMRequest(
+        model="m", system_prompt="s", user_prompt="u", temperature=0.0,
+    )
+    assert base.cache_key() == seeded.cache_key()
+    assert base.cache_key() == tempy.cache_key()
+
+
+def test_cache_key_still_distinguishes_replicates() -> None:
+    base = LLMRequest(model="m", system_prompt="s", user_prompt="u")
+    rep = LLMRequest(
+        model="m", system_prompt="s", user_prompt="u", replicate_id=1,
+    )
+    assert base.cache_key() != rep.cache_key()

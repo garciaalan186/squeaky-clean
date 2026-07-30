@@ -1,0 +1,10 @@
+MODULE Documents
+LAYER Application
+EXPORTS [DocumentCreator]
+DEPENDS []
+CLASSES {
+  DocumentCreator -> FactoryMethod {
+    methods: [create_document(): Document]
+    concretes: [PdfCreator, HtmlCreator]
+  }
+}

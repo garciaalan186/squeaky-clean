@@ -24,7 +24,7 @@ class TestArchitectScorer:
             arch = self._parser.parse(raw)
         except TestArchitectureParseError as exc:
             return AgentScore(
-                agent="TestArchitect", fixture=fixture_id,
+                agent="OracleCompiler", fixture=fixture_id,
                 parsed=False, structural_pass=0.0,
                 issues=(f"parse error: {exc}",),
             )
@@ -43,6 +43,6 @@ class TestArchitectScorer:
                 )
         score = 0.0 if issues else 1.0
         return AgentScore(
-            agent="TestArchitect", fixture=fixture_id,
+            agent="OracleCompiler", fixture=fixture_id,
             parsed=True, structural_pass=score, issues=tuple(issues),
         )

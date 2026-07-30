@@ -1,0 +1,10 @@
+MODULE Filesystem
+LAYER Domain
+EXPORTS [Directory]
+DEPENDS []
+CLASSES {
+  Directory -> Composite {
+    fields: [children: Node]
+    methods: [size(): int, add(child: Node): void]
+  }
+}

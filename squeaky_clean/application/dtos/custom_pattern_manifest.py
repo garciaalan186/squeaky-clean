@@ -10,18 +10,18 @@ class CustomPatternManifestEntry:
     """One externally-supplied pattern declaration.
 
     name: pattern name as it appears in §Notation (e.g. ``EventSourcedAggregate``)
-    icp_spec_name: spec lookup key (e.g. ``python/custom/EventSourcedAggregateICP``)
+    emitter_spec_name: spec lookup key (e.g. ``python/custom/EventSourcedAggregateEmitter``)
     """
 
     name: str
-    icp_spec_name: str
+    emitter_spec_name: str
 
     def __post_init__(self) -> None:
         if not self.name or not self.name.strip():
             raise ValueError("CustomPatternManifestEntry.name is empty")
-        if not self.icp_spec_name or not self.icp_spec_name.strip():
+        if not self.emitter_spec_name or not self.emitter_spec_name.strip():
             raise ValueError(
-                f"icp_spec_name is empty for pattern {self.name!r}"
+                f"emitter_spec_name is empty for pattern {self.name!r}"
             )
 
 

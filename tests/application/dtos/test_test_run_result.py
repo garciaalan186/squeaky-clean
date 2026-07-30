@@ -4,7 +4,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
 def test_test_run_result_preserves_fields() -> None:

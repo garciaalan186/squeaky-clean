@@ -6,18 +6,18 @@ import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _INFRA_SPECS = (
-    _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "icps" / "python"
+    _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "emitters" / "python"
     / "infrastructure"
 )
 
 _NEW_SPECS = [
-    "RestServerHandlerICP.md",
-    "GrpcClientICP.md",
-    "GrpcServerHandlerICP.md",
-    "WebSocketServerHandlerICP.md",
-    "ObservabilityLoggerICP.md",
-    "SecretsProviderICP.md",
-    "SearchICP.md",
+    "RestServerHandlerEmitter.md",
+    "GrpcClientEmitter.md",
+    "GrpcServerHandlerEmitter.md",
+    "WebSocketServerHandlerEmitter.md",
+    "ObservabilityLoggerEmitter.md",
+    "SecretsProviderEmitter.md",
+    "SearchEmitter.md",
 ]
 
 

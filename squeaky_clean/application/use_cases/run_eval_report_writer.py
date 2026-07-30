@@ -5,6 +5,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
 
 
 class RunEvalReportWriter:
@@ -12,7 +13,6 @@ class RunEvalReportWriter:
 
     def write(self, path: Path, bundle: EvalReportBundle) -> None:
         """Serialise ``bundle`` as JSON into ``path``, creating parent dirs."""
-        path.parent.mkdir(parents=True, exist_ok=True)
         payload: dict[str, object] = {
             "problem_id": bundle.problem.id,
             "description": bundle.problem.description,
@@ -34,4 +34,4 @@ class RunEvalReportWriter:
             "files_scanned": bundle.validation.files_scanned,
             "acceptance_criteria": bundle.problem.acceptance_criteria,
         }
-        path.write_text(json.dumps(payload, indent=2, default=str))
+        atomic_write_text(path, json.dumps(payload, indent=2, default=str))

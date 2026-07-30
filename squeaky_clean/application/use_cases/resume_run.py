@@ -5,26 +5,26 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.dtos.validation_report import ValidationReport
 from squeaky_clean.application.use_cases.checkpoint_checksum import CheckpointChecksum
 from squeaky_clean.application.use_cases.checkpoint_reader import CheckpointReader
 from squeaky_clean.application.use_cases.resume_run_executor import ResumeRunExecutor
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
 class ResumeRun:
     """Top-level resume entry point: read checkpoint, dispatch executor."""
 
-    def __init__(self) -> None:
-        self._reader: CheckpointReader = CheckpointReader()
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._logger: RunLogger = logger or NullRunLogger()
+        self._reader: CheckpointReader = CheckpointReader(self._logger)
         self._checksum: CheckpointChecksum = CheckpointChecksum()
-        self._logger: JSONLogger = JSONLogger()
 
     def resume(
         self, run_dir: Path, problem: ProblemSpec, deps: RunEvalDependencies,

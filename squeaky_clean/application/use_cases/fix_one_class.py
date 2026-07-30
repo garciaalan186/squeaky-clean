@@ -12,15 +12,15 @@ from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 
 class FixOneClass:
     """Runs a single fixer LLM call against a FixCandidate."""
 
     def __init__(
-        self, gateway: LLMGateway, router: ModelRouter,
+        self, gateway: LLMGateway, router: ModelRoutingPolicy,
         run_config: RunConfig | None = None,
     ) -> None:
         self._deps = IcpExecutionDeps(

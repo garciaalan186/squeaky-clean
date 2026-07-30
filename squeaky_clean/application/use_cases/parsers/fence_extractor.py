@@ -15,10 +15,25 @@ class FenceExtractor:
     """Extracts the body of the first fenced code block in raw text."""
 
     def extract(self, raw: str, class_name: str) -> str:
-        """Return the inner body of the first fence, or raise on failure."""
-        match = _FENCE.search(raw)
-        if match is None:
+        """Return a fenced code block, preferring the one that defines the class.
+
+        When a response carries several fences (an explanatory snippet plus the
+        real class, say), first-match can grab the wrong one. Preference order:
+        a fence that *defines* ``class_name`` (definition keyword + name), then
+        any fence mentioning it, then the first fence (R3.1).
+        """
+        bodies = [m.group("body") for m in _FENCE.finditer(raw)]
+        if not bodies:
             raise ImplementedClassParseError(
                 f"missing fenced code block for {class_name}"
             )
-        return match.group("body").strip("\n").rstrip()
+        defn = re.compile(
+            r"\b(?:class|struct|interface|type|enum|object|def|fn|func)\s+"
+            + re.escape(class_name) + r"\b"
+        )
+        chosen = (
+            next((b for b in bodies if defn.search(b)), None)
+            or next((b for b in bodies if class_name in b), None)
+            or bodies[0]
+        )
+        return chosen.strip("\n").rstrip()

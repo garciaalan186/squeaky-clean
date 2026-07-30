@@ -32,18 +32,24 @@ class ICPRetryHandler:
     def run(
         self, request: LLMRequest, class_name: str, first: LLMResponse,
     ) -> tuple[LLMResponse, int]:
-        """Validate ``first``; on parse failure, retry with backoff up to cap."""
-        last_err = self._try_parse(first.content, class_name)
+        """Validate ``first``; on timeout/parse failure, retry with backoff."""
+        last_err = self._failure(first, class_name)
         if last_err is None:
             return first, 0
         response = first
         for attempt in range(self._policy.max_icp_retries):
             self._sleep(attempt)
             response = self._gateway.complete(self._build(request, last_err))
-            last_err = self._try_parse(response.content, class_name)
+            last_err = self._failure(response, class_name)
             if last_err is None:
                 return response, attempt + 1
         return response, self._policy.max_icp_retries
+
+    def _failure(self, response: LLMResponse, class_name: str) -> str | None:
+        """Return a retryable error string, or None if the response is usable."""
+        if response.timed_out:
+            return "previous call timed out before returning content"
+        return self._try_parse(response.content, class_name)
 
     def _try_parse(self, content: str, class_name: str) -> str | None:
         try:
@@ -62,6 +68,7 @@ class ICPRetryHandler:
             replicate_id=request.replicate_id,
             tier=request.tier,
             cacheable_user_prefix=request.cacheable_user_prefix,
+            max_tokens=request.max_tokens,
         )
 
     def _sleep(self, attempt: int) -> None:

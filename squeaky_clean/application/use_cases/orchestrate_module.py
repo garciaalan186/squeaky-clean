@@ -4,7 +4,6 @@ import time
 
 from squeaky_clean.application.dtos.implemented_class import ImplementedClass
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.assign_patterns import AssignPatterns
 from squeaky_clean.application.use_cases.implement_class import ImplementClass
 from squeaky_clean.application.use_cases.parallel_icp_dispatcher import ParallelICPDispatcher
@@ -14,6 +13,7 @@ from squeaky_clean.application.use_cases.port_method_decomposer import (
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class OrchestrateModule:

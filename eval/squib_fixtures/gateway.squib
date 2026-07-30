@@ -1,0 +1,9 @@
+MODULE PaymentPort
+LAYER Domain
+EXPORTS [PaymentGateway]
+DEPENDS []
+CLASSES {
+  PaymentGateway -> Gateway {
+    methods: [charge(amount: Money): Result]
+  }
+}

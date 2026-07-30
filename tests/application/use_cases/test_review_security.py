@@ -53,7 +53,7 @@ def test_execute_returns_parsed_security_review() -> None:
     assert len(review.concerns) == 1
     assert review.concerns[0].category == "boundary"
     assert gateway.last_request is not None
-    assert "SecurityArchitect" in (gateway.last_request.system_prompt or "")
+    assert "ThreatAnalyzer" in (gateway.last_request.system_prompt or "")
 
 
 def test_execute_records_token_usage() -> None:

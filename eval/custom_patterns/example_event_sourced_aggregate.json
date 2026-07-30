@@ -2,7 +2,7 @@
   "patterns": [
     {
       "name": "EventSourcedAggregate",
-      "icp_spec_name": "python/custom/EventSourcedAggregateICP"
+      "emitter_spec_name": "python/custom/EventSourcedAggregateEmitter"
     }
   ],
   "extra_spec_roots": ["./eval/custom_patterns/specs/"]

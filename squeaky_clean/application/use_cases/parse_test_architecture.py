@@ -24,9 +24,11 @@ class ParseTestArchitecture:
     def parse(self, raw: str) -> TestArchitecture:
         """Return a TestArchitecture built from TestArchitect raw output."""
         stripped = raw.strip()
-        if "GHERKIN" not in stripped or "TEST_SKELETONS" not in stripped:
+        upper = stripped.upper()
+        if "GHERKIN" not in upper or "TEST_SKELETONS" not in upper:
             raise TestArchitectureParseError(
-                "missing GHERKIN or TEST_SKELETONS section header"
+                "missing GHERKIN or TEST_SKELETONS section header "
+                "(output may have been truncated before the second section)"
             )
         gherkin = self._gherkin.parse(stripped)
         skeletons = self._skeletons.parse(stripped)

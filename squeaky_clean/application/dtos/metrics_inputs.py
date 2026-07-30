@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from squeaky_clean.application.dtos.file_stats import FileStats
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.dtos.validation_report import ValidationReport
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
 @dataclass(frozen=True)
@@ -67,3 +67,4 @@ class MetricsInputs:
     fixer_model: str = ""
     composer_validation_failures: int = 0
     composer_manager_fallback_calls: int = 0
+    wall_clock_ms: int = 0

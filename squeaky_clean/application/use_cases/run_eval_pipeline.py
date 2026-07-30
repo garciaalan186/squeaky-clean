@@ -9,7 +9,6 @@ integration / metrics / test-run.
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.dtos.fix_request import FixRequest
 from squeaky_clean.application.dtos.integration_request import IntegrationRequest
@@ -17,10 +16,8 @@ from squeaky_clean.application.dtos.module_implementation import ModuleImplement
 from squeaky_clean.application.dtos.problem_spec import ProblemSpec
 from squeaky_clean.application.dtos.security_review_context import SecurityReviewContext
 from squeaky_clean.application.dtos.security_test_context import SecurityTestContext
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.dtos.test_architecture import TestArchitecture
 from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.use_cases.architectural_complexity_scorer import (
     ArchitecturalComplexityScorer,
 )
@@ -125,7 +122,13 @@ from squeaky_clean.application.use_cases.validate_http_conventions import (
 )
 from squeaky_clean.application.use_cases.wiring_generator import WiringGenerator
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
+from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
+    LifecycleTimestampLog,
+)
 
 
 class RunEvalPipeline:
@@ -154,7 +157,7 @@ class RunEvalPipeline:
         self._security: SecurityScanStage = SecurityScanStage(
             deps.secret_path_scanner, deps.sast_runner,
         )
-        self._logger: JSONLogger = JSONLogger()
+        self._logger: RunLogger = deps.run_logger
         self._contracts: ContractRegistry = ContractRegistry()
         self._wiring: WiringGenerator = WiringGenerator()
         self._build_manifest: BuildManifestGenerator = BuildManifestGenerator()
@@ -181,7 +184,10 @@ class RunEvalPipeline:
     ) -> EvalReportBundle:
         d = self._deps
         emitter = CheckpointEmitter(problem.id, output_dir)
+        lifecycle = LifecycleTimestampLog(output_dir)
+        lifecycle.record("squib_parse_start")
         arch = d.design_architecture.execute(problem)
+        self._verify_layers(arch)
         arch = self._check_dependency_injection(arch, problem)
         self._arch = arch
         self._persist_notation(output_dir)
@@ -218,6 +224,7 @@ class RunEvalPipeline:
         validation = d.validate_architecture.execute(output_dir)
         self._install_deps(output_dir)
         compile_result = self._run_compile_gate(impl, output_dir)
+        lifecycle.record("build_complete")
         test_run = d.test_runner.run(output_dir)
         emitter.tested()
         test_run, fix_stats = self._run_fixer_loop(impl, test_run, output_dir)
@@ -235,12 +242,20 @@ class RunEvalPipeline:
                 test_run = d.test_runner.run(output_dir)
                 fix_stats = fix_stats.merge(crash)
         emitter.fixed(fix_stats.passes)
+        lifecycle.record_fields("tests_complete", {
+            "all_passed": test_run.failed == 0 and test_run.errors == 0,
+            "passed": test_run.passed,
+            "failed": test_run.failed,
+            "errors": test_run.errors,
+        })
         func_run = (d.functional_test_runner.run(output_dir)
                     if d.functional_test_runner else None)
         outputs = PipelineOutputs(
             implementation=impl, test_run=test_run, validation=validation,
             func_run=func_run, security_architecture=sec_arch,
             fix_stats=fix_stats,
+            wall_clock_ms=lifecycle.elapsed_ms(
+                "squib_parse_start", "tests_complete") or 0,
         )
         inputs = self._assembler.assemble(outputs, output_dir)
         metrics = self._builder.build(inputs)
@@ -269,6 +284,19 @@ class RunEvalPipeline:
             problem=problem, metrics=metrics,
             test_run_result=test_run, validation=validation,
         )
+
+    def _verify_layers(self, arch: ArchitectureSpec) -> None:
+        """Run the opt-in per-layer Verifier pass; log any violations (R1.8)."""
+        verifier = self._deps.verify_layer
+        if verifier is None:
+            return
+        for module in arch.modules:
+            for violation in verifier.verify(module):
+                self._logger.event(
+                    "layer_verification_violation",
+                    module=module.name, layer=module.layer.value,
+                    message=violation,
+                )
 
     def _merge_test_architectures(
         self, arch: ArchitectureSpec, problem: ProblemSpec,
@@ -417,8 +445,14 @@ class RunEvalPipeline:
             metrics.acs_cost_per_unit = round(
                 metrics.estimated_cost_usd / score.composite, 4,
             )
-            wall_s = max(metrics.total_wall_clock_ms / 1000.0, 0.001)
-            metrics.acs_velocity = round(score.composite / wall_s, 3)
+            # Only a real, measured wall-clock yields a meaningful velocity.
+            # A prior `max(wall_s, 0.001)` floor turned an unmeasured run
+            # (total_wall_clock_ms == 0) into composite/0.001 == composite*1000
+            # -- the implausible ACS/sec seen in cache-served runs. Leave
+            # acs_velocity at its 0.0 default when wall-clock is absent.
+            if metrics.total_wall_clock_ms > 0:
+                wall_s = metrics.total_wall_clock_ms / 1000.0
+                metrics.acs_velocity = round(score.composite / wall_s, 3)
 
     def _resolve_tech_specs(
         self, problem: ProblemSpec, arch: ArchitectureSpec,

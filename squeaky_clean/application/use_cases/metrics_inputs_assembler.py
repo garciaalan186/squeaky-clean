@@ -6,19 +6,19 @@ from squeaky_clean.application.dtos.metrics_inputs import MetricsInputs
 from squeaky_clean.application.use_cases.file_stats_scanner import FileStatsScanner
 from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.application.use_cases.pipeline_outputs import PipelineOutputs
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 
 class MetricsInputsAssembler:
     """Turns a PipelineOutputs snapshot + recorder stats into MetricsInputs."""
 
     def __init__(
-        self, recorder: LLMUsageRecorder, router: ModelRouter | None = None,
+        self, recorder: LLMUsageRecorder, router: ModelRoutingPolicy,
     ) -> None:
         self._recorder: LLMUsageRecorder = recorder
         self._scanner: FileStatsScanner = FileStatsScanner()
-        self._router: ModelRouter = router if router is not None else ModelRouter()
+        self._router: ModelRoutingPolicy = router
 
     def assemble(
         self, outputs: PipelineOutputs, output_dir: Path,
@@ -73,4 +73,5 @@ class MetricsInputsAssembler:
             fixer_model=self._router.route(ModelTier.FIXER),
             composer_validation_failures=outputs.composer_stats.validation_failures,
             composer_manager_fallback_calls=outputs.composer_stats.manager_fallback_calls,
+            wall_clock_ms=outputs.wall_clock_ms,
         )

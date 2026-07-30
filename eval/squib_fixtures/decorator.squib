@@ -1,0 +1,11 @@
+MODULE Streams
+LAYER Domain
+EXPORTS [CompressingStream]
+DEPENDS []
+CLASSES {
+  CompressingStream -> Decorator {
+    implements: DataStream
+    methods: [write(data: str): void]
+    depends: [DataStream]
+  }
+}

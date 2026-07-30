@@ -1,7 +1,7 @@
 """RunEvalTokenMapper: copy token/cost fields from MetricsInputs to EvalMetrics."""
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.dtos.metrics_inputs import MetricsInputs
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class RunEvalTokenMapper:

@@ -83,9 +83,10 @@ def test_cache_key_is_stable() -> None:
     assert a.cache_key() == b.cache_key()
 
 
-def test_cache_key_changes_on_temperature() -> None:
+def test_cache_key_ignores_temperature() -> None:
+    # R3.3: temperature is a no-op at the wire, so it must not split the cache.
     a = LLMRequest("m", "sys", "user", temperature=0.0)
     b = LLMRequest("m", "sys", "user", temperature=0.7)
-    assert a.cache_key() != b.cache_key()
+    assert a.cache_key() == b.cache_key()
 
 

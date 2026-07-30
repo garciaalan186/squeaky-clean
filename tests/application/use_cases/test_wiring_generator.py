@@ -3,14 +3,14 @@
 import ast
 from pathlib import Path
 
-from squeaky_clean.application.dtos.tech_spec import TechSpec
-from squeaky_clean.application.dtos.tech_spec_operation import TechSpecOperation
 from squeaky_clean.application.use_cases.wiring_generator import WiringGenerator
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
 
 
 def _adapter(name: str, methods: tuple[str, ...]) -> ClassSpec:

@@ -44,6 +44,7 @@ from squeaky_clean.domain.interfaces.implemented_class_parser import (
 from squeaky_clean.domain.interfaces.integration_bootstrap import IntegrationBootstrap
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.interfaces.rule import Rule
+from squeaky_clean.domain.interfaces.test_runner import TestRunner
 from squeaky_clean.domain.rules.go_granularity_rule import GoGranularityRule
 from squeaky_clean.domain.rules.java_granularity_rule import JavaGranularityRule
 from squeaky_clean.domain.rules.javascript_granularity_rule import JavaScriptGranularityRule
@@ -56,7 +57,6 @@ from squeaky_clean.infrastructure.testing.go_test_runner import GoTestRunner
 from squeaky_clean.infrastructure.testing.maven_test_runner import MavenTestRunner
 from squeaky_clean.infrastructure.testing.node_test_runner import NodeTestRunner
 from squeaky_clean.infrastructure.testing.pytest_runner import PytestRunner
-from squeaky_clean.infrastructure.testing.test_runner import TestRunner
 from squeaky_clean.infrastructure.testing.typescript_test_runner import TypeScriptTestRunner
 
 

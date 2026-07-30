@@ -4,7 +4,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.violation import Violation
+from squeaky_clean.domain.value_objects.violation import Violation
 
 
 def test_violation_preserves_fields() -> None:

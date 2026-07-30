@@ -1,13 +1,9 @@
 """CompileGate: compile a project and drive fixer/test-repair on failures."""
 
-from dataclasses import dataclass
-from pathlib import Path
 
-from squeaky_clean.application.dtos.compile_result import CompileResult
 from squeaky_clean.application.dtos.fix_request import FixRequest
-from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
+from squeaky_clean.application.use_cases.compile_gate_request import CompileGateRequest
+from squeaky_clean.application.use_cases.compile_gate_result import CompileGateResult
 from squeaky_clean.application.use_cases.fixer_stage import (
     FixerStage,
     FixerStageResult,
@@ -16,27 +12,11 @@ from squeaky_clean.application.use_cases.repair_test_file import (
     RepairTestFile,
     TestRepairRequest,
 )
-from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
+from squeaky_clean.domain.value_objects.compile_result import CompileResult
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
-
-@dataclass(frozen=True)
-class CompileGateRequest:
-    """Inputs to one CompileGate run."""
-
-    implementation: ModuleImplementation
-    output_dir: Path
-    max_passes: int
-    architecture: ArchitectureSpec | None = None
-    toolkit: LanguageToolkit | None = None
-
-
-@dataclass(frozen=True)
-class CompileGateResult:
-    """Outcome: residual compile-error count + aggregated fixer usage."""
-
-    compile_errors: int
-    fixer: FixerStageResult
+__all__ = ["CompileGate", "CompileGateRequest", "CompileGateResult"]
 
 
 class CompileGate:

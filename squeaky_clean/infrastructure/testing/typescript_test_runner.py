@@ -6,8 +6,8 @@ import subprocess
 import time
 from pathlib import Path
 
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
-from squeaky_clean.infrastructure.testing.test_runner import TestRunner
+from squeaky_clean.domain.interfaces.test_runner import TestRunner
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 _TIMEOUT_SECONDS: int = 120
 _PASS: re.Pattern[str] = re.compile(r"^#\s*pass\s+(\d+)", re.MULTILINE)

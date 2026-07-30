@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 
 
 @dataclass(frozen=True)
@@ -18,6 +18,6 @@ class LLMCallDeps:
     """
 
     gateway: LLMGateway
-    router: ModelRouter
+    router: ModelRoutingPolicy
     recorder: LLMUsageRecorder
     run_config: RunConfig = field(default_factory=RunConfig)

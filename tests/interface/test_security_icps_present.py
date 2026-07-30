@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-_ICPS_ROOT = _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "icps"
+_ICPS_ROOT = _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "emitters"
 
 _CATEGORIES = (
     "AccessControl",
@@ -38,7 +38,7 @@ _PARAMS = [
 def test_security_icp_spec_present_and_idiomatic(
     language: str, category: str,
 ) -> None:
-    spec = _ICPS_ROOT / language / "security" / f"{category}SecurityICP.md"
+    spec = _ICPS_ROOT / language / "security" / f"{category}SecurityEmitter.md"
     assert spec.is_file(), f"missing spec: {spec}"
     body = spec.read_text()
     token = _LANGUAGE_TOKENS[language]

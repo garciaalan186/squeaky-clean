@@ -1,0 +1,10 @@
+MODULE Imports
+LAYER Application
+EXPORTS [DataImporter]
+DEPENDS []
+CLASSES {
+  DataImporter -> TemplateMethod {
+    methods: [import_records(raw: str): Record]
+    concretes: [CsvImporter, JsonImporter]
+  }
+}

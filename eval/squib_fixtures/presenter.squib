@@ -1,0 +1,9 @@
+MODULE OrderView
+LAYER Interface
+EXPORTS [OrderPresenter]
+DEPENDS []
+CLASSES {
+  OrderPresenter -> Presenter {
+    methods: [present(order: Order): OrderViewModel]
+  }
+}

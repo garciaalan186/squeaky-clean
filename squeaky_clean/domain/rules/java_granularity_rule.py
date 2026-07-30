@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-from squeaky_clean.application.dtos.violation import Violation
 from squeaky_clean.domain.interfaces.rule import Rule
+from squeaky_clean.domain.value_objects.violation import Violation
 
 _CLASS_DECL: re.Pattern[str] = re.compile(
     r"^\s*(?:public\s+)?(?:final\s+)?class\s+(\w+)", re.MULTILINE

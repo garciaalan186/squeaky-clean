@@ -4,15 +4,15 @@ from pathlib import Path
 
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
 from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.assign_patterns_paths import AssignPatternsPaths
 from squeaky_clean.application.use_cases.custom_pattern_registry import (
     CustomPatternRegistry,
 )
-from squeaky_clean.application.use_cases.map_pattern_to_icp import MapPatternToICP
+from squeaky_clean.application.use_cases.map_pattern_to_emitter import MapPatternToEmitter
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 def _method_names(c: ClassSpec) -> tuple[str, ...]:
@@ -29,7 +29,7 @@ class AssignPatterns:
     ) -> None:
         self._toolkit = toolkit
         self._paths = AssignPatternsPaths(toolkit, output_root)
-        self._mapper = MapPatternToICP()
+        self._mapper = MapPatternToEmitter()
         self._custom = custom_patterns or CustomPatternRegistry()
         self._architecture: ArchitectureSpec | None = None
         self._infra_mode = infrastructure_mode
@@ -60,7 +60,7 @@ class AssignPatterns:
         src_path, test_path = self._paths.for_class(c.name, module)
         return ClassAssignment(
             class_spec=c, module=module, toolkit=self._toolkit,
-            icp_spec_name=icp_name, file_path=str(src_path),
+            emitter_spec_name=icp_name, file_path=str(src_path),
             test_file_path=str(test_path), architecture=self._architecture,
             tech_spec=self._tech_for(icp_name),
         )
@@ -68,7 +68,7 @@ class AssignPatterns:
     def _icp_for(self, c: ClassSpec, module: ModuleSpec) -> str:
         custom = self._custom.lookup(c.pattern)
         if custom is not None:
-            return custom.icp_spec_name
+            return custom.emitter_spec_name
         return self._mapper.map_with_layer(
             c.pattern, self._toolkit, module.layer,
             _method_names(c), infrastructure_mode=self._infra_mode,
@@ -86,19 +86,19 @@ class AssignPatterns:
 
 
 _CATEGORY_TO_ICP_SUFFIX: dict[str, str] = {
-    "blob_storage": "BlobStorageAdapterICP",
-    "kv_cache": "KvCacheICP",
-    "rest_client": "RestClientICP",
-    "relational_db": "RelationalDBRepositoryICP",
-    "document_db": "DocumentDBRepositoryICP",
-    "message_queue_producer": "MessageQueueProducerICP",
-    "message_queue_consumer": "MessageQueueConsumerICP",
-    "stream_processor": "StreamProcessorICP",
-    "rest_server_handler": "RestServerHandlerICP",
-    "grpc_client": "GrpcClientICP",
-    "grpc_server_handler": "GrpcServerHandlerICP",
-    "websocket_server_handler": "WebSocketServerHandlerICP",
-    "observability_logger": "ObservabilityLoggerICP",
-    "secrets_provider": "SecretsProviderICP",
-    "search": "SearchICP",
+    "blob_storage": "BlobStorageAdapterEmitter",
+    "kv_cache": "KvCacheEmitter",
+    "rest_client": "RestClientEmitter",
+    "relational_db": "RelationalDBRepositoryEmitter",
+    "document_db": "DocumentDBRepositoryEmitter",
+    "message_queue_producer": "MessageQueueProducerEmitter",
+    "message_queue_consumer": "MessageQueueConsumerEmitter",
+    "stream_processor": "StreamProcessorEmitter",
+    "rest_server_handler": "RestServerHandlerEmitter",
+    "grpc_client": "GrpcClientEmitter",
+    "grpc_server_handler": "GrpcServerHandlerEmitter",
+    "websocket_server_handler": "WebSocketServerHandlerEmitter",
+    "observability_logger": "ObservabilityLoggerEmitter",
+    "secrets_provider": "SecretsProviderEmitter",
+    "search": "SearchEmitter",
 }

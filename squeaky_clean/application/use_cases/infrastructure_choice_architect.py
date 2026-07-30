@@ -12,9 +12,10 @@ from squeaky_clean.application.use_cases.mcda_registry import MCDARegistry
 from squeaky_clean.application.use_cases.mcda_scorer import MCDAScorer
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
+from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
 _RATIONALE_WORD_LIMIT: int = 50
-_MANAGER_MODEL: str = "claude-sonnet-4-5"
 
 
 class NoCandidatesAvailableError(LookupError):
@@ -26,10 +27,12 @@ class InfrastructureChoiceArchitect:
 
     def __init__(
         self, gateway: LLMGateway, registry: MCDARegistry, scorer: MCDAScorer,
+        routing: ModelRoutingPolicy,
     ) -> None:
         self._gateway: LLMGateway = gateway
         self._registry: MCDARegistry = registry
         self._scorer: MCDAScorer = scorer
+        self._routing: ModelRoutingPolicy = routing
 
     def decide(
         self, problem: ProblemSpec, category: str,
@@ -61,7 +64,8 @@ class InfrastructureChoiceArchitect:
             f"no preamble, no markdown."
         )
         req = LLMRequest(
-            model=_MANAGER_MODEL, system_prompt="MCDA rationale writer.",
+            model=self._routing.route(ModelTier.MANAGER),
+            system_prompt="MCDA rationale writer.",
             user_prompt=prompt, temperature=0.0, tier="manager",
         )
         text = self._gateway.complete(req).content.strip()

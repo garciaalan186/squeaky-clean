@@ -25,7 +25,7 @@
 
 ### 1.1 What this design covers
 
-This design describes how Squeaky Clean should generate **concrete infrastructure adapter implementations** for the *user's* generated project. Today the framework's existing pattern library (e.g. `RepositoryICP.md`, `GatewayICP.md`, `AdapterICP.md` once those land — see Section 2.4) is *technology-agnostic*: it knows how to produce a class that fits the GoF/DDD shape, but it has no information about which SDK to import, how that SDK constructs its client, what error types it raises, or what authentication model it uses. As a result, when the architecture spec says "MODULE Persistence has class `OrderRepository -> Repository`", the framework can produce a *port* and a *trivial in-memory adapter*, but cannot produce a working adapter against `boto3`, `psycopg2`, `confluent-kafka`, or `azure-storage-blob`.
+This design describes how Squeaky Clean should generate **concrete infrastructure adapter implementations** for the *user's* generated project. Today the framework's existing pattern library (e.g. `RepositoryEmitter.md`, `GatewayEmitter.md`, `AdapterEmitter.md` — see Section 2.4) is *technology-agnostic*: it knows how to produce a class that fits the GoF/DDD shape, but it has no information about which SDK to import, how that SDK constructs its client, what error types it raises, or what authentication model it uses. As a result, when the architecture spec says "MODULE Persistence has class `OrderRepository -> Repository`", the framework can produce a *port* and a *trivial in-memory adapter*, but cannot produce a working adapter against `boto3`, `psycopg2`, `confluent-kafka`, or `azure-storage-blob`.
 
 The user's role today is to **hand-write all real infrastructure adapters after generation**, exactly as we did during the Twitter-clone v2 build, where SQLite repositories were the orchestrator's responsibility and not the framework's. That gap is the subject of this document.
 
@@ -62,7 +62,7 @@ What this design generates: adapters for *user projects* the framework produces 
 
 ### 1.3 Boundary with existing CLAUDE.md §Rules
 
-CLAUDE.md §Rules currently constrain *every* generated class to ≤80 lines, ≤5 public methods, ≤2 args/method, one class per file, layered import discipline. This design preserves all of those constraints. Concretely: every generated infrastructure adapter must still pass `granularity_rule.py` and `dependency_rule.py`. If an SDK's idiomatic usage requires more than 3 methods (e.g. a Kafka consumer with `subscribe`, `poll`, `commit`, `close`), the design forces a decomposition into multiple collaborating classes — the same way the framework already handles a Facade with multiple use cases.
+CLAUDE.md §Rules currently constrain *every* generated class to ≤80 lines, ≤5 public methods, ≤2 args/method, one class per file, layered import discipline. This design preserves all of those constraints. Concretely: every generated infrastructure adapter must still pass `granularity_rule.py` and `dependency_rule.py`. If an SDK's idiomatic usage requires more than 5 methods (e.g. a Kafka consumer with `subscribe`, `poll`, `commit`, `seek`, `pause`, `close`), the design forces a decomposition into multiple collaborating classes — the same way the framework already handles a Facade with multiple use cases.
 
 ### 1.4 Design tension surfaced upfront
 
@@ -79,8 +79,8 @@ The three-tier model in Section 2 is the proposed resolution: keep what's slow-c
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Tier C (Category) — stable, framework-owned, versioned with the framework  │
-│  Examples: BlobStorageAdapterICP, MessageQueueProducerICP, KvCacheICP        │
-│  Lives in: squeaky_clean/interface/agent_specs/icps/<lang>/infrastructure/             │
+│  Examples: BlobStorageAdapterEmitter, KvCacheEmitter, SearchEmitter          │
+│  Lives in: squeaky_clean/interface/agent_specs/emitters/<lang>/infrastructure/     │
 │  Consumes: ClassSpec + (resolved) TechSpec injected by bridge                │
 │  Produces: One adapter file (<=80 lines, <=5 methods, port-conformant)       │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -107,25 +107,25 @@ Read top-down: a Tier C agent spec is the *only* thing the framework's prompt-as
 
 ### 2.2 Tier C — Category agents
 
-Tier C agents are new pattern-level ICP specs that fill the current gap between `RepositoryICP.md` (which describes the *pattern*) and a real adapter (which needs SDK details). Each Tier C agent describes a **category-of-infrastructure**, not a specific technology.
+Tier C agents are new pattern-level emitter specs that fill the current gap between `RepositoryEmitter.md` (which describes the *pattern*) and a real adapter (which needs SDK details). Each Tier C agent describes a **category-of-infrastructure**, not a specific technology.
 
 **Initial Tier C catalog**:
 
 | File path | Category | What it generates | Existing pattern overlap |
 |---|---|---|---|
-| `BlobStorageAdapterICP.md` | object/blob storage | adapter implementing a `BlobStore` port (`put`, `get`, `delete`) | Adapter, Gateway |
-| `RelationalDBRepositoryICP.md` | RDBMS | repository implementing a domain repo port over SQL | Repository |
-| `DocumentDBRepositoryICP.md` | document/NoSQL | repository over a doc store | Repository |
-| `KvCacheICP.md` | distributed cache | adapter over KV with `get`/`set`/`delete`/`expire` | Adapter |
-| `MessageQueueProducerICP.md` | broker producer | publisher implementing a `MessagePublisher` port | Gateway |
-| `MessageQueueConsumerICP.md` | broker consumer | consumer loop dispatching to a use-case port | Gateway |
-| `RestClientICP.md` | outbound HTTP | client wrapper implementing a domain gateway port | Gateway |
-| `RestServerHandlerICP.md` | inbound HTTP | thin web-handler that delegates to a use case | Adapter / Presenter |
-| `GrpcClientICP.md` | outbound gRPC | client wrapper | Gateway |
-| `GrpcServerHandlerICP.md` | inbound gRPC | servicer delegating to a use case | Adapter |
-| `WebSocketServerHandlerICP.md` | WS server | handler delegating to use case | Adapter |
-| `ObservabilityLoggerICP.md` | structured logs | logger implementing a `Logger` port | Adapter |
-| `SecretsProviderICP.md` | secrets | reader implementing a `Secret` port | Adapter |
+| `BlobStorageAdapterEmitter.md` | object/blob storage | adapter implementing a `BlobStore` port (`put`, `get`, `delete`) | Adapter, Gateway |
+| `RelationalDBRepositoryEmitter.md` | RDBMS | repository implementing a domain repo port over SQL | Repository |
+| `DocumentDBRepositoryEmitter.md` | document/NoSQL | repository over a doc store | Repository |
+| `KvCacheEmitter.md` | distributed cache | adapter over KV with `get`/`set`/`delete`/`expire` | Adapter |
+| `MessageQueueProducerEmitter.md` | broker producer | publisher implementing a `MessagePublisher` port | Gateway |
+| `MessageQueueConsumerEmitter.md` | broker consumer | consumer loop dispatching to a use-case port | Gateway |
+| `RestClientEmitter.md` | outbound HTTP | client wrapper implementing a domain gateway port | Gateway |
+| `RestServerHandlerEmitter.md` | inbound HTTP | thin web-handler that delegates to a use case | Adapter / Presenter |
+| `GrpcClientEmitter.md` | outbound gRPC | client wrapper | Gateway |
+| `GrpcServerHandlerEmitter.md` | inbound gRPC | servicer delegating to a use case | Adapter |
+| `WebSocketServerHandlerEmitter.md` | WS server | handler delegating to use case | Adapter |
+| `ObservabilityLoggerEmitter.md` | structured logs | logger implementing a `Logger` port | Adapter |
+| `SecretsProviderEmitter.md` | secrets | reader implementing a `Secret` port | Adapter |
 
 Each Tier C spec is **stable** because its responsibility ends at "implement the port; receive an SDK detail block; emit a clean adapter". Adding a new technology (e.g. NATS for messaging) requires *no change* to Tier C; only a new TechSpec under Tier T.
 
@@ -167,7 +167,7 @@ TECH_SPEC                                      ← injected by Tier B
     - "always close streams in a try/finally"
 ```
 
-**Tier C output contract**: identical to today's ICP — one fenced Python file, ≤80 lines, port-conformant, mypy-strict, layered imports. The TECH_SPEC block tells the model *what* to import and *how* to call the SDK; the Tier C spec tells it *what shape* the resulting class must take.
+**Tier C output contract**: identical to today's emitters — one fenced Python file, ≤80 lines, port-conformant, mypy-strict, layered imports. The TECH_SPEC block tells the model *what* to import and *how* to call the SDK; the Tier C spec tells it *what shape* the resulting class must take.
 
 **Tier C model tier**: ICP (low parameter, high parallelism). Tier B does the heavy lifting; Tier C is mechanical.
 
@@ -215,18 +215,18 @@ Tier B has two roles:
 
 2. **TechSpecComposer** — invoked once per Tier C call. Inputs: the Tier C agent_spec_path, the resolved TechSpec, and the focal ClassSpec. Output: an *instantiated* ICP user prompt that contains both the ClassSpec block (as today) and the TECH_SPEC block (Section 2.2). Detailed in Section 5.2.
 
-Tier B agents are **Manager-tier** model selections (mid-parameter). They are not pattern-level ICPs; they are orchestration steps in the spirit of `OrchestrateModule` and `OrchestrateArchitecture`.
+Tier B agents are **Manager-tier** model selections (mid-parameter). They are not pattern-level emitters; they are orchestration steps in the spirit of `OrchestrateModule` and `OrchestrateArchitecture`.
 
 ### 2.5 What changes vs stays the same
 
 | Surface | Today | After this design |
 |---|---|---|
 | `pattern_name.py` enum | `Repository`, `Gateway`, `Adapter`, etc. | unchanged; Tier C agents map *from* these patterns by category |
-| `MapPatternToICP` (`squeaky_clean/application/use_cases/map_pattern_to_icp.py`) | dispatches by pattern | extended to consider *layer* + *category* when the assigned pattern is one of `Repository`/`Gateway`/`Adapter` AND the module's `LAYER` is `Infrastructure` |
-| ICP file tree | `icps/<lang>/{ddd_clean,behavioral,structural,...}/` | adds `icps/<lang>/infrastructure/` directory containing the Tier C specs |
+| `MapPatternToEmitter` (`squeaky_clean/application/use_cases/map_pattern_to_emitter.py`) | dispatches by pattern | extended to consider *layer* + *category* when the assigned pattern is one of `Repository`/`Gateway`/`Adapter` AND the module's `LAYER` is `Infrastructure` |
+| Emitter file tree | `emitters/<lang>/{ddd_clean,behavioral,structural,...}/` | adds `emitters/<lang>/infrastructure/` directory containing the Tier C specs |
 | `ProblemSpec` DTO | unchanged from F5 schema (domain_conventions, query_semantics, etc.) | adds `infrastructure_choices: tuple[InfrastructureChoice, ...]` |
-| `RunEval` use case | runs PrincipalArchitect → TestArchitect → ICPs → integrate | inserts Tier B steps between architect and ICPs when infrastructure modules are present |
-| Per-run cost | dominated by ICPs + test architect | adds modest overhead from TechSpecComposer (one Manager call per infrastructure ICP); see Section 8 |
+| `RunEval` use case | runs RequirementCompiler → OracleCompiler → emitters → integrate | inserts Tier B steps between architect and emitters when infrastructure modules are present |
+| Per-run cost | dominated by emitters + OracleCompiler | adds modest overhead from TechSpecComposer (one Manager call per infrastructure emitter); see Section 8 |
 | Static framework size | ~400 source files | grows by ~13 Tier C specs × N languages (~50 new spec files) + bridge code (~10 new use cases). TechSpec catalog grows independently. |
 
 ---
@@ -525,7 +525,7 @@ InfrastructureChoice {
 
 **Input contract.**
 ```
-TierCSpecPath: str               # e.g. python/infrastructure/BlobStorageAdapterICP
+TierCSpecPath: str               # e.g. python/infrastructure/BlobStorageAdapterEmitter
 TechSpec: dict (the JSON)        # from TechSpecResolver
 ClassSpec: ClassSpec             # the focal class
 ArchitectureSpec: ArchitectureSpec
@@ -558,9 +558,9 @@ InstantiatedICPPrompt {
 - Tier C spec missing → raise `TierCAgentSpecMissingError(path)`.
 - TechSpec missing → resolver should have caught this already; this is a programming error if reached.
 
-### 5.3 Bridge agents are NOT pattern ICPs
+### 5.3 Bridge agents are NOT pattern emitters
 
-A common mistake would be to model these as additional `*ICP.md` files alongside `EntityICP.md` etc. They aren't ICPs — they're orchestration steps that *produce* ICP prompts. They live under `squeaky_clean/application/use_cases/` and are invoked by the pipeline, not loaded by `LoadAgentSpec`. Concretely:
+A common mistake would be to model these as additional `*Emitter.md` files alongside `EntityEmitter.md` etc. They aren't emitters — they're orchestration steps that *produce* emitter prompts. They live under `squeaky_clean/application/use_cases/` and are invoked by the pipeline, not loaded by `LoadAgentSpec`. Concretely:
 
 - `squeaky_clean/application/use_cases/infrastructure_choice_architect.py`
 - `squeaky_clean/application/use_cases/techspec_composer.py`
@@ -572,14 +572,14 @@ Each has a corresponding deps DTO and follows the existing use-case conventions 
 
 ```
 1. ProblemSpec loaded                                     [existing]
-2. PrincipalArchitect → ArchitectureSpec                  [existing]
+2. RequirementCompiler → ArchitectureSpec                 [existing]
 3. F5 spec-conformance validation                         [existing]
 4. derive_required_categories(arch) → set[Category]       [NEW]
 5. select_infrastructure_choices(problem) → tuple[Choice] [NEW; see 3.4]
 6. for each Infrastructure module class:
      6a. resolve TechSpec for the module's category       [NEW; Section 4]
      6b. compose instantiated ICP prompt                  [NEW; Section 5.2]
-     6c. invoke ICP via existing pipeline                 [existing]
+     6c. invoke emitter via existing pipeline             [existing]
 7. Integrate, validate, run tests                         [existing]
 8. EvalReport written, including derived choices + scores [NEW field]
 ```
@@ -861,7 +861,7 @@ src/
 │   ├── posts_persistence/                  ← module that the architect named
 │   │   └── sqlite_tweet_repository.py
 │   └── posts_media_storage/                ← module the architect named
-│       └── s3_tweet_media_storage.py       ← generated by Tier C BlobStorageAdapterICP
+│       └── s3_tweet_media_storage.py       ← generated by Tier C BlobStorageAdapterEmitter
 └── interface/
     └── posts/
         └── post_handler.py
@@ -882,10 +882,10 @@ Tier C agents must produce code consistent with this. The Tier C spec template e
 
 Each Tier C agent generates a single class with ≤5 methods and ≤2 args/method. SDKs whose idiomatic usage exceeds this are decomposed by Tier B before the Tier C call. Concretely:
 
-- A Kafka consumer needs `subscribe`, `poll`, `commit`, `close` — 4 methods. **Decomposition**: TechSpec composer recognizes the count and asks Tier B to split into a `KafkaSubscriber` (subscribe + close) and a `KafkaPoller` (poll + commit) — two collaborating classes. The application layer composes them.
-- A REST client with 5 endpoints needs 5 methods. **Decomposition**: each endpoint becomes its own Adapter class implementing a single-method port.
+- A Kafka consumer needs `subscribe`, `poll`, `commit`, `seek`, `pause`, `close` — 6 methods. **Decomposition**: TechSpec composer recognizes the count and asks Tier B to split into a `KafkaSubscriber` (subscribe + pause + close) and a `KafkaPoller` (poll + commit + seek) — two collaborating classes. The application layer composes them.
+- A REST client with 8 endpoints needs 8 methods. **Decomposition**: each endpoint becomes its own Adapter class implementing a single-method port.
 
-This decomposition is mechanical: the bridge counts methods, splits when count > 3, and generates one ICP call per decomposed class. The orchestrator (humans) MAY override by setting a `--allow-larger-adapters` flag, but the default is strict.
+This decomposition is mechanical: the bridge counts methods, splits when count > 5, and generates one emitter call per decomposed class. The orchestrator (humans) MAY override by setting a `--allow-larger-adapters` flag, but the default is strict.
 
 ### 7.4 Test infrastructure
 
@@ -895,9 +895,9 @@ For technologies with mature test doubles (moto for AWS, fakeredis for Redis, te
 
 ### 7.5 Wiring in the interface layer
 
-The Interface layer's `create_app` (or equivalent) is the composition root. It instantiates concrete adapters and injects them into use cases. The framework already knows how to generate the Interface layer (`InterfaceArchitect.md`). After this design lands, the Interface ICPs need a small extension: when a constructor argument is a port whose concrete adapter is in `src/infrastructure/`, import the concrete adapter and instantiate it with config drawn from env vars (the env var names come from the TechSpec's `auth.env_vars` and `client_construction.dependencies`).
+The Interface layer's `create_app` (or equivalent) is the composition root. It instantiates concrete adapters and injects them into use cases. The framework already knows how to generate the Interface layer (`InterfaceVerifier.md`). After this design lands, the Interface emitters need a small extension: when a constructor argument is a port whose concrete adapter is in `src/infrastructure/`, import the concrete adapter and instantiate it with config drawn from env vars (the env var names come from the TechSpec's `auth.env_vars` and `client_construction.dependencies`).
 
-This is a 10–20 line addition to the Interface layer's wiring template and is specified in the existing `InterfaceArchitect.md` as part of this milestone's delivery.
+This is a 10–20 line addition to the Interface layer's wiring template and is specified in the existing `InterfaceVerifier.md` as part of this milestone's delivery.
 
 ### 7.6 Boundary with framework's own infrastructure
 
@@ -913,13 +913,13 @@ A representative high-complexity problem (P3-style: ~6 modules, ~60 classes, wit
 
 | Stage | Calls | Tier | Avg in-toks | Avg out-toks | Cost @ Anthropic 2026 prices |
 |---|---:|---|---:|---:|---:|
-| PrincipalArchitect | 1 | Architect | 2,000 | 2,000 | ~$0.04 |
-| Layer Architects | 4 | Manager | 1,500 | 200 | ~$0.02 |
-| TestArchitect | 6 | Manager | 5,000 | 4,000 | ~$0.40 |
+| RequirementCompiler | 1 | Architect | 2,000 | 2,000 | ~$0.04 |
+| Layer verifiers | 4 | Manager | 1,500 | 200 | ~$0.02 |
+| OracleCompiler | 6 | Manager | 5,000 | 4,000 | ~$0.40 |
 | **InfrastructureChoiceArchitect** (NEW) | 0–4 | Manager | 800 | 80 | $0–$0.05 |
 | **TechSpecComposer Manager fallback** (NEW) | 0–2 | Manager | 1,200 | 200 | $0–$0.04 |
-| ICPs (regular) | 60 | ICP | 1,500 | 700 | ~$0.30 |
-| **Tier C Infrastructure ICPs** (NEW) | 4 | ICP | 2,800 | 900 | ~$0.04 |
+| Emitters (regular) | 60 | ICP | 1,500 | 700 | ~$0.30 |
+| **Tier C Infrastructure Emitters** (NEW) | 4 | ICP | 2,800 | 900 | ~$0.04 |
 | FixerStage | 0–2 | Fixer | 3,000 | 1,000 | $0–$0.03 |
 | Total today | | | | | **~$0.80** |
 | Total with infrastructure | | | | | **~$0.96** |
@@ -930,13 +930,13 @@ The TechSpecComposer Manager call only fires on validation failure; in the happy
 
 ### 8.2 Interaction with E3 (CostBudget)
 
-E3 (just landed) introduces `--max-cost-usd` with graceful partial-results exit. The new agents in this design respect the budget the same way every other call site does: each call goes through `BudgetedGateway.complete`, which records spend and triggers `BudgetExceededError` when the cap is crossed. Because the InfrastructureChoiceArchitect runs *early* (after layer architects, before ICPs), a budget exit there leaves a complete architecture but no generated adapter code — a useful partial-result state.
+E3 (just landed) introduces `--max-cost-usd` with graceful partial-results exit. The new agents in this design respect the budget the same way every other call site does: each call goes through `BudgetedGateway.complete`, which records spend and triggers `BudgetExceededError` when the cap is crossed. Because the InfrastructureChoiceArchitect runs *early* (after the layer verifiers, before emitters), a budget exit there leaves a complete architecture but no generated adapter code — a useful partial-result state.
 
 The `BUDGET_EXIT.txt` from E3 should mention which infrastructure category was being processed when the budget tripped, to help users decide whether to raise the cap or simplify the architecture.
 
 ### 8.3 Per-agent eval fixtures (extends A1)
 
-Each Tier C agent gets a fixture set under `eval/per_agent/fixtures/<tier_c_name>/`. Per-agent metrics extend the EntityICP scoring approach from D1:
+Each Tier C agent gets a fixture set under `eval/per_agent/fixtures/<tier_c_name>/`. Per-agent metrics extend the EntityEmitter scoring approach from D1:
 
 | Metric component | Weight | Check |
 |---|---:|---|
@@ -948,7 +948,7 @@ Each Tier C agent gets a fixture set under `eval/per_agent/fixtures/<tier_c_name
 | idempotency claim respected | 0.10 | declared idempotent ops don't carry retry-on-success guards |
 | granularity rules | 0.05 | ≤5 methods, ≤2 args/method, ≤80 lines |
 
-Fixture set: 5 fixtures per Tier C agent, parametrized over 2–3 technologies each. With 13 Tier C agents at first ship, that's 13 × 5 × ~2.5 = ~160 fixtures. Each fixture takes one ICP call to evaluate; full sweep ~$2–5. Run quarterly (or on every Tier C / TechSpec change touching the fixture's technology).
+Fixture set: 5 fixtures per Tier C agent, parametrized over 2–3 technologies each. With 13 Tier C agents at first ship, that's 13 × 5 × ~2.5 = ~160 fixtures. Each fixture takes one emitter call to evaluate; full sweep ~$2–5. Run quarterly (or on every Tier C / TechSpec change touching the fixture's technology).
 
 Fixtures live with their tier:
 ```
@@ -1005,13 +1005,13 @@ A new milestone family. Slot under **Milestone H** (after current G).
 - `squeaky_clean/application/use_cases/techspec_resolver.py` (resolver itself, paths 1+2 only — bundled and cache, no MCP, no web)
 - `squeaky_clean/application/use_cases/techspec_validator.py` + `squeaky_clean/domain/interfaces/techspec_validator.py` (port + adapter)
 - `eval/tech_specs/blob_storage/local_disk/stdlib.json` (one bundled snapshot)
-- `squeaky_clean/interface/agent_specs/icps/python/infrastructure/BlobStorageAdapterICP.md` (one Tier C agent)
-- `MapPatternToICP` extension to dispatch Repository/Gateway/Adapter assigned to Infrastructure-layer modules to the new Tier C path
+- `squeaky_clean/interface/agent_specs/emitters/python/infrastructure/BlobStorageAdapterEmitter.md` (one Tier C agent)
+- `MapPatternToEmitter` extension to dispatch Repository/Gateway/Adapter assigned to Infrastructure-layer modules to the new Tier C path
 - `--infra=manual` (default) and `--infra=auto` flag wiring; only manual works
 
 **Exit criteria** (measurable):
 - 5 unit tests for the resolver pass.
-- 1 fixture for `BlobStorageAdapterICP` in `eval/per_agent/fixtures/` scores ≥0.80.
+- 1 fixture for `BlobStorageAdapterEmitter` in `eval/per_agent/fixtures/` scores ≥0.80.
 - A run with `--infra=auto` and a ProblemSpec declaring `local_disk` blob storage produces a clean `LocalDiskBlobStorage` adapter under `src/infrastructure/<module>/`.
 - 420+ framework tests still pass (current baseline after E2/E3); mypy --strict clean.
 - Per-run cost on the test problem ≤ existing baseline + $0.05.
@@ -1039,7 +1039,7 @@ A new milestone family. Slot under **Milestone H** (after current G).
 **Deliverables**:
 - `squeaky_clean/application/use_cases/infrastructure_choice_architect.py` + `mcda_scorer.py` (deterministic math) + `mcda_registry.py` (loads scores from `eval/mcda_scores/`)
 - `eval/mcda_scores/blob_storage.json`, `kv_cache.json`, `rest_client.json`
-- New Tier C agents: `KvCacheICP.md`, `RestClientICP.md`
+- New Tier C agents: `KvCacheEmitter.md`, `RestClientEmitter.md`
 - Bundled snapshots: `kv_cache/redis/redis-py==5.0.json`, `rest_client/httpx/httpx==0.27.json`
 - DerivedChoice path enabled with `--infer-infrastructure`
 - EvalReport extensions for derived-choice telemetry
@@ -1140,7 +1140,7 @@ The following questions remain open. Each is followed by the document author's r
 
 ### Q12. Final check: does this design create new domain-inference paths?
 
-**Recommendation: no, by construction.** Every technology choice comes from data: ProblemSpec, the MCDA registry, or the TechSpec catalog. The only LLM judgment is the 50-word rationale at the end of MCDA, which describes the decision but cannot change it. The Tier C ICPs receive technology details as data, not as inferred from problem context. The prime directive holds.
+**Recommendation: no, by construction.** Every technology choice comes from data: ProblemSpec, the MCDA registry, or the TechSpec catalog. The only LLM judgment is the 50-word rationale at the end of MCDA, which describes the decision but cannot change it. The Tier C emitters receive technology details as data, not as inferred from problem context. The prime directive holds.
 
 ---
 
@@ -1183,21 +1183,21 @@ squeaky-clean/
 │   │       └── mcp_tech_doc_fetcher.py                      (H4)
 │   └── interface/
 │       ├── agent_specs/
-│       │   └── icps/
+│       │   └── emitters/
 │       │       └── python/infrastructure/                   (H1+)
-│       │           ├── BlobStorageAdapterICP.md             (H1)
-│       │           ├── KvCacheICP.md                        (H3)
-│       │           ├── RestClientICP.md                     (H3)
-│       │           ├── RelationalDBRepositoryICP.md         (H5)
-│       │           ├── DocumentDBRepositoryICP.md           (H5)
-│       │           ├── MessageQueueProducerICP.md           (H5)
-│       │           ├── MessageQueueConsumerICP.md           (H5)
-│       │           ├── GrpcClientICP.md                     (H5)
-│       │           ├── GrpcServerHandlerICP.md              (H5)
-│       │           ├── RestServerHandlerICP.md              (H5)
-│       │           ├── WebSocketServerHandlerICP.md         (H5)
-│       │           ├── ObservabilityLoggerICP.md            (H5)
-│       │           └── SecretsProviderICP.md                (H5)
+│       │           ├── BlobStorageAdapterEmitter.md         (H1)
+│       │           ├── KvCacheEmitter.md                    (H3)
+│       │           ├── RestClientEmitter.md                 (H3)
+│       │           ├── RelationalDBRepositoryEmitter.md     (H5)
+│       │           ├── DocumentDBRepositoryEmitter.md       (H5)
+│       │           ├── MessageQueueProducerEmitter.md       (H5)
+│       │           ├── MessageQueueConsumerEmitter.md       (H5)
+│       │           ├── GrpcClientEmitter.md                 (H5)
+│       │           ├── GrpcServerHandlerEmitter.md          (H5)
+│       │           ├── RestServerHandlerEmitter.md          (H5)
+│       │           ├── WebSocketServerHandlerEmitter.md     (H5)
+│       │           ├── ObservabilityLoggerEmitter.md        (H5)
+│       │           └── SecretsProviderEmitter.md            (H5)
 │       └── cli/
 │           └── cli_args_parser.py                           (H1; +flags)
 └── eval/
@@ -1216,10 +1216,10 @@ squeaky-clean/
 
 | New component | Touches existing |
 |---|---|
-| `MapPatternToICP` extension | `squeaky_clean/application/use_cases/map_pattern_to_icp.py` |
+| `MapPatternToEmitter` extension | `squeaky_clean/application/use_cases/map_pattern_to_emitter.py` |
 | `InfrastructureChoice` DTO | `squeaky_clean/application/dtos/problem_spec.py` (F5 schema) |
 | MCDA respects budget | `squeaky_clean/application/use_cases/budgeted_gateway.py` (E3) |
-| Tier C ICPs deterministic | `TemperaturePolicy.ICP` (A4) |
+| Tier C emitters deterministic | `TemperaturePolicy.ICP` (A4) |
 | Generated adapter paths | `squeaky_clean/application/use_cases/assign_patterns_paths.py` (C5) |
 | Validator wiring | `squeaky_clean/domain/rules/dependency_rule.py` (C5) |
 | Per-agent eval | `eval/per_agent/` (D1) |

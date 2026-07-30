@@ -64,7 +64,7 @@ def _assignment() -> ClassAssignment:
         class_spec=spec,
         module=module,
         toolkit=_TOOLKIT,
-        icp_spec_name="python/ddd_clean/ValueObjectICP",
+        emitter_spec_name="python/ddd_clean/ValueObjectEmitter",
         file_path="/tmp/p0/src/operand.py",
         test_file_path="/tmp/p0/tests/test_operand.py",
     )
@@ -87,4 +87,4 @@ def test_execute_uses_icp_tier_model() -> None:
     uc.execute(_assignment())
     assert gateway.last_request is not None
     assert gateway.last_request.model == "claude-haiku-4-5-20251001"
-    assert "ValueObjectICP" in gateway.last_request.system_prompt
+    assert "ValueObjectEmitter" in gateway.last_request.system_prompt

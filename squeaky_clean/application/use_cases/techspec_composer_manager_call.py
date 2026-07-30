@@ -5,19 +5,21 @@ from __future__ import annotations
 import json
 
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
+from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
-_MANAGER_MODEL = "claude-sonnet-4-6"
 _SYSTEM_PROMPT = "You repair TechSpec JSON or flag un_implementable."
 
 
 class TechSpecComposerManagerCall:
     """Encapsulates the Manager-tier LLM call + response parsing."""
 
-    def __init__(self, gateway: LLMGateway) -> None:
+    def __init__(self, gateway: LLMGateway, routing: ModelRoutingPolicy) -> None:
         self._gateway: LLMGateway = gateway
+        self._routing: ModelRoutingPolicy = routing
 
     def request_correction(
         self, assignment: ClassAssignment, tech_spec: TechSpec,
@@ -26,7 +28,8 @@ class TechSpecComposerManagerCall:
         """Return parsed correction dict, or None on un_implementable / parse fail."""
         prompt = self._build_prompt(assignment, tech_spec, errors)
         request = LLMRequest(
-            model=_MANAGER_MODEL, system_prompt=_SYSTEM_PROMPT,
+            model=self._routing.route(ModelTier.MANAGER),
+            system_prompt=_SYSTEM_PROMPT,
             user_prompt=prompt, tier="manager",
         )
         return self._parse(self._gateway.complete(request).content)

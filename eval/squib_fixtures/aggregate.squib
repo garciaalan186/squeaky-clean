@@ -1,0 +1,11 @@
+MODULE Orders
+LAYER Domain
+EXPORTS [Order]
+DEPENDS []
+CLASSES {
+  Order -> Aggregate {
+    fields: [id: str, lines: OrderLine]
+    methods: [add_line(line: OrderLine): void, total(): Money]
+    invariants: ["order total must be non-negative"]
+  }
+}

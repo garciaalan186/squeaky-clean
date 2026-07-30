@@ -1,0 +1,10 @@
+MODULE Ordering
+LAYER Application
+EXPORTS [OrderFacade]
+DEPENDS []
+CLASSES {
+  OrderFacade -> Facade {
+    methods: [place_order(command: OrderCommand): Result]
+    depends: [Inventory, Billing]
+  }
+}

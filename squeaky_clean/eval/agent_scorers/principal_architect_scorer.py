@@ -20,7 +20,7 @@ class PrincipalArchitectScorer:
             spec = self._parser.parse(raw_notation)
         except NotationParseError as exc:
             return AgentScore(
-                agent="PrincipalArchitect", fixture=fixture_id,
+                agent="RequirementCompiler", fixture=fixture_id,
                 parsed=False, structural_pass=0.0,
                 issues=(f"parse error: {exc}",),
             )
@@ -44,6 +44,6 @@ class PrincipalArchitectScorer:
             issues.append("no classes declared")
         score = 0.0 if issues else 1.0
         return AgentScore(
-            agent="PrincipalArchitect", fixture=fixture_id,
+            agent="RequirementCompiler", fixture=fixture_id,
             parsed=True, structural_pass=score, issues=tuple(issues),
         )

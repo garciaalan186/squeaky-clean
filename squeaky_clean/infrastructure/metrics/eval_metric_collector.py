@@ -3,7 +3,7 @@
 from copy import deepcopy
 from dataclasses import fields
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.entities.metric import Metric
 from squeaky_clean.domain.interfaces.metric_collector import MetricCollector
 

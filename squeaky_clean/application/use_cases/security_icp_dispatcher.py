@@ -6,7 +6,7 @@ from squeaky_clean.application.dtos.security_dispatch_context import SecurityDis
 from squeaky_clean.application.dtos.test_architecture import TestArchitecture
 from squeaky_clean.application.use_cases.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.use_cases.map_concern_to_security_icp import (
-    MapConcernToSecurityICP,
+    MapConcernToSecurityEmitter,
 )
 from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.application.use_cases.security_concern_formatter import (
@@ -17,8 +17,8 @@ from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _MAX_WORKERS: int = 4
 
@@ -27,14 +27,14 @@ class SecurityICPDispatcher:
     """Dispatches Security ICP calls in parallel and assembles results."""
 
     def __init__(
-        self, gateway: LLMGateway, router: ModelRouter,
+        self, gateway: LLMGateway, router: ModelRoutingPolicy,
         run_config: RunConfig | None = None,
     ) -> None:
         self._gateway: LLMGateway = gateway
-        self._router: ModelRouter = router
+        self._router: ModelRoutingPolicy = router
         self._run_config: RunConfig = run_config or RunConfig()
         self._loader: LoadAgentSpec = LoadAgentSpec()
-        self._mapper: MapConcernToSecurityICP = MapConcernToSecurityICP()
+        self._mapper: MapConcernToSecurityEmitter = MapConcernToSecurityEmitter()
         self._asm: SecurityTestAssembler = SecurityTestAssembler()
 
     def dispatch(self, ctx: SecurityDispatchContext) -> TestArchitecture:

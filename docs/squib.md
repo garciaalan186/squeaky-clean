@@ -1,6 +1,6 @@
 # Squib — Grammar Reference
 
-Squib is the compact text format the PrincipalArchitect emits and ICPs consume. It is the framework's instruction set architecture.
+Squib is the compact text format the RequirementCompiler emits and emitters consume. It is the framework's instruction set architecture.
 
 ## Top-level structure
 
@@ -32,7 +32,7 @@ INVARIANTS [<free-text module-level rule>, ...]
 | `EXPORTS [...]` | Yes (may be empty) | Classes other modules can `DEPENDS` on |
 | `DEPENDS [...]` | Yes (may be empty) | Required for cross-module class dependencies (validated DAG) |
 | `CLASSES { ... }` | Yes | One or more class definitions |
-| `INVARIANTS [...]` | Yes (may be empty) | Module-level invariants surfaced to all ICPs in this module |
+| `INVARIANTS [...]` | Yes (may be empty) | Module-level invariants surfaced to all emitters in this module |
 
 ## Class definitions
 
@@ -41,14 +41,14 @@ INVARIANTS [<free-text module-level rule>, ...]
 | `<ClassName> -> <PatternName>` | Yes | PatternName from the 34-pattern enum (Entity, ValueObject, Repository, Gateway, Adapter, ...) |
 | `fields:` | Yes (may be empty) | Constructor argument shape — `name: Type`. First field is identity for Entity |
 | `methods:` | Yes (may be empty) | `methodName(argName: Type): ReturnType`. Use `Type[]` for collections |
-| `depends:` | Optional | Sibling or `Module::SiblingClass` references the ICP needs to construct |
+| `depends:` | Optional | Sibling or `Module::SiblingClass` references the emitter needs to construct |
 | `concretes:` | Optional | Polymorphic implementations (Strategy, Visitor, State variants) |
 | `implements:` | Optional | The port/interface this class implements (Adapter / Repository pattern) |
 | `invariants:` | Optional | Class-scoped rules — translate to runtime checks |
 
 ## Cross-module references
 
-Use `Module::ClassName` for cross-module dependencies. The class must appear in the target module's `EXPORTS` list. The framework's `validate_cross_module_dependencies` validator catches missing exports + cycles BEFORE ICP fan-out.
+Use `Module::ClassName` for cross-module dependencies. The class must appear in the target module's `EXPORTS` list. The framework's `validate_cross_module_dependencies` validator catches missing exports + cycles BEFORE emitter fan-out.
 
 ```
 MODULE Forwarding
@@ -65,7 +65,7 @@ CLASSES {
 
 ## Type vocabulary
 
-Squib uses language-neutral type names. Per-language ICPs translate via the **type-fidelity rule** in each language's ICP spec:
+Squib uses language-neutral type names. Per-language emitters translate via the **type-fidelity rule** in each language's emitter spec:
 
 | Squib | Python | Java | Go | Rust | JS / TS |
 |---|---|---|---|---|---|
@@ -88,16 +88,16 @@ The `ProblemSpec` JSON drives the architect. Beyond `id`, `description`, `accept
 | `domain_conventions: ["timeline_includes_self", ...]` | Tags map to canonical INVARIANTs the architect MUST surface verbatim | `timeline_includes_self` → `"a user's timeline must include the user's own posts"` |
 | `query_semantics: [{"use_case": "...", "shape": "..."}]` | Declares the query shape per use case | `{"shape": "self_plus_followees"}` |
 | `entity_lifecycle: [{"entity": "...", "transitions": [...]}]` | Explicit state machine declarations | Tweet status: `draft → published → deleted` |
-| `data_classification: [{"field_ref": "User.password_hash", "sensitivity": "credential"}]` | Sensitivity tags for the SecurityArchitect | `credential` / `pii` / `session_token` |
+| `data_classification: [{"field_ref": "User.password_hash", "sensitivity": "credential"}]` | Sensitivity tags for the ThreatAnalyzer | `credential` / `pii` / `session_token` |
 | `produces_contracts: [{name, transport, fields: [...]}]` | Cross-service contract this service emits | Kafka topic + JSON envelope |
 | `consumes_contracts: [{contract_name, role: "consumes"}]` | Cross-service contract this service reads | Resolved from the contract registry |
-| `infrastructure_choices: [{category, technology, version_pin}]` | Pin specific SDKs (boto3, spring-kafka, ...) | Drives Tier C ICP routing |
+| `infrastructure_choices: [{category, technology, version_pin}]` | Pin specific SDKs (boto3, spring-kafka, ...) | Drives Tier C emitter routing |
 
-When any of these is present in the user prompt, the architect's spec includes a strict constraint to honor it (constraint #18-#22 in `PrincipalArchitect.md`).
+When any of these is present in the user prompt, the architect's spec includes a strict constraint to honor it (constraint #18-#22 in `RequirementCompiler.md`).
 
 ## Validators that run on Squib
 
-Before ICP fan-out, the framework runs five validators against the architect's output:
+Before emitter fan-out, the framework runs five validators against the architect's output:
 
 1. **`ArchitectureSpec.validate()`** — every dep references a known class; cycles forbidden.
 2. **`validate_cross_module_dependencies`** — every `Module::Type` is in the target's `EXPORTS`.

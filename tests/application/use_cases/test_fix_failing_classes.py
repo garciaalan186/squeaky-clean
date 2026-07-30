@@ -3,7 +3,6 @@
 from squeaky_clean.application.dtos.fix_request import FixRequest
 from squeaky_clean.application.dtos.implemented_class import ImplementedClass
 from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.test_run_result import TestRunResult
 from squeaky_clean.application.use_cases.fix_failing_classes import FixFailingClasses
 from squeaky_clean.application.use_cases.fix_failing_classes_deps import (
     FixFailingClassesDeps,
@@ -19,6 +18,7 @@ from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _TOOLKIT = LanguageToolkitFactory().for_language(TargetLanguage.PYTHON)

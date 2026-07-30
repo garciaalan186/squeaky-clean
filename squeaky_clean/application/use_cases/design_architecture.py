@@ -20,15 +20,17 @@ from squeaky_clean.domain.entities.notation_parse_error import NotationParseErro
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
-_ARCHITECT_SPEC: str = "PrincipalArchitect"
+_ARCHITECT_SPEC: str = "RequirementCompiler"
 
 
 class DesignArchitecture:
     """Use case: produce a validated ArchitectureSpec from a ProblemSpec."""
 
-    def __init__(self, deps: LLMCallDeps) -> None:
+    def __init__(
+        self, deps: LLMCallDeps, loader: LoadAgentSpec | None = None,
+    ) -> None:
         self._deps: LLMCallDeps = deps
-        self._loader: LoadAgentSpec = LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
         self._parser: ParseArchitectureNotation = ParseArchitectureNotation()
         self._formatter: ProblemSpecFormatter = ProblemSpecFormatter()
 

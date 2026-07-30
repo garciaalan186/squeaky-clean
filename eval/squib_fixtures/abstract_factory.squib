@@ -1,0 +1,10 @@
+MODULE Theming
+LAYER Domain
+EXPORTS [WidgetFactory]
+DEPENDS []
+CLASSES {
+  WidgetFactory -> AbstractFactory {
+    methods: [create_button(): Button, create_checkbox(): Checkbox]
+    concretes: [DarkWidgetFactory, LightWidgetFactory]
+  }
+}

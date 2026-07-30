@@ -6,7 +6,7 @@ from squeaky_clean.domain.interfaces.dependency_installer import DependencyInsta
 from squeaky_clean.domain.interfaces.implemented_class_parser import ImplementedClassParser
 from squeaky_clean.domain.interfaces.integration_bootstrap import IntegrationBootstrap
 from squeaky_clean.domain.interfaces.rule import Rule
-from squeaky_clean.infrastructure.testing.test_runner import TestRunner
+from squeaky_clean.domain.interfaces.test_runner import TestRunner
 
 
 @dataclass(frozen=True)

@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import pytest
 
-from squeaky_clean.application.dtos.sast_report import SastReport
+from squeaky_clean.domain.value_objects.sast_report import SastReport
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
 
 

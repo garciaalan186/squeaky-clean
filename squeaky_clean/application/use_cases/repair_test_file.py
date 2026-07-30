@@ -10,8 +10,8 @@ from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _FENCE: re.Pattern[str] = re.compile(r"```[a-zA-Z]*\n(.*?)```", re.DOTALL)
 _SYSTEM: str = (
@@ -47,7 +47,7 @@ class RepairTestFile:
     """Single LLM call that rewrites one test file to match the real source."""
 
     def __init__(
-        self, gateway: LLMGateway, router: ModelRouter,
+        self, gateway: LLMGateway, router: ModelRoutingPolicy,
         run_config: RunConfig | None = None,
     ) -> None:
         self._deps = IcpExecutionDeps(

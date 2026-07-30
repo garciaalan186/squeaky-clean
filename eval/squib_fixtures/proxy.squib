@@ -1,0 +1,11 @@
+MODULE Images
+LAYER Domain
+EXPORTS [ImageProxy]
+DEPENDS []
+CLASSES {
+  ImageProxy -> Proxy {
+    implements: Image
+    methods: [display(): void]
+    depends: [RealImage]
+  }
+}

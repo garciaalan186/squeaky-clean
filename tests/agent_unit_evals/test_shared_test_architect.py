@@ -9,7 +9,7 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 def _compose_shared(lang: TargetLanguage) -> str:
     toolkit = LanguageToolkitFactory().for_language(lang)
-    return ComposeAgentSpec().compose("_shared/TestArchitect", toolkit)
+    return ComposeAgentSpec().compose("_shared/OracleCompiler", toolkit)
 
 
 def test_python_composition_has_no_unfilled_placeholders() -> None:

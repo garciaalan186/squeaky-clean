@@ -7,7 +7,6 @@ from dataclasses import replace
 from squeaky_clean.application.dtos.class_assignment import ClassAssignment
 from squeaky_clean.application.dtos.composer_stats import ComposerStats
 from squeaky_clean.application.dtos.instantiated_icp_prompt import InstantiatedICPPrompt
-from squeaky_clean.application.dtos.tech_spec import TechSpec
 from squeaky_clean.application.use_cases.class_assignment_formatter import (
     ClassAssignmentFormatter,
 )
@@ -19,19 +18,19 @@ from squeaky_clean.application.use_cases.techspec_composer_validator import (
     validate_composition,
 )
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
+from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
 
 
 class TechSpecComposer:
     """Bridge from (ClassAssignment, TechSpec) to a ready-to-dispatch prompt."""
 
-    def __init__(
-        self, gateway: LLMGateway, loader: LoadAgentSpec | None = None,
-    ) -> None:
-        self._loader = loader or LoadAgentSpec()
+    def __init__(self, gateway: LLMGateway, routing: ModelRoutingPolicy) -> None:
+        self._loader = LoadAgentSpec()
         self._builder = TechSpecBuilder()
-        self._manager = TechSpecComposerManagerCall(gateway)
+        self._manager = TechSpecComposerManagerCall(gateway, routing)
         self.stats: ComposerStats = ComposerStats()
 
     def compose(
@@ -69,7 +68,7 @@ class TechSpecComposer:
     ) -> InstantiatedICPPrompt:
         rendered = replace(assignment, tech_spec=tech_spec)
         return InstantiatedICPPrompt(
-            system_prompt=self._loader.load(assignment.icp_spec_name),
+            system_prompt=self._loader.load(assignment.emitter_spec_name),
             user_prompt=ClassAssignmentFormatter(assignment.toolkit).format(rendered),
             model_tier=ModelTier.ICP,
         )

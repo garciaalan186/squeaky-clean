@@ -1,6 +1,6 @@
 """Tests for EvalMetrics."""
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 def test_empty_returns_zero_initialized_instance() -> None:

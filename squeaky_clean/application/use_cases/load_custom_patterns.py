@@ -25,7 +25,7 @@ class LoadCustomPatterns:
             {
               "patterns": [
                 {"name": "EventSourcedAggregate",
-                 "icp_spec_name": "python/custom/EventSourcedAggregateICP"}
+                 "emitter_spec_name": "python/custom/EventSourcedAggregateEmitter"}
               ],
               "extra_spec_roots": ["./my_specs/"]
             }
@@ -58,7 +58,7 @@ class LoadCustomPatterns:
                 )
             entries.append(CustomPatternManifestEntry(
                 name=str(raw.get("name", "")),
-                icp_spec_name=str(raw.get("icp_spec_name", "")),
+                emitter_spec_name=str(raw.get("emitter_spec_name", "")),
             ))
         roots = tuple(str(r) for r in data.get("extra_spec_roots", []))
         return CustomPatternManifest(

@@ -9,11 +9,11 @@ Public, milestone-level. Last updated 2026-04-29.
 | **A** Measurement Foundation | Per-agent unit evals, replicate runs, regression detection, deterministic mode, cache visibility. |
 | **B** Spec Architecture Cleanup | Shared specs + per-language profiles, prompt caching with `cache_control`, structured outputs. |
 | **C** Multi-Module Architecture | Multi-MODULE Squib with cross-module DAG validation, per-module worktrees, layered output paths. |
-| **D** Convergent ICP Optimization | DSPy POC closed with INCONCLUSIVE verdict on Haiku 4.5; hand-written ICP specs remain authoritative. |
+| **D** Convergent ICP Optimization | DSPy POC closed with INCONCLUSIVE verdict on Haiku 4.5; hand-written emitter specs remain authoritative. |
 | **E** Reliability, Cost, Security | Graceful agent failure, retry policy, cost budget, rate limiting, secret scan, SAST, reproducibility manifest. |
 | **F** Language & Domain Coverage | Go and Rust profiles, sample-domain library (P5 OAuth2), user-supplied ProblemSpec, custom-pattern hook, richer ProblemSpec schema. |
 | **G** Productionization | CI workflow, Dockerfile, JSON logger, latency/cost percentiles, resumable runs, history dashboard, versioned spec library. |
-| **H** Generalized Infrastructure Layer | 60 Tier C ICPs (15 categories × 4 languages) with TechSpec catalog (~130 bundled snapshots), MCDA-driven choice selection, MCP + web-fetch resolver chain with anti-poisoning. |
+| **H** Generalized Infrastructure Layer | 60 Tier C emitters (15 categories × 4 languages) with TechSpec catalog (~130 bundled snapshots), MCDA-driven choice selection, MCP + web-fetch resolver chain with anti-poisoning. |
 | **K** Cross-language end-to-end gaps | Polymorphic class-parser, dependency installer, HTTP-conventions validator, per-module criterion filtering, JS/TS Tier C parity, registry-driven dispatch. Open-source launch blockers closed. |
 
 ## In progress
@@ -27,7 +27,7 @@ Public, milestone-level. Last updated 2026-04-29.
 - **Recovery — agentic member classification.** Turn the framework-coupling refactor from a skeleton into a faithful split: an LLM classifies which of a coupled class's members are business rules (→ Entity) vs persistence concerns (→ Adapter). The first LLM step in the otherwise-deterministic recovery front-half. (Milestones L / M / N landed — see In progress.)
 - **Anthropic-only abstraction.** The `LLMGateway` port is multi-provider-ready; concrete adapters for OpenAI / Bedrock / local-Llama are post-launch work. PRs welcome.
 - **Hosted dashboard service.** A multi-user `meta-evaluation-results/` analysis service. Currently the dashboard is per-user static HTML.
-- **Versioned spec library at v1.0.** The spec library is currently `0.1.0`. Tag a stable v1.0 once the catalog stabilizes after community feedback.
+- **Versioned spec library at v1.0.** The spec library is currently `0.2.0`. Tag a stable v1.0 once the catalog stabilizes after community feedback.
 - **Reduce architect HTTP-type drift.** The validator catches it with retry; long-term we want the architect to never need a retry on this class of constraint.
 - **Per-language Tier C maturity.** Today Java/Go/Rust/JS/TS tests_pass=0.00 in our event-pipeline benchmark because per-language test runners report zero on toolchain-availability fallback. Closing this requires CI-environment toolchain pinning + occasionally tightening the language-specific code-emit rules.
 - **Compute-efficiency ablation.** Measure the same architecture produced one-shot on a large model vs. Squeaky Clean's compact fan-out, to quantify the token (and proportional energy) reduction — the evidence that would promote the "leaner compute" goal from directional to measured.

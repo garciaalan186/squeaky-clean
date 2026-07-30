@@ -1,6 +1,7 @@
 """LLMUsageRecorder: accumulates tokens, cost, duration per agent label."""
 
 from collections import defaultdict
+from threading import Lock
 
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 
@@ -39,27 +40,30 @@ class LLMUsageRecorder:
         # G2: per-call samples for percentile computation. Keyed by tier.
         self._tier_durations_ms: dict[str, list[int]] = defaultdict(list)
         self._tier_costs_usd: dict[str, list[float]] = defaultdict(list)
+        # Parallel ICP threads record concurrently; guard the read-modify-write.
+        self._lock: Lock = Lock()
 
     def record(self, response: LLMResponse, label: str) -> None:
-        """Accumulate one LLMResponse under ``label``."""
-        b = self._buckets[label]
-        b[0] += response.input_tokens
-        b[1] += response.output_tokens
-        b[2] += response.cost_usd
-        b[3] += response.duration_ms
-        if response.cache_hit:
-            self._cache_hits += 1
-        else:
-            self._cache_misses += 1
-        self._cache_create_tokens += response.cache_creation_input_tokens
-        self._cache_read_tokens += response.cache_read_input_tokens
-        tier = _LABEL_TO_TIER.get(label, label)
-        self._tier_create[tier] += response.cache_creation_input_tokens
-        self._tier_read[tier] += response.cache_read_input_tokens
-        self._tier_durations_ms[tier].append(response.duration_ms)
-        self._tier_costs_usd[tier].append(response.cost_usd)
-        if response.timed_out:
-            self._timeouts += 1
+        """Accumulate one LLMResponse under ``label`` (thread-safe)."""
+        with self._lock:
+            b = self._buckets[label]
+            b[0] += response.input_tokens
+            b[1] += response.output_tokens
+            b[2] += response.cost_usd
+            b[3] += response.duration_ms
+            if response.cache_hit:
+                self._cache_hits += 1
+            else:
+                self._cache_misses += 1
+            self._cache_create_tokens += response.cache_creation_input_tokens
+            self._cache_read_tokens += response.cache_read_input_tokens
+            tier = _LABEL_TO_TIER.get(label, label)
+            self._tier_create[tier] += response.cache_creation_input_tokens
+            self._tier_read[tier] += response.cache_read_input_tokens
+            self._tier_durations_ms[tier].append(response.duration_ms)
+            self._tier_costs_usd[tier].append(response.cost_usd)
+            if response.timed_out:
+                self._timeouts += 1
 
     def tier_samples(
         self, tier: str,

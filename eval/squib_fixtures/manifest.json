@@ -1,0 +1,142 @@
+{
+  "AbstractFactory": {
+    "file": "abstract_factory.squib",
+    "focal": "WidgetFactory",
+    "category": "creational"
+  },
+  "Adapter": {
+    "file": "adapter.squib",
+    "focal": "StripeAdapter",
+    "category": "structural"
+  },
+  "Aggregate": {
+    "file": "aggregate.squib",
+    "focal": "Order",
+    "category": "ddd_clean"
+  },
+  "Bridge": {
+    "file": "bridge.squib",
+    "focal": "Shape",
+    "category": "structural"
+  },
+  "Builder": {
+    "file": "builder.squib",
+    "focal": "ReportBuilder",
+    "category": "creational"
+  },
+  "ChainOfResponsibility": {
+    "file": "chain_of_responsibility.squib",
+    "focal": "TicketHandler",
+    "category": "behavioral"
+  },
+  "Command": {
+    "file": "command.squib",
+    "focal": "EditCommand",
+    "category": "behavioral"
+  },
+  "Composite": {
+    "file": "composite.squib",
+    "focal": "Directory",
+    "category": "structural"
+  },
+  "DTOMapper": {
+    "file": "d_t_o_mapper.squib",
+    "focal": "UserMapper",
+    "category": "ddd_clean"
+  },
+  "Decorator": {
+    "file": "decorator.squib",
+    "focal": "CompressingStream",
+    "category": "structural"
+  },
+  "DomainEvent": {
+    "file": "domain_event.squib",
+    "focal": "OrderPlaced",
+    "category": "ddd_clean"
+  },
+  "Facade": {
+    "file": "facade.squib",
+    "focal": "OrderFacade",
+    "category": "structural"
+  },
+  "FactoryMethod": {
+    "file": "factory_method.squib",
+    "focal": "DocumentCreator",
+    "category": "creational"
+  },
+  "Flyweight": {
+    "file": "flyweight.squib",
+    "focal": "Glyph",
+    "category": "structural"
+  },
+  "Gateway": {
+    "file": "gateway.squib",
+    "focal": "PaymentGateway",
+    "category": "ddd_clean"
+  },
+  "Interpreter": {
+    "file": "interpreter.squib",
+    "focal": "Expression",
+    "category": "behavioral"
+  },
+  "Iterator": {
+    "file": "iterator.squib",
+    "focal": "HistoryIterator",
+    "category": "behavioral"
+  },
+  "Mediator": {
+    "file": "mediator.squib",
+    "focal": "ChatMediator",
+    "category": "behavioral"
+  },
+  "Memento": {
+    "file": "memento.squib",
+    "focal": "EditorMemento",
+    "category": "behavioral"
+  },
+  "Observer": {
+    "file": "observer.squib",
+    "focal": "EventObserver",
+    "category": "behavioral"
+  },
+  "Presenter": {
+    "file": "presenter.squib",
+    "focal": "OrderPresenter",
+    "category": "ddd_clean"
+  },
+  "Prototype": {
+    "file": "prototype.squib",
+    "focal": "Shape",
+    "category": "creational"
+  },
+  "Proxy": {
+    "file": "proxy.squib",
+    "focal": "ImageProxy",
+    "category": "structural"
+  },
+  "Singleton": {
+    "file": "singleton.squib",
+    "focal": "AppConfig",
+    "category": "creational"
+  },
+  "Specification": {
+    "file": "specification.squib",
+    "focal": "InStockSpec",
+    "category": "ddd_clean"
+  },
+  "State": {
+    "file": "state.squib",
+    "focal": "OrderState",
+    "category": "behavioral"
+  },
+  "TemplateMethod": {
+    "file": "template_method.squib",
+    "focal": "DataImporter",
+    "category": "behavioral"
+  },
+  "Visitor": {
+    "file": "visitor.squib",
+    "focal": "NodeVisitor",
+    "category": "behavioral"
+  }
+}

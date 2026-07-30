@@ -42,11 +42,11 @@ def test_class_assignment_stores_fields() -> None:
         class_spec=spec,
         module=_module(spec),
         toolkit=_TOOLKIT,
-        icp_spec_name="ValueObjectICP",
+        emitter_spec_name="ValueObjectEmitter",
         file_path="src/operand.py",
         test_file_path="tests/test_operand.py",
     )
-    assert assignment.icp_spec_name == "ValueObjectICP"
+    assert assignment.emitter_spec_name == "ValueObjectEmitter"
     assert assignment.class_spec.name == "Operand"
     assert assignment.module.name == "Calculator"
 
@@ -57,9 +57,9 @@ def test_class_assignment_is_frozen() -> None:
         class_spec=spec,
         module=_module(spec),
         toolkit=_TOOLKIT,
-        icp_spec_name="ValueObjectICP",
+        emitter_spec_name="ValueObjectEmitter",
         file_path="src/operand.py",
         test_file_path="tests/test_operand.py",
     )
     with pytest.raises(FrozenInstanceError):
-        assignment.icp_spec_name = "Other"  # type: ignore[misc]
+        assignment.emitter_spec_name = "Other"  # type: ignore[misc]

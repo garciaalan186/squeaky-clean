@@ -1,0 +1,10 @@
+MODULE Rendering
+LAYER Domain
+EXPORTS [Shape]
+DEPENDS []
+CLASSES {
+  Shape -> Bridge {
+    methods: [draw(): void]
+    depends: [Renderer]
+  }
+}

@@ -2,8 +2,8 @@
 
 import math
 
-from squeaky_clean.application.dtos.eval_metrics import EvalMetrics
 from squeaky_clean.application.use_cases.replicate_aggregator import ReplicateAggregator
+from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 def _metrics(tests_pass: float, cost: float, hit: int, miss: int) -> EvalMetrics:

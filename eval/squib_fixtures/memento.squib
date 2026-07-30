@@ -1,0 +1,10 @@
+MODULE TextEditor
+LAYER Domain
+EXPORTS [EditorMemento]
+DEPENDS []
+CLASSES {
+  EditorMemento -> Memento {
+    fields: [content: str]
+    methods: [content(): str]
+  }
+}

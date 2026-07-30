@@ -1,0 +1,10 @@
+MODULE Support
+LAYER Domain
+EXPORTS [TicketHandler]
+DEPENDS []
+CLASSES {
+  TicketHandler -> ChainOfResponsibility {
+    methods: [handle(ticket: Ticket): Result]
+    concretes: [Tier1Handler, Tier2Handler]
+  }
+}

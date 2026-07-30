@@ -1,0 +1,10 @@
+MODULE Ast
+LAYER Domain
+EXPORTS [NodeVisitor]
+DEPENDS []
+CLASSES {
+  NodeVisitor -> Visitor {
+    methods: [visit_number(node: NumberNode): int, visit_add(node: AddNode): int]
+    concretes: [EvalVisitor]
+  }
+}

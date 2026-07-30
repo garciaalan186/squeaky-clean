@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 _CHECKPOINT_FILENAME = "CHECKPOINT.json"
 
@@ -15,8 +15,8 @@ _CHECKPOINT_FILENAME = "CHECKPOINT.json"
 class CheckpointReader:
     """Read ``<run_dir>/CHECKPOINT.json`` if present and valid; else return None."""
 
-    def __init__(self) -> None:
-        self._logger: JSONLogger = JSONLogger()
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._logger: RunLogger = logger or NullRunLogger()
 
     def read(
         self, run_dir: Path, expected_checksum: str | None = None,
