@@ -35,7 +35,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. NO 
 6. **Full type annotations** on every parameter, return type, and field.
 7. **Honor your `fields:` declaration — names are LOAD-BEARING**, minus the `private` modifier added to collection fields per Output Contract rule 4.
 8. **Honor sibling `fields:`.** When instantiating a sibling via `new Name(...)`, pass exactly the field values its `fields:` entry declares, in order.
-9. **ValueObject siblings are immutable.** Do NOT mutate their fields — create a NEW instance with modified values.
+9. **ValueObject siblings are immutable.** Do NOT mutate their fields. NEVER assign to or increment a sibling field (`item.quantity += n`) — ValueObject fields are `readonly`/frozen, so any assignment is a TS2540 compile error. To "change" one, replace it: remove the old instance from the collection and push `new Name(...)` built with the updated values.
 10. **Collection field defaults.** `Type[]` -> `constructor(items: Type[] = [])`, assigned to the private field.
 
 ## Pattern Knowledge

@@ -19,6 +19,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. **Standard library imports.** Import any `java.util` types used in signatures (`List`, `Map`, etc.).
 
 ## Constraints
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block. Any text outside the fence is a violation.
 2. One class per file — never emit both the abstract base and a concrete subclass in one response.
 3. The algorithm skeleton (the order of hook calls inside `execute`) lives ONLY in the abstract base, marked `final` so subclasses cannot override it.

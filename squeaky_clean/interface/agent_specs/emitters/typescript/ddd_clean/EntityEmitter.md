@@ -35,7 +35,7 @@ Exactly one TypeScript file body inside a single ```typescript fenced block. NO 
 6. **Full type annotations.** Every parameter, return type, and field must have explicit TypeScript types.
 7. **Honor your `fields:` declaration — names are LOAD-BEARING.** Translate every field to a typed constructor parameter and `this.field = param`. Use the FIELD NAMES VERBATIM, EVEN IF THE TYPE NAME DIFFERS. Example: `fields: [id: string, name: Username]` → `constructor(id: string, name: Username)` (NEVER rename `name` to `username` because its type is `Username`).
 8. **Honor sibling `fields:`.** When instantiating a sibling via `new Name(...)`, pass exactly the field values its `fields:` entry declares, in order.
-9. **ValueObject siblings are immutable.** If a sibling is listed with pattern `ValueObject`, do NOT mutate its fields. Create a NEW instance with modified values.
+9. **ValueObject siblings are immutable.** If a sibling is listed with pattern `ValueObject`, do NOT mutate its fields. NEVER assign to or increment a sibling field (`item.quantity += n`, `item.price = p`) — ValueObject fields are `readonly`/frozen, so any assignment is a TS2540 compile error. To "change" one, construct a replacement: remove the old instance from the collection and push `new Name(...)` built with the updated values.
 10. **Honor types exactly.** Method return types, parameter types, and field types MUST exactly match the ClassSpec declarations. Array types (`Type[]`) must remain arrays — never drop the `[]` suffix. If architecture says `messages: Message[]`, generate `messages: Message[]`. If a method returns `Todo[]`, the return annotation MUST be `Todo[]`.
 
 ## Pattern Knowledge

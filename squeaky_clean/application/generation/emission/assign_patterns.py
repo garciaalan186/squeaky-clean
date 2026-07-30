@@ -5,6 +5,9 @@ from pathlib import Path
 from squeaky_clean.application.generation.emission.assign_patterns_paths import AssignPatternsPaths
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.map_pattern_to_emitter import MapPatternToEmitter
+from squeaky_clean.application.generation.emission.polymorphic_role_normalizer import (
+    PolymorphicRoleNormalizer,
+)
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.application.shared.problem.custom_pattern_registry import (
     CustomPatternRegistry,
@@ -30,6 +33,7 @@ class AssignPatterns:
         self._toolkit = toolkit
         self._paths = AssignPatternsPaths(toolkit, output_root)
         self._mapper = MapPatternToEmitter()
+        self._roles = PolymorphicRoleNormalizer()
         self._custom = custom_patterns or CustomPatternRegistry()
         self._architecture: ArchitectureSpec | None = None
         self._infra_mode = infrastructure_mode
@@ -46,6 +50,7 @@ class AssignPatterns:
         return self
 
     def assign_all(self, module: ModuleSpec) -> tuple[ClassAssignment, ...]:
+        module = self._roles.normalize(module)
         return tuple(self._one(cls, module) for cls in module.classes)
 
     def tier_c_class_names(self, module: ModuleSpec) -> frozenset[str]:

@@ -19,6 +19,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. **Standard library imports.** Sibling classes ARE in `com.example` so they need NO explicit import. Import `java.util` classes only if a field or parameter type requires them.
 
 ## Constraints
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block.
 2. One type per file — never emit both the Originator and the Memento in one response.
 3. Method bodies must be real implementations.
