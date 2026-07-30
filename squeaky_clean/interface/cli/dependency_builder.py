@@ -33,6 +33,7 @@ from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.use_cases.techspec_composer import TechSpecComposer
 from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
+from squeaky_clean.application.use_cases.verify_layer import VerifyLayer
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.rule import Rule
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
@@ -156,6 +157,7 @@ class DependencyBuilder:
             sast_runner=BanditSastRunner() if rc.enable_sast else None,
             model_router=router,
             run_logger=JSONLogger(),
+            verify_layer=VerifyLayer(call_deps) if rc.verify_layers else None,
             tech_spec_resolver=self._tech_spec_resolver(rc),
             infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
             dependency_installer=adapters.dependency_installer,

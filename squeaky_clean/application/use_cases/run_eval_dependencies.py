@@ -23,6 +23,7 @@ from squeaky_clean.application.use_cases.review_security import ReviewSecurity
 from squeaky_clean.application.use_cases.run_config import RunConfig
 from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathScanner
 from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
+from squeaky_clean.application.use_cases.verify_layer import VerifyLayer
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
 from squeaky_clean.domain.interfaces.metric_collector import MetricCollector
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
@@ -63,6 +64,7 @@ class RunEvalDependencies:
     sast_runner: SastRunner | None = None
     secret_path_scanner: SecretPathScanner = field(default_factory=SecretPathScanner)
     run_logger: RunLogger = field(default_factory=NullRunLogger)
+    verify_layer: VerifyLayer | None = None
     tech_spec_resolver: TechSpecResolver | None = None
     infrastructure_choice_architect: InfrastructureChoiceArchitect | None = None
     dependency_installer: DependencyInstaller | None = None

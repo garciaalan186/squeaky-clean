@@ -187,6 +187,7 @@ class RunEvalPipeline:
         lifecycle = LifecycleTimestampLog(output_dir)
         lifecycle.record("squib_parse_start")
         arch = d.design_architecture.execute(problem)
+        self._verify_layers(arch)
         arch = self._check_dependency_injection(arch, problem)
         self._arch = arch
         self._persist_notation(output_dir)
@@ -283,6 +284,19 @@ class RunEvalPipeline:
             problem=problem, metrics=metrics,
             test_run_result=test_run, validation=validation,
         )
+
+    def _verify_layers(self, arch: ArchitectureSpec) -> None:
+        """Run the opt-in per-layer Verifier pass; log any violations (R1.8)."""
+        verifier = self._deps.verify_layer
+        if verifier is None:
+            return
+        for module in arch.modules:
+            for violation in verifier.verify(module):
+                self._logger.event(
+                    "layer_verification_violation",
+                    module=module.name, layer=module.layer.value,
+                    message=violation,
+                )
 
     def _merge_test_architectures(
         self, arch: ArchitectureSpec, problem: ProblemSpec,
