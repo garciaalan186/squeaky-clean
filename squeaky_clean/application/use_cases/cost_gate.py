@@ -3,10 +3,11 @@
 from threading import Lock
 
 from squeaky_clean.application.dtos.cost_budget import CostBudget
+from squeaky_clean.application.use_cases.budget_exceeded_error import (
+    BudgetExceededError,
+)
 
-
-class BudgetExceededError(RuntimeError):
-    """Raised when recording or projecting a spend would exceed the cap."""
+__all__ = ["BudgetExceededError", "CostGate"]
 
 
 class CostGate:
