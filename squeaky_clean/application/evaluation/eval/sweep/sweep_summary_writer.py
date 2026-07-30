@@ -38,6 +38,11 @@ class SweepSummaryWriter:
                 f"| {m.estimated_cost_usd:.4f} "
                 f"| {m.total_wall_clock_ms} |"
             )
+        lines.append("")
+        lines.append(
+            "> single sample per problem (N=1) — exploratory; fix/regression "
+            "claims require N>=3 replicates (`--replicates 3`)."
+        )
         lines.extend(self._totals(result))
         lines.extend(self._cache_renderer.render(self._aggregate_metrics(result)))
         lines.extend(self._errors(result))
