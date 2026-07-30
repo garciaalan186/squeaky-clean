@@ -113,7 +113,7 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 | secrets_provider | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | search | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-`✅` = full Tier C atomic agent + ≥2 TechSpec snapshots + e2e build available. `⏳` = on the roadmap. The four pattern rows are the complete 34-pattern GoF + DDD/Clean catalog; every entry is a dedicated, language-idiomatic ICP spec.
+`✅` = full Tier C atomic agent + ≥2 TechSpec snapshots + e2e build available. `⏳` = on the roadmap. The four pattern rows are the complete 34-pattern GoF + DDD/Clean catalog; every entry is a dedicated, language-idiomatic emitter spec.
 
 ## Benchmarks & Meta-Evaluation
 
@@ -217,4 +217,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). The framework eats its own dog food: e
 
 ## Project status
 
-**Active development.** The full 34-pattern GoF + DDD/Clean ICP catalog across all six target languages; 60 Tier C atomic agents across 15 infrastructure categories. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.
+**Active development.** The full 34-pattern GoF + DDD/Clean emitter catalog across all six target languages; 60 Tier C atomic agents across 15 infrastructure categories. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.

@@ -17,7 +17,7 @@ This document defines an Architectural Complexity Score (**ACS**) and the normal
 | Producer Java | 0.00 | $0.28 | 56,670 | 18,421 | 38,038 | 313 |
 | Persister Java | 0.00 | $0.41 | 84,678 | 27,567 | 30,067 | 570 |
 
-**Cross-run consistency**: ~$0.35/run, 80–100k input tokens, 20–27k output tokens. Java wall-clock is ~2× Python because Java ICPs are wordier (more boilerplate per class). **Artifact-token velocity** (output tokens per wall-second) is the closest existing throughput metric — already exposed on `EvalMetrics`.
+**Cross-run consistency**: ~$0.35/run, 80–100k input tokens, 20–27k output tokens. Java wall-clock is ~2× Python because Java emitters are wordier (more boilerplate per class). **Artifact-token velocity** (output tokens per wall-second) is the closest existing throughput metric — already exposed on `EvalMetrics`.
 
 These numbers are not directly comparable: Java is doing more *work* per token than Python because Java needs more verbosity to express the same architectural decision. Without a complexity denominator, comparisons mislead.
 
@@ -161,7 +161,7 @@ ACS-velocity = 1.0 / 6s = 0.17 ACS-units/wall-second
 ACS-tokens   = ~12k / 1.0 = 12,000 tokens/ACS-unit
 ```
 
-**Interpretation**: the framework is ~40% cheaper *per unit of complexity* on hard problems than on easy ones — consistent with cache reuse across more ICPs amortizing fixed overhead. ACS-velocity is ~4× higher on hard problems for the same reason. Without ACS normalization, raw `cost_usd` makes Calculator look "cheaper" when it's actually less efficient per architectural decision.
+**Interpretation**: the framework is ~40% cheaper *per unit of complexity* on hard problems than on easy ones — consistent with cache reuse across more emitters amortizing fixed overhead. ACS-velocity is ~4× higher on hard problems for the same reason. Without ACS normalization, raw `cost_usd` makes Calculator look "cheaper" when it's actually less efficient per architectural decision.
 
 ## 7. Implementation
 

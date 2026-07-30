@@ -58,7 +58,7 @@ If you know your service uses Kafka + S3, declare it:
 ]
 ```
 
-This routes the matching classes to **Tier C ICPs** which generate adapter code with real SDK calls (not stubs). Without explicit choices, you can opt into MCDA-driven selection with `--infer-infrastructure`, but this is exploratory; real production specs declare.
+This routes the matching classes to **Tier C emitters** which generate adapter code with real SDK calls (not stubs). Without explicit choices, you can opt into MCDA-driven selection with `--infer-infrastructure`, but this is exploratory; real production specs declare.
 
 ### 4. Use `domain_conventions` to encode common semantics
 

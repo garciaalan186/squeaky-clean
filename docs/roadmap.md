@@ -9,11 +9,11 @@ Public, milestone-level. Last updated 2026-04-29.
 | **A** Measurement Foundation | Per-agent unit evals, replicate runs, regression detection, deterministic mode, cache visibility. |
 | **B** Spec Architecture Cleanup | Shared specs + per-language profiles, prompt caching with `cache_control`, structured outputs. |
 | **C** Multi-Module Architecture | Multi-MODULE Squib with cross-module DAG validation, per-module worktrees, layered output paths. |
-| **D** Convergent ICP Optimization | DSPy POC closed with INCONCLUSIVE verdict on Haiku 4.5; hand-written ICP specs remain authoritative. |
+| **D** Convergent ICP Optimization | DSPy POC closed with INCONCLUSIVE verdict on Haiku 4.5; hand-written emitter specs remain authoritative. |
 | **E** Reliability, Cost, Security | Graceful agent failure, retry policy, cost budget, rate limiting, secret scan, SAST, reproducibility manifest. |
 | **F** Language & Domain Coverage | Go and Rust profiles, sample-domain library (P5 OAuth2), user-supplied ProblemSpec, custom-pattern hook, richer ProblemSpec schema. |
 | **G** Productionization | CI workflow, Dockerfile, JSON logger, latency/cost percentiles, resumable runs, history dashboard, versioned spec library. |
-| **H** Generalized Infrastructure Layer | 60 Tier C ICPs (15 categories × 4 languages) with TechSpec catalog (~130 bundled snapshots), MCDA-driven choice selection, MCP + web-fetch resolver chain with anti-poisoning. |
+| **H** Generalized Infrastructure Layer | 60 Tier C emitters (15 categories × 4 languages) with TechSpec catalog (~130 bundled snapshots), MCDA-driven choice selection, MCP + web-fetch resolver chain with anti-poisoning. |
 | **K** Cross-language end-to-end gaps | Polymorphic class-parser, dependency installer, HTTP-conventions validator, per-module criterion filtering, JS/TS Tier C parity, registry-driven dispatch. Open-source launch blockers closed. |
 
 ## In progress

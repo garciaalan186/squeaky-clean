@@ -8,10 +8,12 @@ Each tier maps to a different model size + temperature + prompt-cache policy.
 
 | Tier | Default model | Temperature | Seeded? | What it does |
 |---|---|---:|---|---|
-| **Architect** | claude-sonnet-4-6 | 0 | seed=0 | RequirementCompiler: reads ProblemSpec, emits `ArchitectureSpec` in Squib. One call per run. |
-| **Manager** | claude-sonnet-4-6 | 0 | seed=0 | OracleCompiler, ThreatAnalyzer, layer verifiers, InfrastructureChoiceArchitect, ModuleLowerer. Mid-tier orchestration. |
+| **Architect** | claude-sonnet-5 | 0 | seed=0 | RequirementCompiler: reads ProblemSpec, emits `ArchitectureSpec` in Squib. One call per run. |
+| **Manager** | claude-sonnet-5 | 0 | seed=0 | OracleCompiler, ThreatAnalyzer, layer verifiers, InfrastructureChoiceArchitect, ModuleLowerer. Mid-tier orchestration. |
 | **ICP** | claude-haiku-4-5 | 0.2 | seed=run.seed | Implements one class. Parallelized N-wide. Cost driver. |
-| **Fixer** | claude-sonnet-4-6 | 0 | seed=0 | Single retry pass when a generated test fails. |
+| **Fixer** | claude-sonnet-5 | 0 | seed=0 | Single retry pass when a generated test fails. |
+
+Concrete model identifiers live in exactly one place — `squeaky_clean/infrastructure/llm/model_catalog.py::ModelId` — which both `ModelRouter` and the pricing table read from, so no other layer names a bare model string and bumping a tier's model is a one-line change. The full-quality mapping (`ModelRouter.DEFAULT_MAPPING`) puts the Architect tier on `claude-opus-4-8`; the CLI's `RouterFactory` applies the cost override that demotes it to `claude-sonnet-5`, and that override is derived from `DEFAULT_MAPPING` rather than a second table, so it can't diverge on a model bump. The column above is what a default CLI run resolves to. Whatever a given run actually resolved — including `--model-override` — is rendered from the router into that run's SUMMARY.md and manifest.
 
 `--deterministic` pins every tier to `temperature=0, seed=0` for byte-identical replay. `temperature=0` alone doesn't guarantee determinism on the Anthropic API — we additionally use a content-addressed prompt cache to memoize identical requests.
 
@@ -40,13 +42,13 @@ Each tier maps to a different model size + temperature + prompt-cache policy.
        │                                                    │          │
        │                                                    ▼          │
        │                                         ┌────────────────────┐│
-       │                                         │ Tier C ICPs        ││
+       │                                         │ Tier C Emitters    ││
        │                                         │ (15 categories)    ││
        │                                         └─────────┬──────────┘│
        ▼                                                   │           │
 ┌──────────────────────────────────────────────────────────────────────┐
 │                  OrchestrateArchitecture                             │
-│       (parallel ICP fan-out across all classes; ≤ max_parallel)      │
+│    (parallel emitter fan-out across all classes; ≤ max_parallel)     │
 └──────────────────────────────┬───────────────────────────────────────┘
                                ▼
                      ┌──────────────────────┐
@@ -66,7 +68,7 @@ Each tier maps to a different model size + temperature + prompt-cache policy.
 
 ## Squib — the instruction set
 
-The compact text format passed from RequirementCompiler to ICPs.
+The compact text format passed from RequirementCompiler to emitters.
 
 ```
 MODULE Tasks
@@ -116,7 +118,7 @@ A `ProblemSpec` splits cleanly along what a Squib can and cannot carry, and expo
 
 ## Tier C — generalized infrastructure
 
-The *generalized infrastructure layer* (Milestone H) adds **technology-specific code generation** for 15 infrastructure categories (blob_storage, kv_cache, message_queue, rest_server_handler, etc.). The architect picks a category; the framework's `TechSpecResolver` picks a technology (boto3 vs azure-blob, Kafka vs RabbitMQ); the Tier C ICP emits the SDK-coupled adapter.
+The *generalized infrastructure layer* (Milestone H) adds **technology-specific code generation** for 15 infrastructure categories (blob_storage, kv_cache, message_queue, rest_server_handler, etc.). The architect picks a category; the framework's `TechSpecResolver` picks a technology (boto3 vs azure-blob, Kafka vs RabbitMQ); the Tier C emitter emits the SDK-coupled adapter.
 
 A separate document at [`infrastructure_layer_design.md`](infrastructure_layer_design.md) covers the full three-tier design (Tier C / Tier T / Tier B), the MCDA scoring algorithm, and the `--infra={manual,auto}` rollout strategy.
 
@@ -124,7 +126,7 @@ A separate document at [`infrastructure_layer_design.md`](infrastructure_layer_d
 
 Six languages share the same architecture orchestration; per-language adapters cover:
 
-- ICP specs (per-pattern, per-language) — `squeaky_clean/interface/agent_specs/icps/<lang>/...`, covering all 34 patterns in each of the six languages
+- Emitter specs (per-pattern, per-language) — `squeaky_clean/interface/agent_specs/emitters/<lang>/...`, covering all 34 patterns in each of the six languages
 - OracleCompiler specs (per-language test-framework idioms)
 - Granularity rules (per-language source-size enforcement)
 - Test runner adapters (pytest / mvn / cargo / go test / npm test)
@@ -163,11 +165,11 @@ The key property: **everything after ingest is language-neutral.** Layer assignm
 ## Cross-cutting concerns
 
 - **Prompt cache.** `--prompt-cache` (default on) + `cache_control: {"type": "ephemeral"}` on stable prefixes. Per-tier hit ratio + savings reported in SUMMARY.md.
-- **Cost budget.** `--max-cost-usd <N>` triggers graceful exit with `BUDGET_EXIT.txt` + partial-results report.
+- **Cost budget.** `--max-cost-usd <N>` is enforced pre-flight: each call reserves a conservative projected cost (input estimated from prompt length, output assumed to use the full `max_tokens`) against the cap before it runs, then settles the actual cost afterward — so a call that would blow the budget is never paid for, and parallel overshoot is bounded by the reservation rather than by racing threads each reading a below-cap total. Crossing the cap triggers graceful exit with `BUDGET_EXIT.txt` + partial-results report. A `--resume`d run seeds the gate with the spend recorded before the checkpoint.
 - **Resumable runs.** `--resume <run_dir>` re-attaches a crashed run via per-stage CHECKPOINT.json.
 - **Replicates.** `--replicates N` runs N seeds + reports mean ± stddev across runs.
 - **Per-agent eval.** `eval/per_agent/fixtures/` + scoring functions per agent class for unit-eval (decoupled from full pipeline).
-- **Routing fixtures.** `eval/squib_fixtures/` — one minimal Squib per catalog pattern not already required by a benchmark ProblemSpec, parsed through the real parse → assign path in all six languages to assert each pattern reaches its own dedicated ICP rather than the `SimpleClass` escape hatch. Deterministic; no LLM calls.
+- **Routing fixtures.** `eval/squib_fixtures/` — one minimal Squib per catalog pattern not already required by a benchmark ProblemSpec, parsed through the real parse → assign path in all six languages to assert each pattern reaches its own dedicated emitter rather than the `SimpleClass` escape hatch. Deterministic; no LLM calls.
 - **Dashboard.** `--rebuild-dashboard` aggregates `meta-evaluation-results/` history into a static HTML chart.
 
 ## See also
