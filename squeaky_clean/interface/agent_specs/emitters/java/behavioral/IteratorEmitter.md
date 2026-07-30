@@ -19,6 +19,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. Respect hard rules: file <=80 lines, 1 class, <=5 public methods, <=2 args per method. Constructor does NOT count.
 
 ## Constraints
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block. Any text outside the fence is a violation.
 2. `hasNext()` and `next()` must be real implementations — never `return false;` unconditionally or a stub `throw new UnsupportedOperationException()`.
 3. `next()` MUST `throw new NoSuchElementException()` when `hasNext()` would be `false` — never return `null` on exhaustion.
