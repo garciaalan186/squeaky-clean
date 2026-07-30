@@ -40,6 +40,7 @@ from squeaky_clean.application.use_cases.recovery.violation_report_deserializer 
 )
 from squeaky_clean.application.use_cases.run_eval import RunEval
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
@@ -93,36 +94,36 @@ class SqueakyCleanCLI:
                   file=sys.stderr)
             return 1
 
-    def _single(self, router: object, problem_id: str, args: CLIArgs) -> int:
+    def _single(self, router: ModelRouter, problem_id: str, args: CLIArgs) -> int:
         return self._dispatch(
             router, ProblemResolver().resolve(problem_id), args,
         )
 
     def _dispatch(
-        self, router: object, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
     ) -> int:
         if args.replicates > 1:
             return self._replicates(router, problem, args)
         return self._single_spec(router, problem, args)
 
     def _single_spec(
-        self, router: object, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
     ) -> int:
         rc = RunConfigFactory().build(args, replicate_id=0)
-        deps = DependencyBuilder().build(router, problem, rc)  # type: ignore[arg-type]
+        deps = DependencyBuilder().build(router, problem, rc)
         result = RunEval(deps).execute(problem)
         print(f"[squeaky] run complete: report at {result.report_path}")
         print(f"[squeaky] tests_pass={result.metrics.tests_pass:.2f} "
               f"cost=${result.metrics.estimated_cost_usd:.4f}")
         return 0
 
-    def _recover(self, router: object, args: CLIArgs) -> int:
+    def _recover(self, router: ModelRouter, args: CLIArgs) -> int:
         spec = SquibReviewGate().load(Path(str(args.squib_file)))
         tests_dir = Path(args.legacy_tests) if args.legacy_tests else None
         problem = ProblemSpecSynthesizer().synthesize(spec, tests_dir)
         designer = SuppliedArchitectureDesigner(spec, SquibEmitter().emit(spec))
         rc = RunConfigFactory().build(args, replicate_id=0)
-        deps = DependencyBuilder().build(router, problem, rc)  # type: ignore[arg-type]
+        deps = DependencyBuilder().build(router, problem, rc)
         result = RunEval(replace(deps, design_architecture=designer)).execute(problem)
         print(f"[squeaky] recovery regenerated: report at {result.report_path}")
         return 0
@@ -176,19 +177,19 @@ class SqueakyCleanCLI:
         return answer not in ("n", "no")
 
     def _replicates(
-        self, router: object, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
     ) -> int:
         runner = ReplicateRunner(DependencyBuilder(), RunConfigFactory())
-        summary = runner.run(router, problem, args)  # type: ignore[arg-type]
+        summary = runner.run(router, problem, args)
         print(f"[squeaky] replicates complete: {summary.summary_path}")
         return 0
 
-    def _sweep(self, router: object, args: CLIArgs) -> int:
+    def _sweep(self, router: ModelRouter, args: CLIArgs) -> int:
         resolver = ProblemResolver()
         problems = tuple(resolver.resolve(pid) for pid in args.problem_ids)
         deps = RunSweepDeps(
             dependency_builder=DependencyBuilder(),
-            router=router,  # type: ignore[arg-type]
+            router=router,
         )
         result = RunSweep(deps, JSONLogger()).execute(SweepRequest(
             problems=problems, max_parallel=args.max_parallel,
@@ -198,8 +199,8 @@ class SqueakyCleanCLI:
               f"${result.total_cost_usd:.4f}, {result.total_duration_ms}ms")
         return 0
 
-    def _resume(self, router: object, args: CLIArgs) -> int:
-        bundle = ResumeDispatch().resume(router, args)  # type: ignore[arg-type]
+    def _resume(self, router: ModelRouter, args: CLIArgs) -> int:
+        bundle = ResumeDispatch().resume(router, args)
         print(f"[squeaky] resume complete: cost="
               f"${bundle.metrics.estimated_cost_usd:.4f}")
         return 0
