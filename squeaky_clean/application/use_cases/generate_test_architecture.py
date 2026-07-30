@@ -36,9 +36,12 @@ _TRUNCATED_ERR: str = "output was truncated at the token limit"
 class GenerateTestArchitecture:
     """Use case: produce a TestArchitecture from a TestArchitectureContext via LLM."""
 
-    def __init__(self, deps: GenerateTestArchitectureDeps) -> None:
+    def __init__(
+        self, deps: GenerateTestArchitectureDeps,
+        loader: LoadAgentSpec | None = None,
+    ) -> None:
         self._deps: GenerateTestArchitectureDeps = deps
-        self._loader: LoadAgentSpec = LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
         self._parser: ParseTestArchitecture = ParseTestArchitecture()
         self._formatter: TestArchitectureContextFormatter = (
             TestArchitectureContextFormatter()
