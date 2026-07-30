@@ -1,6 +1,6 @@
 """Tests for RunConfig."""
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
 

@@ -2,7 +2,6 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
 from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.security.map_concern_to_security_icp import (
     MapConcernToSecurityEmitter,
@@ -17,6 +16,7 @@ from squeaky_clean.application.generation.security.security_test_assembler impor
     SecurityTestAssembler,
 )
 from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest

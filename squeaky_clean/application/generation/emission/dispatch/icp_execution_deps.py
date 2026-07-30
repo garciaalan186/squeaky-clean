@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 

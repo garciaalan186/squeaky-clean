@@ -4,8 +4,10 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
-from squeaky_clean.application.generation.emission.icp_execution_deps import IcpExecutionDeps
+from squeaky_clean.application.generation.emission.dispatch.icp_execution_deps import (
+    IcpExecutionDeps,
+)
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest

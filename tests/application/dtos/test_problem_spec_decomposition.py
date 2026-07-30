@@ -3,11 +3,11 @@
 from squeaky_clean.application.evaluation.eval.metrics.derive_structural_hints import (
     derive_structural_hints_from_squib,
 )
-from squeaky_clean.application.evaluation.eval.metrics.structural_hints import StructuralHints
 from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
 from squeaky_clean.application.shared.problem.behavior_spec import BehaviorSpec
+from squeaky_clean.application.shared.problem.structural_hints import StructuralHints
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
 
 _SQUIB = """MODULE Cart

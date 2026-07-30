@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.evaluation.mcda.entity_lifecycle import (
+from squeaky_clean.application.shared.mcda.entity_lifecycle import (
     EntityLifecycle,
     StateTransition,
 )

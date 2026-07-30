@@ -1,7 +1,7 @@
 """Tests for VerifyLayer (R1.8 — the previously-dead LayerVerifier specs)."""
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
 from squeaky_clean.application.generation.validation.verify_layer import VerifyLayer
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
 from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.entities.class_spec import ClassSpec

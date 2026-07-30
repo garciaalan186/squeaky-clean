@@ -1,8 +1,5 @@
 """TestArchitectureContextFormatter: render context into a user prompt string."""
 
-from squeaky_clean.application.evaluation.mcda.per_module_criterion_filter import (
-    filter_criteria_for_module,
-)
 from squeaky_clean.application.generation.emission.class_paths_block_renderer import (
     ClassPathsBlockRenderer,
 )
@@ -16,6 +13,9 @@ from squeaky_clean.application.generation.testgen.test_architecture_context impo
     TestArchitectureContext,
 )
 from squeaky_clean.application.shared.language.snake_case_converter import SnakeCaseConverter
+from squeaky_clean.application.shared.mcda.per_module_criterion_filter import (
+    filter_criteria_for_module,
+)
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec

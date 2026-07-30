@@ -2,9 +2,9 @@
 
 import pytest
 
-from squeaky_clean.application.evaluation.mcda.mcda_registry import MCDARegistryEntry
-from squeaky_clean.application.evaluation.mcda.mcda_scorer import MCDAScorer
-from squeaky_clean.application.evaluation.mcda.mcda_weights import MCDAWeights
+from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistryEntry
+from squeaky_clean.application.shared.mcda.mcda_scorer import MCDAScorer
+from squeaky_clean.application.shared.mcda.mcda_weights import MCDAWeights
 
 _WEIGHTS = MCDAWeights().as_dict()
 

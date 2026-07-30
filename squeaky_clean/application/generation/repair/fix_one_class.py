@@ -1,7 +1,8 @@
 """FixOneClass: single Sonnet LLM call to repair one failing ImplementedClass."""
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
-from squeaky_clean.application.generation.emission.icp_execution_deps import IcpExecutionDeps
+from squeaky_clean.application.generation.emission.dispatch.icp_execution_deps import (
+    IcpExecutionDeps,
+)
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
 from squeaky_clean.application.generation.emission.parsers.implemented_class_parse_error import (
     ImplementedClassParseError,
@@ -11,6 +12,7 @@ from squeaky_clean.application.generation.emission.parsers.parse_implemented_cla
 )
 from squeaky_clean.application.generation.repair.fix_candidate import FixCandidate
 from squeaky_clean.application.generation.repair.fix_prompt_builder import FixPromptBuilder
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

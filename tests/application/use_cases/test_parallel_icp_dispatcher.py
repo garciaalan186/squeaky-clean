@@ -1,10 +1,10 @@
 """Tests for ParallelICPDispatcher error isolation (R0.6)."""
 
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
-from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
-from squeaky_clean.application.generation.emission.parallel_icp_dispatcher import (
+from squeaky_clean.application.generation.emission.dispatch.parallel_icp_dispatcher import (
     ParallelICPDispatcher,
 )
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )

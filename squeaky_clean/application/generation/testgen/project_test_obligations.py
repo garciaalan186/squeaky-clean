@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import re
 
-from squeaky_clean.application.evaluation.mcda.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.generation.testgen.test_obligation import TestObligation
+from squeaky_clean.application.shared.mcda.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.assertion_kind import AssertionKind

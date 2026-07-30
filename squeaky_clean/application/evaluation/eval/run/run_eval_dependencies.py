@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
 from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
 from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
 from squeaky_clean.application.generation.integration.integrate_module import IntegrateModule
@@ -23,6 +22,7 @@ from squeaky_clean.application.generation.validation.validate_architecture impor
     ValidateArchitecture,
 )
 from squeaky_clean.application.generation.validation.verify_layer import VerifyLayer
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.gateways.cost_gate import CostGate
 from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit

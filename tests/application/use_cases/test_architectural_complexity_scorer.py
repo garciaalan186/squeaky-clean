@@ -5,11 +5,11 @@ from __future__ import annotations
 from squeaky_clean.application.evaluation.eval.metrics.architectural_complexity_scorer import (
     ArchitecturalComplexityScorer,
 )
-from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
 from squeaky_clean.application.generation.techspec.infrastructure_choice import InfrastructureChoice
 from squeaky_clean.application.generation.validation.contract import Contract
 from squeaky_clean.application.generation.validation.contract_field import ContractField
 from squeaky_clean.application.generation.validation.contract_ref import ContractRef
+from squeaky_clean.application.shared.mcda.data_classification import DataClassification
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

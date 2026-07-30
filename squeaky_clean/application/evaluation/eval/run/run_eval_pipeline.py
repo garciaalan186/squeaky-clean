@@ -25,9 +25,6 @@ from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import 
 from squeaky_clean.application.evaluation.eval.run.run_eval_metrics_builder import (
     RunEvalMetricsBuilder,
 )
-from squeaky_clean.application.evaluation.mcda.per_module_criterion_filter import (
-    filter_criteria_for_module,
-)
 from squeaky_clean.application.generation.architecture.architecture_merger import ArchitectureMerger
 from squeaky_clean.application.generation.architecture.cross_module_dependency_error import (
     CrossModuleDependencyError,
@@ -129,6 +126,9 @@ from squeaky_clean.application.shared.language.rewrite_entity_construction impor
 )
 from squeaky_clean.application.shared.language.rewrite_java_field_access import (
     RewriteJavaFieldAccess,
+)
+from squeaky_clean.application.shared.mcda.per_module_criterion_filter import (
+    filter_criteria_for_module,
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

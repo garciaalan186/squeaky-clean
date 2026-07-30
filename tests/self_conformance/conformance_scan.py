@@ -16,6 +16,8 @@ import ast
 import re
 from pathlib import Path
 
+from squeaky_clean.domain.rules.component_dependency_rule import ComponentDependencyRule
+from squeaky_clean.domain.rules.package_cohesion_rule import PackageCohesionRule
 from squeaky_clean.domain.rules.python_granularity_rule import PythonGranularityRule
 from squeaky_clean.domain.value_objects.violation import Violation
 
@@ -123,5 +125,9 @@ def scan_violation_keys() -> set[str]:
             keys.add(_key(v, root))
         for v in _layer_violations(path, root):
             keys.add(_key(v, root))
+    for v in PackageCohesionRule().check_tree(root):
+        keys.add(_key(v, root))
+    for v in ComponentDependencyRule().check_tree(root):
+        keys.add(_key(v, root))
     keys |= _missing_mirror_keys(root)
     return keys

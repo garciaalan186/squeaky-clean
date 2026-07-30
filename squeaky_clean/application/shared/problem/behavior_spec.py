@@ -9,10 +9,10 @@ its structure with one of these to be verifiable.
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
-from squeaky_clean.application.evaluation.mcda.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.generation.validation.contract import Contract
 from squeaky_clean.application.generation.validation.contract_ref import ContractRef
+from squeaky_clean.application.shared.mcda.data_classification import DataClassification
+from squeaky_clean.application.shared.mcda.expected_outcome import ExpectedOutcome
 
 
 @dataclass(frozen=True)

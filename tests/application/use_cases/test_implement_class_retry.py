@@ -1,8 +1,8 @@
 """Tests for ImplementClass retry behavior under RetryPolicy."""
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
 from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
@@ -81,7 +81,9 @@ def test_no_retry_when_first_call_succeeds() -> None:
 
 def test_retry_handler_treats_timeout_as_retryable() -> None:
     """A timed-out (empty) response must trigger a retry, not be parsed as-is."""
-    from squeaky_clean.application.generation.emission.icp_retry_handler import ICPRetryHandler
+    from squeaky_clean.application.generation.emission.dispatch.icp_retry_handler import (
+        ICPRetryHandler,
+    )
     from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
         ParseImplementedClass,
     )

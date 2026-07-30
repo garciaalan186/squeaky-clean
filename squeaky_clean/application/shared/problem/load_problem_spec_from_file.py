@@ -7,18 +7,18 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
-from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
-from squeaky_clean.application.evaluation.mcda.entity_lifecycle import (
-    EntityLifecycle,
-    StateTransition,
-)
-from squeaky_clean.application.evaluation.mcda.expected_outcome import ExpectedOutcome
-from squeaky_clean.application.evaluation.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.generation.techspec.infrastructure_choice import InfrastructureChoice
 from squeaky_clean.application.generation.validation.load_contracts_from_problem import (
     parse_consumes,
     parse_produces,
 )
+from squeaky_clean.application.shared.mcda.data_classification import DataClassification
+from squeaky_clean.application.shared.mcda.entity_lifecycle import (
+    EntityLifecycle,
+    StateTransition,
+)
+from squeaky_clean.application.shared.mcda.expected_outcome import ExpectedOutcome
+from squeaky_clean.application.shared.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 

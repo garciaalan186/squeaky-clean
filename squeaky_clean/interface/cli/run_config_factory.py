@@ -1,6 +1,6 @@
 """RunConfigFactory: build a RunConfig from CLIArgs."""
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
 from squeaky_clean.application.shared.gateways.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy

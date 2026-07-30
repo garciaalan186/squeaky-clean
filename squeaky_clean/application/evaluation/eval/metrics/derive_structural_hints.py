@@ -5,7 +5,7 @@ ProblemSpec is a deterministic function of the architecture. This is the
 generalized core of the recovery path's ProblemSpecSynthesizer.
 """
 
-from squeaky_clean.application.evaluation.eval.metrics.structural_hints import StructuralHints
+from squeaky_clean.application.shared.problem.structural_hints import StructuralHints
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 
 

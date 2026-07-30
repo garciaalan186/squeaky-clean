@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.evaluation.mcda.mcda_criterion import ALL_MCDA_CRITERIA
-from squeaky_clean.application.evaluation.mcda.mcda_registry import MCDARegistryEntry
-from squeaky_clean.application.evaluation.mcda.mcda_score_table import MCDAScoreRow, MCDAScoreTable
+from squeaky_clean.application.shared.mcda.mcda_criterion import ALL_MCDA_CRITERIA
+from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistryEntry
+from squeaky_clean.application.shared.mcda.mcda_score_table import MCDAScoreRow, MCDAScoreTable
 
 _STABILITY_RANK: dict[str, int] = {"ga": 0, "beta": 1, "preview": 2}
 

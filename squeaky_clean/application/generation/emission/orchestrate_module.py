@@ -3,12 +3,12 @@
 import time
 
 from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
+from squeaky_clean.application.generation.emission.dispatch.parallel_icp_dispatcher import (
+    ParallelICPDispatcher,
+)
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
 from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
-from squeaky_clean.application.generation.emission.parallel_icp_dispatcher import (
-    ParallelICPDispatcher,
-)
 from squeaky_clean.application.generation.emission.port_method_decomposer import (
     decompose_module_for_tier_c,
 )

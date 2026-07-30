@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.evaluation.mcda.mcda_registry import MCDARegistry
-from squeaky_clean.application.evaluation.mcda.mcda_score_table import MCDAScoreRow, MCDAScoreTable
-from squeaky_clean.application.evaluation.mcda.mcda_scorer import MCDAScorer
-from squeaky_clean.application.evaluation.mcda.mcda_weights import MCDAWeights
 from squeaky_clean.application.generation.techspec.derived_infrastructure_choice import (
     DerivedInfrastructureChoice,
 )
+from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistry
+from squeaky_clean.application.shared.mcda.mcda_score_table import MCDAScoreRow, MCDAScoreTable
+from squeaky_clean.application.shared.mcda.mcda_scorer import MCDAScorer
+from squeaky_clean.application.shared.mcda.mcda_weights import MCDAWeights
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest

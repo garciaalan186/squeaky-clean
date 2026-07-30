@@ -1,14 +1,14 @@
 """Tests for ValidateArchitectureAgainstSpec."""
 
-from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
-from squeaky_clean.application.evaluation.mcda.entity_lifecycle import (
-    EntityLifecycle,
-    StateTransition,
-)
-from squeaky_clean.application.evaluation.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.generation.validation.validate_architecture_against_spec import (
     ValidateArchitectureAgainstSpec,
 )
+from squeaky_clean.application.shared.mcda.data_classification import DataClassification
+from squeaky_clean.application.shared.mcda.entity_lifecycle import (
+    EntityLifecycle,
+    StateTransition,
+)
+from squeaky_clean.application.shared.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

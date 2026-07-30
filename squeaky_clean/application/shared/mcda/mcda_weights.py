@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from squeaky_clean.application.evaluation.mcda.mcda_criterion import ALL_MCDA_CRITERIA
+from squeaky_clean.application.shared.mcda.mcda_criterion import ALL_MCDA_CRITERIA
 
 _EPSILON: float = 1e-6
 

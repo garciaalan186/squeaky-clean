@@ -1,18 +1,20 @@
 """ImplementClass: ICP LLM call producing one ImplementedClass."""
 
-from squeaky_clean.application.evaluation.eval.run.run_config import RunConfig
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.class_assignment_formatter import (
     ClassAssignmentFormatter,
 )
-from squeaky_clean.application.generation.emission.icp_execution_deps import IcpExecutionDeps
-from squeaky_clean.application.generation.emission.icp_retry_handler import ICPRetryHandler
+from squeaky_clean.application.generation.emission.dispatch.icp_execution_deps import (
+    IcpExecutionDeps,
+)
+from squeaky_clean.application.generation.emission.dispatch.icp_retry_handler import ICPRetryHandler
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
 from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
     ParseImplementedClass,
 )
 from squeaky_clean.application.generation.techspec.techspec_composer import TechSpecComposer
+from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
