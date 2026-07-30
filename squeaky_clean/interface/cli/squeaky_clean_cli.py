@@ -46,6 +46,7 @@ from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.micro_eval_command import MicroEvalCommand
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
 from squeaky_clean.interface.cli.replicate_runner import ReplicateRunner
 from squeaky_clean.interface.cli.resume_dispatch import ResumeDispatch
@@ -71,6 +72,8 @@ class SqueakyCleanCLI:
         try:
             if args.rebuild_dashboard:
                 return self._rebuild_dashboard()
+            if args.micro_evals:
+                return MicroEvalCommand().run(args)
             if args.triage is not None:
                 return self._triage(args)
             if args.refactor is not None:

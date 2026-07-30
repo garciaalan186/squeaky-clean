@@ -36,6 +36,7 @@ class CLIArgs:
         "architect", "manager", "icp", "fixer",
     )
     rebuild_dashboard: bool = False
+    micro_evals: bool = False
     resume_run_dir: str | None = None
     infrastructure_mode: str = "manual"
     infer_infrastructure: bool = False
