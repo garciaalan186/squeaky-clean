@@ -46,7 +46,8 @@ class RunEvalSummaryWriter:
         )
         lines.append("")
         lines.append(
-            "> single sample (N=1) — exploratory; fix/regression claims "
+            "> pass rate = functional acceptance criteria only. "
+            "single sample (N=1) — exploratory; fix/regression claims "
             "require N>=3 replicates (`--replicates 3`)."
         )
         lines.append("")

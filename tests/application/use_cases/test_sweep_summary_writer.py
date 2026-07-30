@@ -47,3 +47,7 @@ def test_write_renders_summary_table_and_totals(tmp_path: Path) -> None:
     assert "problems at 100% (overall): 1/2" in text
     assert "classes fixed by Sonnet fixer: 1" in text
     assert (tmp_path / "metrics.json").is_file()
+    # R5.3: security is unmeasured in these fixtures — must render n/a,
+    # and the legend must explain the columns.
+    assert "| n/a |" in text
+    assert "n/a = not measured" in text

@@ -6,6 +6,9 @@ from dataclasses import asdict
 from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer import (
     CacheSummaryRenderer,
 )
+from squeaky_clean.application.evaluation.eval.metrics.unmeasured_nulls import (
+    null_unmeasured,
+)
 from squeaky_clean.application.evaluation.eval.sweep.sweep_result import SweepResult
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
@@ -30,14 +33,27 @@ class SweepSummaryWriter:
         for b in result.bundles:
             m = b.metrics
             tag = " ⚠️" if b.error else ""
+            # Unmeasured is n/a, never 0.00 (R5.3) — a reader must be able to
+            # tell "insecure" from "security tests not enabled".
+            security = ("n/a" if m.security_test_count == 0
+                        else f"{m.security_tests_pass:.2f}")
+            violations = (f"{m.architecture_violations} ⚠"
+                          if m.architecture_violations > 0
+                          else "0")
             lines.append(
                 f"| {b.problem.id}{tag} | {m.tests_pass:.2f} "
                 f"| {m.functional_tests_pass:.2f} "
-                f"| {m.security_tests_pass:.2f} "
-                f"| {m.architecture_violations} | {m.classes_fixed} "
+                f"| {security} "
+                f"| {violations} | {m.classes_fixed} "
                 f"| {m.estimated_cost_usd:.4f} "
                 f"| {m.total_wall_clock_ms} |"
             )
+        lines.append("")
+        lines.append(
+            "> tests/functional = functional acceptance criteria only; "
+            "security = generated security tests (n/a = not measured — "
+            "enable with `--security-tests`)."
+        )
         lines.append("")
         lines.append(
             "> single sample per problem (N=1) — exploratory; fix/regression "
@@ -109,7 +125,8 @@ class SweepSummaryWriter:
             "total_cost_usd": result.total_cost_usd,
             "total_duration_ms": result.total_duration_ms,
             "problems": [
-                {"problem_id": b.problem.id, "metrics": asdict(b.metrics)}
+                {"problem_id": b.problem.id,
+                 "metrics": null_unmeasured(asdict(b.metrics))}
                 for b in result.bundles
             ],
         }
