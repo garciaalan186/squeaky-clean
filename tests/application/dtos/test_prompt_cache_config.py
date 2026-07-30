@@ -5,14 +5,15 @@ import pytest
 from squeaky_clean.application.dtos.prompt_cache_config import PromptCacheConfig
 
 
-def test_defaults_enable_all_four_tiers() -> None:
+def test_defaults_cache_repeating_tiers_but_not_architect() -> None:
+    # R3.5: architect runs once/problem with a unique prompt → not cached by
+    # default (0% hit, negative savings); the repeating tiers stay on.
     cfg = PromptCacheConfig()
     assert cfg.enabled is True
-    assert set(cfg.enabled_tiers) == {
-        "architect", "manager", "icp", "fixer",
-    }
-    for t in ("architect", "manager", "icp", "fixer"):
+    assert set(cfg.enabled_tiers) == {"manager", "icp", "fixer"}
+    for t in ("manager", "icp", "fixer"):
         assert cfg.is_enabled_for(t) is True
+    assert cfg.is_enabled_for("architect") is False
 
 
 def test_global_disable_overrides_tier_allowlist() -> None:

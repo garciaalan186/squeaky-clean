@@ -17,12 +17,18 @@ class PromptCacheConfig:
     of ``enabled_tiers``. When ``enabled`` is True, only tiers listed in
     ``enabled_tiers`` get ``cache_control`` blocks attached to the system
     prompt + stable user-prompt prefix.
+
+    ``architect`` is excluded from the default (R3.5): it runs once per problem
+    with a unique prompt, so anchoring it only pays the ~25% cache-creation
+    premium with no later read to amortise it — measured as a 0% hit-ratio and
+    negative savings. The tiers that DO repeat identical system prompts
+    (``icp`` reuses one of 34 stable pattern specs per call; ``manager`` and
+    ``fixer`` recur per module/failure) stay on. Add ``architect`` back
+    explicitly if a workload re-invokes it enough to amortise the premium.
     """
 
     enabled: bool = True
-    enabled_tiers: tuple[str, ...] = (
-        "architect", "manager", "icp", "fixer",
-    )
+    enabled_tiers: tuple[str, ...] = ("manager", "icp", "fixer")
 
     def __post_init__(self) -> None:
         for t in self.enabled_tiers:
