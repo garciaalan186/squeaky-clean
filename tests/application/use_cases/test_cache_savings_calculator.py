@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.cache_savings_calculator import (
+from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
     CacheSavingsCalculator,
     TierCacheTokens,
 )

@@ -6,7 +6,7 @@ from typing import cast
 
 import pytest
 
-from squeaky_clean.application.dtos.prompt_cache_config import PromptCacheConfig
+from squeaky_clean.application.shared.gateways.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
 

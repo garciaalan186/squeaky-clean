@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.go_mod_generator import generate_go_mod
+from squeaky_clean.application.generation.integration.manifests.go_mod_generator import (
+    generate_go_mod,
+)
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
-from squeaky_clean.application.use_cases.percentile_summary_renderer import (
+from squeaky_clean.application.evaluation.eval.report.percentile_summary_renderer import (
     PercentileSummaryRenderer,
 )
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 
 

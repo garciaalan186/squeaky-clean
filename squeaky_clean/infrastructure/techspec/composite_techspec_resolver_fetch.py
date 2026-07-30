@@ -3,8 +3,11 @@
 import logging
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.tech_doc_sanitizer import TechDocPoisonedError, sanitize
-from squeaky_clean.application.use_cases.tech_spec_html_extractor import (
+from squeaky_clean.application.generation.techspec.tech_doc_sanitizer import (
+    TechDocPoisonedError,
+    sanitize,
+)
+from squeaky_clean.application.generation.techspec.tech_spec_html_extractor import (
     TechDocFormatUnknownError,
     TechSpecHTMLExtractor,
 )

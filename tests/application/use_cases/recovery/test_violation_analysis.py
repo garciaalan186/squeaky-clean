@@ -2,17 +2,19 @@
 
 import json
 
-from squeaky_clean.application.dtos.recovery.class_catalog import ClassCatalog
-from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
-from squeaky_clean.application.dtos.recovery.recovery_artifact import RecoveryArtifact
-from squeaky_clean.application.dtos.recovery.violation_report import ViolationReport
-from squeaky_clean.application.use_cases.recovery.violation_analysis import (
+from squeaky_clean.application.generation.recovery.extraction.class_catalog import ClassCatalog
+from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
+from squeaky_clean.application.generation.recovery.refactor.recovery_artifact import (
+    RecoveryArtifact,
+)
+from squeaky_clean.application.generation.recovery.scoring.violation_analysis import (
     ViolationAnalysis,
 )
-from squeaky_clean.application.use_cases.recovery.violation_report_renderer import (
+from squeaky_clean.application.generation.recovery.scoring.violation_report import ViolationReport
+from squeaky_clean.application.generation.recovery.scoring.violation_report_renderer import (
     ViolationReportRenderer,
 )
-from squeaky_clean.application.use_cases.recovery.violation_report_serializer import (
+from squeaky_clean.application.generation.recovery.scoring.violation_report_serializer import (
     ViolationReportSerializer,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

@@ -4,13 +4,13 @@ Adds coverage for relational_db, document_db, message_queue_producer,
 message_queue_consumer, and stream_processor categories.
 """
 
-from squeaky_clean.application.use_cases.infrastructure_category_inference import (
+from squeaky_clean.application.generation.emission.map_pattern_to_emitter import MapPatternToEmitter
+from squeaky_clean.application.generation.techspec.infrastructure_category_inference import (
     infer_category,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.map_pattern_to_emitter import MapPatternToEmitter
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 

@@ -1,6 +1,6 @@
 """H5a: derive_required_categories now recognises five new categories."""
 
-from squeaky_clean.application.use_cases.derive_required_categories import (
+from squeaky_clean.application.generation.techspec.derive_required_categories import (
     derive_required_categories,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

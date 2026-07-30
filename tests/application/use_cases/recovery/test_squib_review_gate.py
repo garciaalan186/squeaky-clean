@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.use_cases.recovery.squib_review_error import (
+from squeaky_clean.application.generation.recovery.squib.squib_review_error import (
     SquibReviewError,
 )
-from squeaky_clean.application.use_cases.recovery.squib_review_gate import (
+from squeaky_clean.application.generation.recovery.squib.squib_review_gate import (
     SquibReviewGate,
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

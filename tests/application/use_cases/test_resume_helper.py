@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.resume_helper import ResumeHelper
+from squeaky_clean.application.evaluation.eval.resume.resume_helper import ResumeHelper
 
 
 def test_empty_run_dir(tmp_path: Path) -> None:

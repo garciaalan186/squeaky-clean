@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller

@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.convention_to_invariant import (
+from squeaky_clean.application.generation.notation.convention_to_invariant import (
     ConventionToInvariant,
     UnknownConventionError,
 )

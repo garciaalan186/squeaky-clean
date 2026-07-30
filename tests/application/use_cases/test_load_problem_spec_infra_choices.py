@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
+from squeaky_clean.application.shared.problem.load_problem_spec_from_file import (
     LoadProblemSpecFromFile,
 )
 

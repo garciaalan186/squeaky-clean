@@ -1,16 +1,16 @@
 """Tests for FixFailingClasses."""
 
-from squeaky_clean.application.dtos.fix_request import FixRequest
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.use_cases.fix_failing_classes import FixFailingClasses
-from squeaky_clean.application.use_cases.fix_failing_classes_deps import (
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.repair.fix_failing_classes import FixFailingClasses
+from squeaky_clean.application.generation.repair.fix_failing_classes_deps import (
     FixFailingClassesDeps,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.generation.repair.fix_request import FixRequest
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway

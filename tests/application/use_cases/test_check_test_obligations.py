@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.test_obligation import TestObligation
-from squeaky_clean.application.use_cases.check_test_obligations import (
+from squeaky_clean.application.generation.testgen.check_test_obligations import (
     CheckTestObligations,
 )
+from squeaky_clean.application.generation.testgen.test_obligation import TestObligation
 from squeaky_clean.domain.value_objects.assertion_kind import AssertionKind
 
 

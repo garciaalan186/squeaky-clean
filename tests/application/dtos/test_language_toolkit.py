@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
+from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

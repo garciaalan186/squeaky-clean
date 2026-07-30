@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.contract import Contract
-from squeaky_clean.application.dtos.contract_field import ContractField
-from squeaky_clean.application.use_cases.contract_registry import ContractRegistry
+from squeaky_clean.application.generation.validation.contract import Contract
+from squeaky_clean.application.generation.validation.contract_field import ContractField
+from squeaky_clean.application.generation.validation.contract_registry import ContractRegistry
 
 
 def _c(name: str, fields: tuple[ContractField, ...] = ()) -> Contract:

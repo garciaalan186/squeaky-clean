@@ -1,9 +1,9 @@
 """Tests for RefactorDecider (preserve vs split under user priorities)."""
 
-from squeaky_clean.application.use_cases.recovery.criteria_weighting import (
+from squeaky_clean.application.generation.recovery.refactor.criteria_weighting import (
     CriteriaWeighting,
 )
-from squeaky_clean.application.use_cases.recovery.refactor_decider import RefactorDecider
+from squeaky_clean.application.generation.recovery.refactor.refactor_decider import RefactorDecider
 
 _PURITY_FIRST = (
     "testability", "evolvability", "performance",

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.recovery.python_class_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.python_class_catalog_extractor import (
     PythonClassCatalogExtractor,
 )
 

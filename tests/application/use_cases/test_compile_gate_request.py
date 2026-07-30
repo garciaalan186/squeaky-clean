@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.use_cases.compile_gate_request import CompileGateRequest
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.repair.compile_gate_request import CompileGateRequest
 
 
 def test_construction_defaults() -> None:

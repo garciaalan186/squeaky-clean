@@ -4,13 +4,13 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.infrastructure_choice_architect import (
+from squeaky_clean.application.generation.techspec.infrastructure_choice_architect import (
     InfrastructureChoiceArchitect,
     NoCandidatesAvailableError,
 )
-from squeaky_clean.application.use_cases.mcda_registry import MCDARegistry
-from squeaky_clean.application.use_cases.mcda_scorer import MCDAScorer
+from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistry
+from squeaky_clean.application.shared.mcda.mcda_scorer import MCDAScorer
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

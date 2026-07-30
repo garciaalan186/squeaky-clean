@@ -1,6 +1,6 @@
 """Unit tests for SecretScanner."""
 
-from squeaky_clean.application.use_cases.secret_scanner import SecretScanner
+from squeaky_clean.application.generation.security.secret_scanner import SecretScanner
 
 
 def test_clean_text_returns_empty() -> None:

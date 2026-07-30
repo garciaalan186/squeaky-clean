@@ -1,6 +1,6 @@
 """LanguageAdapterSelector: registry-driven dispatch for per-language bundles."""
 
-from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
+from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage

@@ -2,17 +2,21 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.recovery.class_catalog import ClassCatalog
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
-from squeaky_clean.application.use_cases.recovery.layer_assigner import LayerAssigner
-from squeaky_clean.application.use_cases.recovery.module_decomposer import ModuleDecomposer
-from squeaky_clean.application.use_cases.recovery.pattern_classifier import PatternClassifier
-from squeaky_clean.application.use_cases.recovery.python_class_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.decomposition.layer_assigner import LayerAssigner
+from squeaky_clean.application.generation.recovery.decomposition.module_decomposer import (
+    ModuleDecomposer,
+)
+from squeaky_clean.application.generation.recovery.extraction.class_catalog import ClassCatalog
+from squeaky_clean.application.generation.recovery.extraction.python_class_catalog_extractor import (
     PythonClassCatalogExtractor,
 )
-from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
+from squeaky_clean.application.generation.recovery.scoring.pattern_classifier import (
+    PatternClassifier,
+)
+from squeaky_clean.application.generation.recovery.squib.squib_emitter import SquibEmitter
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 

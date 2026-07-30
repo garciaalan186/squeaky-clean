@@ -8,25 +8,27 @@ from pathlib import Path
 from typing import cast
 from unittest.mock import Mock
 
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.dtos.integration_result import IntegrationResult
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.security_review import SecurityReview
-from squeaky_clean.application.dtos.test_architecture import TestArchitecture
-from squeaky_clean.application.dtos.validation_report import ValidationReport
-from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
-from squeaky_clean.application.use_cases.generate_security_tests import (
+from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
+from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
+from squeaky_clean.application.generation.integration.integrate_module import IntegrateModule
+from squeaky_clean.application.generation.integration.integration_result import IntegrationResult
+from squeaky_clean.application.generation.security.generate_security_tests import (
     GenerateSecurityTests,
 )
-from squeaky_clean.application.use_cases.generate_test_architecture import (
+from squeaky_clean.application.generation.security.review_security import ReviewSecurity
+from squeaky_clean.application.generation.security.security_review import SecurityReview
+from squeaky_clean.application.generation.testgen.generate_test_architecture import (
     GenerateTestArchitecture,
 )
-from squeaky_clean.application.use_cases.integrate_module import IntegrateModule
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
-from squeaky_clean.application.use_cases.orchestrate_module import OrchestrateModule
-from squeaky_clean.application.use_cases.review_security import ReviewSecurity
-from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
-from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
+from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
+from squeaky_clean.application.generation.validation.validate_architecture import (
+    ValidateArchitecture,
+)
+from squeaky_clean.application.generation.validation.validation_report import ValidationReport
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

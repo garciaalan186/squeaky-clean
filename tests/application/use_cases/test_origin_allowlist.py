@@ -1,6 +1,6 @@
 """Tests for OriginAllowlist (H4)."""
 
-from squeaky_clean.application.use_cases.origin_allowlist import OriginAllowlist
+from squeaky_clean.application.generation.validation.origin_allowlist import OriginAllowlist
 
 
 def test_allowlist_accepts_url_with_matching_prefix() -> None:

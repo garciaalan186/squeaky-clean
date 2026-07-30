@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.query_semantic import QuerySemantic
+from squeaky_clean.application.shared.mcda.query_semantic import QuerySemantic
 
 
 def test_query_semantic_accepts_known_shape() -> None:

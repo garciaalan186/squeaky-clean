@@ -1,8 +1,10 @@
 """Tests for SiblingInterfaceFormatter."""
 
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
-from squeaky_clean.application.use_cases.sibling_interface_formatter import (
+from squeaky_clean.application.generation.emission.sibling_interface_formatter import (
     SiblingInterfaceFormatter,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec

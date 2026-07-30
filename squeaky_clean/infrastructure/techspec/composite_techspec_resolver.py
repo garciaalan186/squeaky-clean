@@ -3,7 +3,9 @@
 from collections.abc import Callable
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.tech_spec_html_extractor import TechSpecHTMLExtractor
+from squeaky_clean.application.generation.techspec.tech_spec_html_extractor import (
+    TechSpecHTMLExtractor,
+)
 from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetcher
 from squeaky_clean.domain.interfaces.tech_spec_resolver import (
     TechSpecResolver,

@@ -1,8 +1,10 @@
 """Tests for MapConcernToSecurityEmitter."""
 
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
-from squeaky_clean.application.use_cases.map_concern_to_security_icp import (
+from squeaky_clean.application.generation.security.map_concern_to_security_icp import (
     MapConcernToSecurityEmitter,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 

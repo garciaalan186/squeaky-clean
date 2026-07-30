@@ -1,6 +1,6 @@
 """P2 E-Commerce Cart: exercises Strategy pattern + multi-class collaboration."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P2: ProblemSpec = ProblemSpec(

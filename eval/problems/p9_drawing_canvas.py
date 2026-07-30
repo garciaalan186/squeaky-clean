@@ -1,6 +1,6 @@
 """P9 Drawing Canvas: exercises Composite (shape tree) + Visitor (area traversal)."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P9: ProblemSpec = ProblemSpec(

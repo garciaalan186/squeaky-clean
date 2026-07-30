@@ -1,12 +1,12 @@
 """Tests for FrameworkCouplingDetector and RefactorProposalRenderer."""
 
-from squeaky_clean.application.dtos.recovery.class_catalog import ClassCatalog
-from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
-from squeaky_clean.application.use_cases.recovery.framework_coupling_detector import (
-    FrameworkCouplingDetector,
-)
-from squeaky_clean.application.use_cases.recovery.refactor_proposal_renderer import (
+from squeaky_clean.application.generation.recovery.extraction.class_catalog import ClassCatalog
+from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
+from squeaky_clean.application.generation.recovery.refactor.refactor_proposal_renderer import (
     RefactorProposalRenderer,
+)
+from squeaky_clean.application.generation.recovery.scoring.framework_coupling_detector import (
+    FrameworkCouplingDetector,
 )
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 

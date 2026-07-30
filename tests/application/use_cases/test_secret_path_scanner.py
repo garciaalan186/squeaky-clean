@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathScanner
-from squeaky_clean.application.use_cases.secret_scanner import SecretScanner
+from squeaky_clean.application.generation.security.secret_path_scanner import SecretPathScanner
+from squeaky_clean.application.generation.security.secret_scanner import SecretScanner
 
 _SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "scan_for_secrets.py"
 _FAKE_KEY = "sk-ant" + "-abc123ABCDEF0123456789"

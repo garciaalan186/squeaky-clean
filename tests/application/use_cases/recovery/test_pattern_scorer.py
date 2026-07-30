@@ -1,7 +1,7 @@
 """Tests for the deterministic PatternScorer fingerprints (Stage 3)."""
 
-from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
-from squeaky_clean.application.use_cases.recovery.pattern_scorer import PatternScorer
+from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
+from squeaky_clean.application.generation.recovery.scoring.pattern_scorer import PatternScorer
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.pattern_name import PatternName
 

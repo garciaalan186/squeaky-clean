@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import cast
 
-from squeaky_clean.application.use_cases.tech_spec_html_extractor import (
+from squeaky_clean.application.generation.techspec.tech_spec_html_extractor import (
     TechSpecHTMLExtractor,
 )
 from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidator

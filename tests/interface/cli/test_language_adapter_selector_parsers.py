@@ -2,23 +2,23 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.use_cases.parsers.go_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.go_implemented_class_parser import (
     GoImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.java_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.java_implemented_class_parser import (
     JavaImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.javascript_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.javascript_implemented_class_parser import (
     JavaScriptImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.python_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.python_implemented_class_parser import (
     PythonImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.rust_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.rust_implemented_class_parser import (
     RustImplementedClassParser,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem

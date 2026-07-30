@@ -1,6 +1,6 @@
 """Tests for the RunMetricsSnapshot DTO."""
 
-from squeaky_clean.application.dtos.run_metrics_snapshot import RunMetricsSnapshot
+from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
 
 
 def test_snapshot_is_frozen() -> None:

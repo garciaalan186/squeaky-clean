@@ -4,8 +4,10 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.security_review_context import SecurityReviewContext
+from squeaky_clean.application.generation.security.security_review_context import (
+    SecurityReviewContext,
+)
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType

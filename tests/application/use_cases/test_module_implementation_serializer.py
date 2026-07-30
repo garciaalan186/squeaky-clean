@@ -1,8 +1,8 @@
 """Tests for ModuleImplementationSerializer round-trip (G3)."""
 
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.use_cases.module_implementation_serializer import (
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.notation.module_implementation_serializer import (
     ModuleImplementationSerializer,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

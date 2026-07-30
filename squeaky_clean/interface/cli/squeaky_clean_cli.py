@@ -5,40 +5,42 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.recovery.architectural_criterion import (
-    ALL_ARCHITECTURAL_CRITERIA,
-)
-from squeaky_clean.application.dtos.sweep_request import SweepRequest
-from squeaky_clean.application.use_cases.html_dashboard_writer import HtmlDashboardWriter
-from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
-    LoadProblemSpecFromFile,
-)
-from squeaky_clean.application.use_cases.metrics_history_aggregator import (
+from squeaky_clean.application.evaluation.eval.metrics.metrics_history_aggregator import (
     MetricsHistoryAggregator,
 )
-from squeaky_clean.application.use_cases.recovery.interactive_triage import (
+from squeaky_clean.application.evaluation.eval.report.html_dashboard_writer import (
+    HtmlDashboardWriter,
+)
+from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
+from squeaky_clean.application.evaluation.eval.sweep.sweep_request import SweepRequest
+from squeaky_clean.application.generation.recovery.decomposition.interactive_triage import (
     InteractiveTriage,
 )
-from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer import (
+from squeaky_clean.application.generation.recovery.decomposition.problem_spec_synthesizer import (
     ProblemSpecSynthesizer,
 )
-from squeaky_clean.application.use_cases.recovery.recovery_emitter import RecoveryEmitter
-from squeaky_clean.application.use_cases.recovery.refactor_emitter import RefactorEmitter
-from squeaky_clean.application.use_cases.recovery.refactor_plan_serializer import (
-    RefactorPlanSerializer,
-)
-from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
-from squeaky_clean.application.use_cases.recovery.squib_review_gate import (
-    SquibReviewGate,
-)
-from squeaky_clean.application.use_cases.recovery.supplied_architecture_designer import (
+from squeaky_clean.application.generation.recovery.decomposition.supplied_architecture_designer import (  # noqa: E501
     SuppliedArchitectureDesigner,
 )
-from squeaky_clean.application.use_cases.recovery.violation_report_deserializer import (
+from squeaky_clean.application.generation.recovery.refactor.architectural_criterion import (
+    ALL_ARCHITECTURAL_CRITERIA,
+)
+from squeaky_clean.application.generation.recovery.refactor.recovery_emitter import RecoveryEmitter
+from squeaky_clean.application.generation.recovery.refactor.refactor_emitter import RefactorEmitter
+from squeaky_clean.application.generation.recovery.refactor.refactor_plan_serializer import (
+    RefactorPlanSerializer,
+)
+from squeaky_clean.application.generation.recovery.scoring.violation_report_deserializer import (
     ViolationReportDeserializer,
 )
-from squeaky_clean.application.use_cases.run_eval import RunEval
+from squeaky_clean.application.generation.recovery.squib.squib_emitter import SquibEmitter
+from squeaky_clean.application.generation.recovery.squib.squib_review_gate import (
+    SquibReviewGate,
+)
+from squeaky_clean.application.shared.problem.load_problem_spec_from_file import (
+    LoadProblemSpecFromFile,
+)
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger

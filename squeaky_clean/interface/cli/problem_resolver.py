@@ -24,7 +24,7 @@ from eval.problems.p6_stock_monitor import P6
 from eval.problems.p7_order_lifecycle import P7
 from eval.problems.p8_text_editor import P8
 from eval.problems.p9_drawing_canvas import P9
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 
 _REGISTRY: dict[str, ProblemSpec] = {
     "P0": P0, "P0JS": P0JS, "P0TS": P0TS, "P0JAVA": P0JAVA,

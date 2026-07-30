@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.rule_runner import RuleRunner
-from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
+from squeaky_clean.application.generation.validation.rule_runner import RuleRunner
+from squeaky_clean.application.generation.validation.validate_architecture import (
+    ValidateArchitecture,
+)
 from squeaky_clean.domain.interfaces.rule import Rule
 from squeaky_clean.domain.rules.python_granularity_rule import PythonGranularityRule
 

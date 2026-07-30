@@ -3,8 +3,10 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.package_json_generator import generate
+from squeaky_clean.application.generation.integration.manifests.package_json_generator import (
+    generate,
+)
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage

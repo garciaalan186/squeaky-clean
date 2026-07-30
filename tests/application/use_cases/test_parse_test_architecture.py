@@ -2,10 +2,12 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.test_architecture_parse_error import (
+from squeaky_clean.application.generation.testgen.parse_test_architecture import (
+    ParseTestArchitecture,
+)
+from squeaky_clean.application.generation.testgen.test_architecture_parse_error import (
     TestArchitectureParseError,
 )
-from squeaky_clean.application.use_cases.parse_test_architecture import ParseTestArchitecture
 
 _SAMPLE = """GHERKIN
 ---

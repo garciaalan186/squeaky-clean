@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.regression_record import RegressionRecord
-from squeaky_clean.application.use_cases.regression_writer import RegressionWriter
+from squeaky_clean.application.evaluation.eval.report.regression_record import RegressionRecord
+from squeaky_clean.application.evaluation.eval.report.regression_writer import RegressionWriter
 
 
 def _record(metric: str = "tests_pass") -> RegressionRecord:

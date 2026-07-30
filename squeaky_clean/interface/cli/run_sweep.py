@@ -5,17 +5,17 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.sweep_request import SweepRequest
-from squeaky_clean.application.dtos.sweep_result import SweepResult
-from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError
-from squeaky_clean.application.use_cases.dashboard_generator import DashboardGenerator
-from squeaky_clean.application.use_cases.meta_eval_paths import MetaEvalPaths
-from squeaky_clean.application.use_cases.resume_helper import ResumeHelper
-from squeaky_clean.application.use_cases.run_eval import RunEval
-from squeaky_clean.application.use_cases.sweep_failure_bundle import SweepFailureBundle
-from squeaky_clean.application.use_cases.sweep_summary_writer import SweepSummaryWriter
+from squeaky_clean.application.evaluation.eval.report.dashboard_generator import DashboardGenerator
+from squeaky_clean.application.evaluation.eval.resume.resume_helper import ResumeHelper
+from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.evaluation.eval.run.meta_eval_paths import MetaEvalPaths
+from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
+from squeaky_clean.application.evaluation.eval.sweep.sweep_failure_bundle import SweepFailureBundle
+from squeaky_clean.application.evaluation.eval.sweep.sweep_request import SweepRequest
+from squeaky_clean.application.evaluation.eval.sweep.sweep_result import SweepResult
+from squeaky_clean.application.evaluation.eval.sweep.sweep_summary_writer import SweepSummaryWriter
+from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.interface.cli.run_sweep_deps import RunSweepDeps
 

@@ -1,16 +1,16 @@
 """Tests for LanguageAdapterSelector."""
 
-from squeaky_clean.application.use_cases.java_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.java_integration_bootstrap import (
     JavaIntegrationBootstrap,
 )
-from squeaky_clean.application.use_cases.javascript_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.javascript_integration_bootstrap import (
     JavaScriptIntegrationBootstrap,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.use_cases.python_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.python_integration_bootstrap import (
     PythonIntegrationBootstrap,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.rules.java_granularity_rule import JavaGranularityRule
 from squeaky_clean.domain.rules.javascript_granularity_rule import JavaScriptGranularityRule

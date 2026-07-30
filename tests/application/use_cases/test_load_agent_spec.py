@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.load_agent_spec import LoadAgentSpec
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 
 
 def test_load_principal_architect_spec() -> None:

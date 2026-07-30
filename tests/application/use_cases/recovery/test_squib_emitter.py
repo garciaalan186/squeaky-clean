@@ -1,9 +1,9 @@
 """Round-trip tests for SquibEmitter against the real §Notation parser."""
 
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
-from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
+from squeaky_clean.application.generation.recovery.squib.squib_emitter import SquibEmitter
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

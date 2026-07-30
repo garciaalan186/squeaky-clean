@@ -1,11 +1,17 @@
 """Tests for SecurityICPDispatcher."""
 
-from squeaky_clean.application.dtos.language_toolkit import LanguageToolkit
-from squeaky_clean.application.dtos.security_concern import SecurityConcern
-from squeaky_clean.application.dtos.security_dispatch_context import SecurityDispatchContext
-from squeaky_clean.application.dtos.security_review import SecurityReview
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
-from squeaky_clean.application.use_cases.security_icp_dispatcher import SecurityICPDispatcher
+from squeaky_clean.application.generation.security.security_concern import SecurityConcern
+from squeaky_clean.application.generation.security.security_dispatch_context import (
+    SecurityDispatchContext,
+)
+from squeaky_clean.application.generation.security.security_icp_dispatcher import (
+    SecurityICPDispatcher,
+)
+from squeaky_clean.application.generation.security.security_review import SecurityReview
+from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway

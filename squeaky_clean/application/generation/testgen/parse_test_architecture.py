@@ -1,0 +1,42 @@
+"""ParseTestArchitecture: decode TestArchitect LLM output into a TestArchitecture."""
+
+from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
+from squeaky_clean.application.generation.testgen.test_architecture_gherkin_parser import (
+    TestArchitectureGherkinParser,
+)
+from squeaky_clean.application.generation.testgen.test_architecture_parse_error import (
+    TestArchitectureParseError,
+)
+from squeaky_clean.application.generation.testgen.test_architecture_skeletons_parser import (
+    TestArchitectureSkeletonsParser,
+)
+
+
+class ParseTestArchitecture:
+    """Parses the TestArchitect output format into a TestArchitecture DTO."""
+
+    def __init__(self) -> None:
+        self._gherkin: TestArchitectureGherkinParser = TestArchitectureGherkinParser()
+        self._skeletons: TestArchitectureSkeletonsParser = (
+            TestArchitectureSkeletonsParser()
+        )
+
+    def parse(self, raw: str) -> TestArchitecture:
+        """Return a TestArchitecture built from TestArchitect raw output."""
+        stripped = raw.strip()
+        upper = stripped.upper()
+        if "GHERKIN" not in upper or "TEST_SKELETONS" not in upper:
+            raise TestArchitectureParseError(
+                "missing GHERKIN or TEST_SKELETONS section header "
+                "(output may have been truncated before the second section)"
+            )
+        gherkin = self._gherkin.parse(stripped)
+        skeletons = self._skeletons.parse(stripped)
+        if not gherkin:
+            raise TestArchitectureParseError("no Gherkin scenarios extracted")
+        if not skeletons:
+            raise TestArchitectureParseError("no test skeletons extracted")
+        return TestArchitecture(
+            gherkin_scenarios=gherkin,
+            test_skeletons=skeletons,
+        )

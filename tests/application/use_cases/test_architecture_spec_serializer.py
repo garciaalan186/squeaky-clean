@@ -1,6 +1,6 @@
 """Tests for ArchitectureSpecSerializer round-trip (G3)."""
 
-from squeaky_clean.application.use_cases.architecture_spec_serializer import (
+from squeaky_clean.application.generation.notation.architecture_spec_serializer import (
     ArchitectureSpecSerializer,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

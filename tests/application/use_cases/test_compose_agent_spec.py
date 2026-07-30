@@ -1,10 +1,10 @@
 """Unit tests for ComposeAgentSpec."""
 
-from squeaky_clean.application.use_cases.compose_agent_spec import ComposeAgentSpec
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.generation.emission.compose_agent_spec import ComposeAgentSpec
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.load_agent_spec import LoadAgentSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

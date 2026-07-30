@@ -15,7 +15,7 @@ import time
 import anthropic
 from anthropic.types import MessageParam, TextBlockParam
 
-from squeaky_clean.application.dtos.prompt_cache_config import PromptCacheConfig
+from squeaky_clean.application.shared.gateways.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

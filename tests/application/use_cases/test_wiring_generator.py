@@ -3,7 +3,7 @@
 import ast
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.wiring_generator import WiringGenerator
+from squeaky_clean.application.generation.integration.wiring_generator import WiringGenerator
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

@@ -6,10 +6,10 @@ from unittest.mock import Mock
 
 import pytest
 
-from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.sweep_request import SweepRequest
-from squeaky_clean.application.dtos.validation_report import ValidationReport
+from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.evaluation.eval.sweep.sweep_request import SweepRequest
+from squeaky_clean.application.generation.validation.validation_report import ValidationReport
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
@@ -64,7 +64,7 @@ def test_execute_runs_problems_in_parallel(tmp_run_root: Path) -> None:
         captured.append(problem.id)
         return _bundle(problem.id, cost=0.5)
 
-    from squeaky_clean.application.use_cases import run_eval as run_eval_module
+    from squeaky_clean.application.evaluation.eval.run import run_eval as run_eval_module
 
     monkey = run_eval_module.RunEval.execute_in
     run_eval_module.RunEval.execute_in = fake_execute_in  # type: ignore[method-assign]
@@ -82,7 +82,7 @@ def test_execute_runs_problems_in_parallel(tmp_run_root: Path) -> None:
 
 
 def test_budget_exceeded_aborts_whole_sweep(tmp_run_root: Path) -> None:
-    from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError
+    from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError
 
     builder = Mock(spec=DependencyBuilder)
     builder.build.return_value = Mock()
@@ -95,7 +95,7 @@ def test_budget_exceeded_aborts_whole_sweep(tmp_run_root: Path) -> None:
     def boom(self: object, problem: ProblemSpec, run_dir: Path) -> EvalReportBundle:  # noqa: ARG001
         raise BudgetExceededError("cap reached")
 
-    from squeaky_clean.application.use_cases import run_eval as run_eval_module
+    from squeaky_clean.application.evaluation.eval.run import run_eval as run_eval_module
 
     monkey = run_eval_module.RunEval.execute_in
     run_eval_module.RunEval.execute_in = boom  # type: ignore[method-assign]

@@ -1,8 +1,8 @@
 """Tests for LayerAssigner (Stage-2 Clean-Architecture layer routing)."""
 
-from squeaky_clean.application.dtos.recovery.class_catalog import ClassCatalog
-from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
-from squeaky_clean.application.use_cases.recovery.layer_assigner import LayerAssigner
+from squeaky_clean.application.generation.recovery.decomposition.layer_assigner import LayerAssigner
+from squeaky_clean.application.generation.recovery.extraction.class_catalog import ClassCatalog
+from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 
 

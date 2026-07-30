@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.rule_runner import RuleRunner
+from squeaky_clean.application.generation.validation.rule_runner import RuleRunner
 from squeaky_clean.domain.interfaces.rule import Rule
 from squeaky_clean.domain.rules.dependency_rule import DependencyRule
 from squeaky_clean.domain.rules.python_granularity_rule import PythonGranularityRule

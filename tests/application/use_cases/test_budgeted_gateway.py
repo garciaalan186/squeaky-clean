@@ -2,9 +2,9 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.cost_budget import CostBudget
-from squeaky_clean.application.use_cases.budgeted_gateway import BudgetedGateway
-from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError, CostGate
+from squeaky_clean.application.shared.gateways.budgeted_gateway import BudgetedGateway
+from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
+from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError, CostGate
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

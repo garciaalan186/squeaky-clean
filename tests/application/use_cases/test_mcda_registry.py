@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.use_cases.mcda_registry import (
+from squeaky_clean.application.shared.mcda.mcda_registry import (
     MCDARegistry,
     MCDARegistryEntryMissingError,
 )

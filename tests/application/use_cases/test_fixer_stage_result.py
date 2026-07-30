@@ -1,6 +1,6 @@
 """Tests for FixerStageResult (R2.4 extraction)."""
 
-from squeaky_clean.application.use_cases.fixer_stage_result import FixerStageResult
+from squeaky_clean.application.generation.repair.fixer_stage_result import FixerStageResult
 
 
 def test_merge_sums_all_fields() -> None:

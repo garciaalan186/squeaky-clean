@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.metrics_history_aggregator import (
+from squeaky_clean.application.evaluation.eval.metrics.metrics_history_aggregator import (
     MetricsHistoryAggregator,
 )
 

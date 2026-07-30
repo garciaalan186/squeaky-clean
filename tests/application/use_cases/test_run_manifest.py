@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.run_manifest import RunManifest
+from squeaky_clean.application.evaluation.eval.run.run_manifest import RunManifest
 
 
 def test_writes_manifest_with_required_fields(tmp_path: Path) -> None:

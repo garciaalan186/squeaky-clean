@@ -4,8 +4,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.test_architecture import TestArchitecture
-from squeaky_clean.application.dtos.test_skeleton import TestSkeleton
+from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
+from squeaky_clean.application.generation.testgen.test_skeleton import TestSkeleton
 
 
 def test_construction_preserves_fields() -> None:

@@ -3,12 +3,12 @@
 import pytest
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
-from squeaky_clean.application.use_cases.design_architecture_error import (
+from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
+from squeaky_clean.application.generation.architecture.design_architecture_error import (
     DesignArchitectureError,
 )
-from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

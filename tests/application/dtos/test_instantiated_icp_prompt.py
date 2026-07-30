@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.dtos.instantiated_icp_prompt import InstantiatedICPPrompt
+from squeaky_clean.application.generation.emission.instantiated_icp_prompt import (
+    InstantiatedICPPrompt,
+)
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
 

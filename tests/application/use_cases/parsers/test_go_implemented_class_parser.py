@@ -2,11 +2,11 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.implemented_class_parse_error import (
-    ImplementedClassParseError,
-)
-from squeaky_clean.application.use_cases.parsers.go_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.go_implemented_class_parser import (
     GoImplementedClassParser,
+)
+from squeaky_clean.application.generation.emission.parsers.implemented_class_parse_error import (
+    ImplementedClassParseError,
 )
 
 

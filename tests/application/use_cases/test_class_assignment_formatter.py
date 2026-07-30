@@ -1,10 +1,12 @@
 """Tests for ClassAssignmentFormatter."""
 
-from squeaky_clean.application.dtos.class_assignment import ClassAssignment
-from squeaky_clean.application.use_cases.class_assignment_formatter import (
+from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
+from squeaky_clean.application.generation.emission.class_assignment_formatter import (
     ClassAssignmentFormatter,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType

@@ -1,7 +1,7 @@
 """P5 OAuth2 Authorization Server: realistic security-sensitive multi-module app."""
 
-from squeaky_clean.application.dtos.data_classification import DataClassification
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.mcda.data_classification import DataClassification
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P5: ProblemSpec = ProblemSpec(

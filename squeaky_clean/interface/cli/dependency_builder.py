@@ -2,38 +2,50 @@
 import os
 from pathlib import Path
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.assign_patterns import AssignPatterns
-from squeaky_clean.application.use_cases.budgeted_gateway import BudgetedGateway
-from squeaky_clean.application.use_cases.cost_gate import CostGate
-from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
-from squeaky_clean.application.use_cases.fix_failing_classes import FixFailingClasses
-from squeaky_clean.application.use_cases.fix_failing_classes_deps import FixFailingClassesDeps
-from squeaky_clean.application.use_cases.generate_security_tests import GenerateSecurityTests
-from squeaky_clean.application.use_cases.generate_test_architecture import GenerateTestArchitecture
-from squeaky_clean.application.use_cases.generate_test_architecture_deps import (
-    GenerateTestArchitectureDeps,
+from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
+from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
+from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
+from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
+from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
+    ParseImplementedClass,
 )
-from squeaky_clean.application.use_cases.implement_class import ImplementClass
-from squeaky_clean.application.use_cases.infrastructure_choice_architect import (
+from squeaky_clean.application.generation.integration.integrate_module import IntegrateModule
+from squeaky_clean.application.generation.repair.fix_failing_classes import FixFailingClasses
+from squeaky_clean.application.generation.repair.fix_failing_classes_deps import (
+    FixFailingClassesDeps,
+)
+from squeaky_clean.application.generation.repair.repair_test_file import RepairTestFile
+from squeaky_clean.application.generation.security.generate_security_tests import (
+    GenerateSecurityTests,
+)
+from squeaky_clean.application.generation.security.review_security import ReviewSecurity
+from squeaky_clean.application.generation.techspec.infrastructure_choice_architect import (
     InfrastructureChoiceArchitect,
 )
-from squeaky_clean.application.use_cases.integrate_module import IntegrateModule
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
-from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
-from squeaky_clean.application.use_cases.mcda_registry import MCDARegistry
-from squeaky_clean.application.use_cases.mcda_scorer import MCDAScorer
-from squeaky_clean.application.use_cases.orchestrate_module import OrchestrateModule
-from squeaky_clean.application.use_cases.parse_implemented_class import ParseImplementedClass
-from squeaky_clean.application.use_cases.repair_test_file import RepairTestFile
-from squeaky_clean.application.use_cases.review_security import ReviewSecurity
-from squeaky_clean.application.use_cases.rule_runner import RuleRunner
-from squeaky_clean.application.use_cases.run_config import RunConfig
-from squeaky_clean.application.use_cases.run_eval_dependencies import RunEvalDependencies
-from squeaky_clean.application.use_cases.techspec_composer import TechSpecComposer
-from squeaky_clean.application.use_cases.validate_architecture import ValidateArchitecture
-from squeaky_clean.application.use_cases.verify_layer import VerifyLayer
+from squeaky_clean.application.generation.techspec.techspec_composer import TechSpecComposer
+from squeaky_clean.application.generation.testgen.generate_test_architecture import (
+    GenerateTestArchitecture,
+)
+from squeaky_clean.application.generation.testgen.generate_test_architecture_deps import (
+    GenerateTestArchitectureDeps,
+)
+from squeaky_clean.application.generation.validation.rule_runner import RuleRunner
+from squeaky_clean.application.generation.validation.validate_architecture import (
+    ValidateArchitecture,
+)
+from squeaky_clean.application.generation.validation.verify_layer import VerifyLayer
+from squeaky_clean.application.shared.config.run_config import RunConfig
+from squeaky_clean.application.shared.gateways.budgeted_gateway import BudgetedGateway
+from squeaky_clean.application.shared.gateways.cost_gate import CostGate
+from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
+from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistry
+from squeaky_clean.application.shared.mcda.mcda_scorer import MCDAScorer
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.rule import Rule
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver

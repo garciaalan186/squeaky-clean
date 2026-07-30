@@ -1,7 +1,7 @@
 """Tests for SecurityTestAssembler strict-fence handling (R3.1)."""
 
-from squeaky_clean.application.dtos.security_concern import SecurityConcern
-from squeaky_clean.application.use_cases.security_test_assembler import (
+from squeaky_clean.application.generation.security.security_concern import SecurityConcern
+from squeaky_clean.application.generation.security.security_test_assembler import (
     SecurityTestAssembler,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

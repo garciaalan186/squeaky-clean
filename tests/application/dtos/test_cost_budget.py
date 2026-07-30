@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.cost_budget import CostBudget
+from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
 
 
 def test_default_is_unlimited() -> None:

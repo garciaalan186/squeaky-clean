@@ -1,17 +1,19 @@
 """Tests for GenerateTestArchitecture use case."""
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
-from squeaky_clean.application.use_cases.generate_test_architecture import (
+from squeaky_clean.application.generation.testgen.generate_test_architecture import (
     GenerateTestArchitecture,
 )
-from squeaky_clean.application.use_cases.generate_test_architecture_deps import (
+from squeaky_clean.application.generation.testgen.generate_test_architecture_deps import (
     GenerateTestArchitectureDeps,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.generation.testgen.test_architecture_context import (
+    TestArchitectureContext,
+)
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
@@ -140,7 +142,7 @@ def test_execute_retries_on_parse_error_then_succeeds() -> None:
 def test_execute_raises_after_exhausting_retries() -> None:
     import pytest
 
-    from squeaky_clean.application.use_cases.generate_test_architecture_error import (
+    from squeaky_clean.application.generation.testgen.generate_test_architecture_error import (
         GenerateTestArchitectureError,
     )
     gateway = _SeqGateway([_resp("still broken")])

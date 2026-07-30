@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.infrastructure_choice import InfrastructureChoice
+from squeaky_clean.application.generation.techspec.infrastructure_choice import InfrastructureChoice
 
 
 def test_infrastructure_choice_stores_triple() -> None:

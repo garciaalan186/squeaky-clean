@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.dtos.integration_result import IntegrationResult
+from squeaky_clean.application.generation.integration.integration_result import IntegrationResult
 
 
 def test_integration_result_preserves_fields() -> None:

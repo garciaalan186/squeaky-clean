@@ -2,7 +2,7 @@
 
 import math
 
-from squeaky_clean.application.use_cases.replicate_aggregator import ReplicateAggregator
+from squeaky_clean.application.evaluation.eval.sweep.replicate_aggregator import ReplicateAggregator
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 

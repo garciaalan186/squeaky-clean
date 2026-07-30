@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.file_stats_scanner import FileStatsScanner
+from squeaky_clean.application.evaluation.eval.metrics.file_stats_scanner import FileStatsScanner
 
 
 def _write(root: Path, rel: str, content: str) -> Path:

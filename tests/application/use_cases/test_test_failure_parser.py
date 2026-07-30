@@ -1,6 +1,6 @@
 """Tests for TestFailureParser."""
 
-from squeaky_clean.application.use_cases.test_failure_parser import TestFailureParser
+from squeaky_clean.application.generation.testgen.test_failure_parser import TestFailureParser
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

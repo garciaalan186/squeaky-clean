@@ -1,6 +1,6 @@
 """Tests for validate_dependency_injection orchestrator detection."""
 
-from squeaky_clean.application.use_cases.validate_dependency_injection import (
+from squeaky_clean.application.generation.validation.validate_dependency_injection import (
     validate_dependency_injection,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

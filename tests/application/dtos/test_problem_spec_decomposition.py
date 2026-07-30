@@ -1,13 +1,13 @@
 """ProblemSpec decomposition: behavior oracle vs Squib-derivable structure."""
 
-from squeaky_clean.application.dtos.behavior_spec import BehaviorSpec
-from squeaky_clean.application.dtos.structural_hints import StructuralHints
-from squeaky_clean.application.use_cases.derive_structural_hints import (
+from squeaky_clean.application.evaluation.eval.metrics.derive_structural_hints import (
     derive_structural_hints_from_squib,
 )
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
+from squeaky_clean.application.shared.problem.behavior_spec import BehaviorSpec
+from squeaky_clean.application.shared.problem.structural_hints import StructuralHints
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
 
 _SQUIB = """MODULE Cart

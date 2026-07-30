@@ -1,12 +1,12 @@
 """E1 integration: fixer timeout preserves original code, records timeout."""
 
-from squeaky_clean.application.dtos.fix_candidate import FixCandidate
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.use_cases.fix_one_class import FixOneClass
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.repair.fix_candidate import FixCandidate
+from squeaky_clean.application.generation.repair.fix_one_class import FixOneClass
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest

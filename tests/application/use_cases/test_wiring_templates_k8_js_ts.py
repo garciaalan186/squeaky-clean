@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.wiring_generator import WiringGenerator
-from squeaky_clean.application.use_cases.wiring_templates import (
+from squeaky_clean.application.generation.integration.wiring_generator import WiringGenerator
+from squeaky_clean.application.generation.integration.wiring_templates import (
     render_express_main,
     render_fastify_main,
 )

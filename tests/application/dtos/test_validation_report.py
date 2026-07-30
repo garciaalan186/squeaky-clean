@@ -4,7 +4,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.validation_report import ValidationReport
+from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.domain.value_objects.violation import Violation
 
 

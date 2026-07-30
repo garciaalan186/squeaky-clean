@@ -4,7 +4,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.security_concern import SecurityConcern
+from squeaky_clean.application.generation.security.security_concern import SecurityConcern
 
 
 def test_security_concern_is_frozen() -> None:

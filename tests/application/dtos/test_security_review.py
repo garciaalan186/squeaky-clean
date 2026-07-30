@@ -4,8 +4,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.security_concern import SecurityConcern
-from squeaky_clean.application.dtos.security_review import SecurityReview
+from squeaky_clean.application.generation.security.security_concern import SecurityConcern
+from squeaky_clean.application.generation.security.security_review import SecurityReview
 
 
 def test_security_review_is_frozen() -> None:

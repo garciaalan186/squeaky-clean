@@ -2,11 +2,11 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.recovery.decomposition_option import (
-    DecompositionOption,
-)
-from squeaky_clean.application.use_cases.recovery.architectural_tradeoff_scorer import (
+from squeaky_clean.application.generation.recovery.refactor.architectural_tradeoff_scorer import (
     ArchitecturalTradeoffScorer,
+)
+from squeaky_clean.application.generation.recovery.refactor.decomposition_option import (
+    DecompositionOption,
 )
 
 

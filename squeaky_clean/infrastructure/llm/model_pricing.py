@@ -14,7 +14,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.infrastructure.llm.model_catalog import ModelId
 
 _LOG = logging.getLogger(__name__)

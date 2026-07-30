@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.dtos.integration_request import IntegrationRequest
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.test_architecture import TestArchitecture
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.integration.integration_request import IntegrationRequest
+from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType

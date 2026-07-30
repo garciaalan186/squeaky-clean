@@ -1,6 +1,6 @@
 """Tests for LLMUsageRecorder."""
 
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 
 

@@ -17,10 +17,10 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from squeaky_clean.application.use_cases.html_dashboard_writer import (  # noqa: E402
+from squeaky_clean.application.evaluation.eval.report.html_dashboard_writer import (  # noqa: E402
     HtmlDashboardWriter,
 )
-from squeaky_clean.application.use_cases.metrics_history_aggregator import (  # noqa: E402
+from squeaky_clean.application.evaluation.eval.metrics.metrics_history_aggregator import (  # noqa: E402
     MetricsHistoryAggregator,
 )
 

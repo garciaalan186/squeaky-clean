@@ -2,19 +2,19 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.recovery.class_catalog_extractor_factory import (
+from squeaky_clean.application.generation.recovery.extraction.class_catalog_extractor_factory import (
     ClassCatalogExtractorFactory,
 )
-from squeaky_clean.application.use_cases.recovery.java_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.java_catalog_extractor import (
     JavaClassCatalogExtractor,
 )
-from squeaky_clean.application.use_cases.recovery.javascript_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.javascript_catalog_extractor import (
     JavaScriptClassCatalogExtractor,
 )
-from squeaky_clean.application.use_cases.recovery.python_class_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.python_class_catalog_extractor import (
     PythonClassCatalogExtractor,
 )
-from squeaky_clean.application.use_cases.recovery.typescript_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.typescript_catalog_extractor import (
     TypeScriptClassCatalogExtractor,
 )
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage

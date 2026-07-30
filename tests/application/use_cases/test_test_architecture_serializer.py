@@ -1,10 +1,10 @@
 """Tests for TestArchitectureSerializer round-trip (G3)."""
 
-from squeaky_clean.application.dtos.test_architecture import TestArchitecture
-from squeaky_clean.application.dtos.test_skeleton import TestSkeleton
-from squeaky_clean.application.use_cases.test_architecture_serializer import (
+from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
+from squeaky_clean.application.generation.testgen.test_architecture_serializer import (
     TestArchitectureSerializer,
 )
+from squeaky_clean.application.generation.testgen.test_skeleton import TestSkeleton
 
 
 def _arch() -> TestArchitecture:

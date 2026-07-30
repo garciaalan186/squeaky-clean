@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.recovery.ingest_scope import IngestScope
+from squeaky_clean.application.generation.recovery.extraction.ingest_scope import IngestScope
 
 
 def _includes(rel: str) -> bool:
