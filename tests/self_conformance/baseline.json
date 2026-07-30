@@ -129,7 +129,6 @@
   "MissingMirrorTest|squeaky_clean/application/use_cases/run_eval_token_mapper.py|no mirror test file",
   "MissingMirrorTest|squeaky_clean/application/use_cases/run_eval_velocity.py|no mirror test file",
   "MissingMirrorTest|squeaky_clean/application/use_cases/security_review_formatter.py|no mirror test file",
-  "MissingMirrorTest|squeaky_clean/application/use_cases/security_test_assembler.py|no mirror test file",
   "MissingMirrorTest|squeaky_clean/application/use_cases/series_statistics.py|no mirror test file",
   "MissingMirrorTest|squeaky_clean/application/use_cases/sweep_failure_bundle.py|no mirror test file",
   "MissingMirrorTest|squeaky_clean/application/use_cases/tech_spec_block_formatter.py|no mirror test file",

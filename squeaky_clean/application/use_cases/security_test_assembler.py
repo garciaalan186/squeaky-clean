@@ -46,8 +46,14 @@ class SecurityTestAssembler:
         for concern in concerns:
             if concern.target_class not in class_map:
                 continue
-            code = self._extract_code(responses[idx].content) + "\n"
+            extracted = self._extract_code(responses[idx].content)
             idx += 1
+            if not extracted.strip():
+                # Strict fence (R3.1): a prose-only response is NOT test code —
+                # skip it rather than writing prose into a .py file that would
+                # break collection of the whole generated suite.
+                continue
+            code = extracted + "\n"
             class_snake = self._snake.convert(concern.target_class)
             base = self._slug(concern.category)
             key = (class_snake, base)
@@ -77,9 +83,10 @@ class SecurityTestAssembler:
         return f"tests/{layer}/{mod_slug}"
 
     def _extract_code(self, raw: str) -> str:
+        """Fenced code only; empty string when the response is prose (R3.1)."""
         match = _CODE_FENCE.search(raw)
         if match is None:
-            return raw.strip()
+            return ""
         return match.group("code").strip()
 
     def _slug(self, value: str) -> str:
