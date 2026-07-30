@@ -22,6 +22,16 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      # Pin Node so the JS test-runner tests are deterministic. The runner
+      # invokes `node --test`; leaving the version to the runner image's
+      # ambient Node caused failures when it shipped Node 22+ (changed
+      # directory-arg and default-reporter behaviour). Node 20 LTS matches
+      # local dev; the runner code is verified on Node 20/22/24.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install (dev extras)
         run: pip install -e '.[dev]'
 
