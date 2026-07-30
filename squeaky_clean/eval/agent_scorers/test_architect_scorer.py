@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.dtos.test_architecture_parse_error import (
+from squeaky_clean.application.generation.testgen.parse_test_architecture import (
+    ParseTestArchitecture,
+)
+from squeaky_clean.application.generation.testgen.test_architecture_parse_error import (
     TestArchitectureParseError,
 )
-from squeaky_clean.application.use_cases.parse_test_architecture import ParseTestArchitecture
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.eval.agent_scorers.agent_score import AgentScore
 

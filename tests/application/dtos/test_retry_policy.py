@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.retry_policy import RetryPolicy
+from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 
 
 def test_defaults_are_valid() -> None:

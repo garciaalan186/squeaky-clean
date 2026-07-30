@@ -1,6 +1,6 @@
 """Tests for PascalToCamelConverter."""
 
-from squeaky_clean.application.use_cases.pascal_to_camel_converter import (
+from squeaky_clean.application.shared.language.pascal_to_camel_converter import (
     PascalToCamelConverter,
 )
 

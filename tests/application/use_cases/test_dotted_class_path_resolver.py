@@ -1,9 +1,9 @@
 """Tests for DottedClassPathResolver — per-language dotted path mapping."""
 
-from squeaky_clean.application.use_cases.dotted_class_path_resolver import (
+from squeaky_clean.application.generation.emission.dotted_class_path_resolver import (
     DottedClassPathResolver,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

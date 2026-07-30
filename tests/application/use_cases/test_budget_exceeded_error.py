@@ -1,9 +1,9 @@
 """Tests for BudgetExceededError (R2.4 extraction)."""
 
-from squeaky_clean.application.use_cases.budget_exceeded_error import (
+from squeaky_clean.application.shared.gateways.budget_exceeded_error import (
     BudgetExceededError,
 )
-from squeaky_clean.application.use_cases.cost_gate import (
+from squeaky_clean.application.shared.gateways.cost_gate import (
     BudgetExceededError as ReExported,
 )
 

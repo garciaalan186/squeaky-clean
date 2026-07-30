@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.emit_java_entity_serialization import (
+from squeaky_clean.application.shared.language.emit_java_entity_serialization import (
     EmitJavaEntitySerialization,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

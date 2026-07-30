@@ -17,7 +17,7 @@ from eval.per_agent.blob_storage_adapter_icp_metric import (  # noqa: E402
     BlobAdapterSpec,
     score_blob_storage_output,
 )
-from squeaky_clean.application.use_cases.tech_spec_block_formatter import (  # noqa: E402
+from squeaky_clean.application.generation.techspec.tech_spec_block_formatter import (  # noqa: E402
     TechSpecBlockFormatter,
 )
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest  # noqa: E402

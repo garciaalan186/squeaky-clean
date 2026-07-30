@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.dtos.custom_pattern_manifest import (
+from squeaky_clean.application.shared.problem.custom_pattern_manifest import (
     CustomPatternManifestEntry,
 )
-from squeaky_clean.application.use_cases.load_custom_patterns import (
+from squeaky_clean.application.shared.problem.load_custom_patterns import (
     CustomPatternManifestError,
     LoadCustomPatterns,
 )

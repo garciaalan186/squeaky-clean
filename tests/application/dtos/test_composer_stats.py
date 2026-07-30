@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.dtos.composer_stats import ComposerStats
+from squeaky_clean.application.generation.techspec.composer_stats import ComposerStats
 
 
 def test_default_zero() -> None:

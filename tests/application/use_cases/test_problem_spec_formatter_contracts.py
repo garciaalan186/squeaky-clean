@@ -2,14 +2,14 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.contract import Contract
-from squeaky_clean.application.dtos.contract_field import ContractField
-from squeaky_clean.application.dtos.contract_ref import ContractRef
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.contract_registry import ContractRegistry
-from squeaky_clean.application.use_cases.problem_spec_formatter import (
+from squeaky_clean.application.generation.architecture.problem_spec_formatter import (
     ProblemSpecFormatter,
 )
+from squeaky_clean.application.generation.validation.contract import Contract
+from squeaky_clean.application.generation.validation.contract_field import ContractField
+from squeaky_clean.application.generation.validation.contract_ref import ContractRef
+from squeaky_clean.application.generation.validation.contract_registry import ContractRegistry
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

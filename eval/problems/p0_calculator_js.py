@@ -1,6 +1,6 @@
 """P0JS Calculator: JavaScript proof-of-concept benchmark."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P0JS: ProblemSpec = ProblemSpec(

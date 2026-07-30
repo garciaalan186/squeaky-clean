@@ -7,10 +7,10 @@ import statistics
 from dataclasses import dataclass
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_result_dto import EvalResult
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
-from squeaky_clean.application.use_cases.run_eval import RunEval
+from squeaky_clean.application.evaluation.eval.run.eval_result_dto import EvalResult
+from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder

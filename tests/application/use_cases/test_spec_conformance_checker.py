@@ -1,8 +1,8 @@
 """Tests for SpecConformanceChecker method-drift detection."""
 
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.use_cases.spec_conformance_checker import (
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.emission.spec_conformance_checker import (
     SpecConformanceChecker,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

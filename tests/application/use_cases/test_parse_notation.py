@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.parse_notation import ParseNotation
+from squeaky_clean.application.generation.notation.parse_notation import ParseNotation
 from squeaky_clean.domain.entities.notation_parse_error import NotationParseError
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 

@@ -2,14 +2,14 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
-from squeaky_clean.application.use_cases.recovery.refactor_emitter import RefactorEmitter
-from squeaky_clean.application.use_cases.recovery.refactor_plan_deserializer import (
+from squeaky_clean.application.generation.recovery.refactor.refactor_emitter import RefactorEmitter
+from squeaky_clean.application.generation.recovery.refactor.refactor_plan_deserializer import (
     RefactorPlanDeserializer,
 )
-from squeaky_clean.application.use_cases.recovery.squib_emitter import SquibEmitter
+from squeaky_clean.application.generation.recovery.squib.squib_emitter import SquibEmitter
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

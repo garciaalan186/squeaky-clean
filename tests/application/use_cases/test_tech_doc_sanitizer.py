@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.tech_doc_sanitizer import (
+from squeaky_clean.application.generation.techspec.tech_doc_sanitizer import (
     TechDocPoisonedError,
     sanitize,
 )

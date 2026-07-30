@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.dtos.infrastructure_choice import InfrastructureChoice
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.http_conventions_error import (
+from squeaky_clean.application.evaluation.eval.run.run_eval_pipeline import RunEvalPipeline
+from squeaky_clean.application.generation.techspec.infrastructure_choice import InfrastructureChoice
+from squeaky_clean.application.generation.validation.http_conventions_error import (
     HttpConventionsError,
 )
-from squeaky_clean.application.use_cases.run_eval_pipeline import RunEvalPipeline
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

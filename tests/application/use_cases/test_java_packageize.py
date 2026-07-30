@@ -2,7 +2,9 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.java_packageize import java_packageize
+from squeaky_clean.application.generation.integration.bootstrap.java_packageize import (
+    java_packageize,
+)
 
 
 def test_main_java_file_rebased_under_com_example(tmp_path: Path) -> None:

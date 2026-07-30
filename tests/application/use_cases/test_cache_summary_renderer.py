@@ -1,6 +1,8 @@
 """Unit tests for CacheSummaryRenderer."""
 
-from squeaky_clean.application.use_cases.cache_summary_renderer import CacheSummaryRenderer
+from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer import (
+    CacheSummaryRenderer,
+)
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 

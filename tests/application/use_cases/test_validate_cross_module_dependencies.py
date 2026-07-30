@@ -1,6 +1,6 @@
 """Unit tests for validate_cross_module_dependencies."""
 
-from squeaky_clean.application.use_cases.validate_cross_module_dependencies import (
+from squeaky_clean.application.generation.validation.validate_cross_module_dependencies import (
     validate_cross_module_dependencies,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

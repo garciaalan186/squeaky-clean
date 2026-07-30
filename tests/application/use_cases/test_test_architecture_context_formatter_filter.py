@@ -1,13 +1,15 @@
 """Filter integration test for TestArchitectureContextFormatter."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
+from squeaky_clean.application.generation.testgen.test_architecture_context import (
+    TestArchitectureContext,
 )
-from squeaky_clean.application.use_cases.test_architecture_context_formatter import (
+from squeaky_clean.application.generation.testgen.test_architecture_context_formatter import (
     TestArchitectureContextFormatter,
 )
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType

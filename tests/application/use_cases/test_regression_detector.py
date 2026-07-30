@@ -1,7 +1,7 @@
 """Unit tests for RegressionDetector."""
 
-from squeaky_clean.application.dtos.replicate_summary import ReplicateSummary
-from squeaky_clean.application.use_cases.regression_detector import RegressionDetector
+from squeaky_clean.application.evaluation.eval.report.regression_detector import RegressionDetector
+from squeaky_clean.application.evaluation.eval.sweep.replicate_summary import ReplicateSummary
 
 
 def _summary(

@@ -1,9 +1,9 @@
 """Tests for the deterministic invariant-test emitter."""
 
-from squeaky_clean.application.use_cases.emit_invariant_test_renderer import (
+from squeaky_clean.application.generation.testgen.emit_invariant_test_renderer import (
     InvariantTestRenderer,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

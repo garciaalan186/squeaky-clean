@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.use_cases.run_eval import RunEval
+from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
 from tests.application.use_cases.run_eval_stub_deps import build_stub_deps
 
 

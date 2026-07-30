@@ -1,10 +1,10 @@
 """Unit tests for validate_http_conventions (constraint #22)."""
 
-from squeaky_clean.application.dtos.infrastructure_choice import InfrastructureChoice
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.validate_http_conventions import (
+from squeaky_clean.application.generation.techspec.infrastructure_choice import InfrastructureChoice
+from squeaky_clean.application.generation.validation.validate_http_conventions import (
     validate_http_conventions,
 )
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

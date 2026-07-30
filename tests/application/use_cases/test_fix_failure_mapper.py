@@ -1,7 +1,7 @@
 """Tests for FixFailureMapper."""
 
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.use_cases.fix_failure_mapper import FixFailureMapper
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.repair.fix_failure_mapper import FixFailureMapper
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

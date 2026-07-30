@@ -5,10 +5,10 @@ from dataclasses import replace
 from pathlib import Path
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.cost_budget import CostBudget
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError, CostGate
-from squeaky_clean.application.use_cases.run_eval import RunEval
+from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
+from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
+from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError, CostGate
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from tests.application.use_cases.run_eval_stub_deps import build_stub_deps
 

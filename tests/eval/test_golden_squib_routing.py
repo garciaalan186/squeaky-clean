@@ -15,12 +15,12 @@ from pathlib import Path
 import pytest
 
 import squeaky_clean
-from squeaky_clean.application.use_cases.assign_patterns import AssignPatterns
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 

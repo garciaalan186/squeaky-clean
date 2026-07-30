@@ -2,12 +2,12 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
-from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
-from squeaky_clean.application.use_cases.recovery.llm_pattern_tiebreaker import (
+from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
+from squeaky_clean.application.generation.recovery.scoring.llm_pattern_tiebreaker import (
     LlmPatternTiebreaker,
 )
+from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

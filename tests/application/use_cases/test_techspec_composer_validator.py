@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.use_cases.techspec_composer_validator import (
+from squeaky_clean.application.generation.techspec.techspec_composer_validator import (
     validate_composition,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

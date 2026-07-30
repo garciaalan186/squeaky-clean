@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.cost_guardrail import (
+from squeaky_clean.application.shared.gateways.cost_guardrail import (
     CostExceededError,
     CostGuardrail,
 )

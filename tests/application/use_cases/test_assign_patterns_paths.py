@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.assign_patterns_paths import AssignPatternsPaths
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.generation.emission.assign_patterns_paths import AssignPatternsPaths
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

@@ -1,12 +1,15 @@
 """Tests for ValidateArchitectureAgainstSpec."""
 
-from squeaky_clean.application.dtos.data_classification import DataClassification
-from squeaky_clean.application.dtos.entity_lifecycle import EntityLifecycle, StateTransition
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.query_semantic import QuerySemantic
-from squeaky_clean.application.use_cases.validate_architecture_against_spec import (
+from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
+from squeaky_clean.application.evaluation.mcda.entity_lifecycle import (
+    EntityLifecycle,
+    StateTransition,
+)
+from squeaky_clean.application.evaluation.mcda.query_semantic import QuerySemantic
+from squeaky_clean.application.generation.validation.validate_architecture_against_spec import (
     ValidateArchitectureAgainstSpec,
 )
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

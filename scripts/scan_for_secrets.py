@@ -22,7 +22,7 @@ from pathlib import Path
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))  # so ``src.*`` imports resolve
 
-from squeaky_clean.application.use_cases.secret_path_scanner import (  # noqa: E402
+from squeaky_clean.application.generation.security.secret_path_scanner import (  # noqa: E402
     SecretPathScanner,
 )
 

@@ -1,6 +1,6 @@
 """Tests for ParseSecurityReview."""
 
-from squeaky_clean.application.use_cases.parse_security_review import ParseSecurityReview
+from squeaky_clean.application.generation.security.parse_security_review import ParseSecurityReview
 
 _SAMPLE = """SECURITY_REVIEW
 ---

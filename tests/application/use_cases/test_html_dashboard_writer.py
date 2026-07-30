@@ -3,8 +3,10 @@
 from html.parser import HTMLParser
 from pathlib import Path
 
-from squeaky_clean.application.dtos.run_metrics_snapshot import RunMetricsSnapshot
-from squeaky_clean.application.use_cases.html_dashboard_writer import HtmlDashboardWriter
+from squeaky_clean.application.evaluation.eval.report.html_dashboard_writer import (
+    HtmlDashboardWriter,
+)
+from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
 
 
 class _CountingParser(HTMLParser):

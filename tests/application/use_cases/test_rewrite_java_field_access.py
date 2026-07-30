@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.rewrite_java_field_access import (
+from squeaky_clean.application.shared.language.rewrite_java_field_access import (
     RewriteJavaFieldAccess,
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

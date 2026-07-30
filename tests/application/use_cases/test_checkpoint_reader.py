@@ -3,9 +3,9 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
-from squeaky_clean.application.use_cases.checkpoint_reader import CheckpointReader
-from squeaky_clean.application.use_cases.checkpoint_writer import CheckpointWriter
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_reader import CheckpointReader
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_writer import CheckpointWriter
+from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
 
 
 def test_read_returns_none_when_missing(tmp_path: Path) -> None:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.mcda_weights import MCDAWeights
+from squeaky_clean.application.evaluation.mcda.mcda_weights import MCDAWeights
 
 
 def test_default_weights_sum_to_one() -> None:

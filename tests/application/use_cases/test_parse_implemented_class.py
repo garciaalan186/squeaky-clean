@@ -2,10 +2,12 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.implemented_class_parse_error import (
+from squeaky_clean.application.generation.emission.parsers.implemented_class_parse_error import (
     ImplementedClassParseError,
 )
-from squeaky_clean.application.use_cases.parse_implemented_class import ParseImplementedClass
+from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
+    ParseImplementedClass,
+)
 
 _CANNED = '''Here is the implementation:
 ```python
@@ -36,7 +38,7 @@ def test_parse_raises_when_no_python_fence() -> None:
 
 
 def test_parse_extracts_javascript_body() -> None:
-    from squeaky_clean.application.use_cases.parsers.javascript_implemented_class_parser import (
+    from squeaky_clean.application.generation.emission.parsers.javascript_implemented_class_parser import (
         JavaScriptImplementedClassParser,
     )
     raw = (
@@ -62,7 +64,7 @@ def test_parse_raises_when_unclosed_fence() -> None:
 
 
 def test_parse_extracts_java_interface() -> None:
-    from squeaky_clean.application.use_cases.parsers.java_implemented_class_parser import (
+    from squeaky_clean.application.generation.emission.parsers.java_implemented_class_parser import (
         JavaImplementedClassParser,
     )
     raw = (

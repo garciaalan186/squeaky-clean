@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.prompt_cache_config import PromptCacheConfig
+from squeaky_clean.application.shared.gateways.prompt_cache_config import PromptCacheConfig
 
 
 def test_defaults_cache_repeating_tiers_but_not_architect() -> None:

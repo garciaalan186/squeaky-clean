@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.data_classification import DataClassification
+from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
 
 
 def test_data_classification_round_trip() -> None:

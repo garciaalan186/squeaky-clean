@@ -1,6 +1,6 @@
 """P0 Calculator: the smallest benchmark problem in the eval suite."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P0: ProblemSpec = ProblemSpec(

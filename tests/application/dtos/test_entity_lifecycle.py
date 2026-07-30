@@ -2,7 +2,10 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.entity_lifecycle import EntityLifecycle, StateTransition
+from squeaky_clean.application.evaluation.mcda.entity_lifecycle import (
+    EntityLifecycle,
+    StateTransition,
+)
 
 
 def test_entity_lifecycle_round_trip() -> None:

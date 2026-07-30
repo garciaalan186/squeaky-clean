@@ -2,16 +2,16 @@
 
 import json
 
-from squeaky_clean.application.dtos.recovery.architectural_violation import (
-    ArchitecturalViolation,
-)
-from squeaky_clean.application.dtos.recovery.violation_report import ViolationReport
-from squeaky_clean.application.use_cases.recovery.interactive_triage import (
+from squeaky_clean.application.generation.recovery.decomposition.interactive_triage import (
     InteractiveTriage,
 )
-from squeaky_clean.application.use_cases.recovery.refactor_plan_serializer import (
+from squeaky_clean.application.generation.recovery.refactor.refactor_plan_serializer import (
     RefactorPlanSerializer,
 )
+from squeaky_clean.application.generation.recovery.scoring.architectural_violation import (
+    ArchitecturalViolation,
+)
+from squeaky_clean.application.generation.recovery.scoring.violation_report import ViolationReport
 
 _COUPLING = ArchitecturalViolation("framework-coupling", "app.Page", "d", "s")
 _GRANULARITY = ArchitecturalViolation("granularity", "God", "d", "s")

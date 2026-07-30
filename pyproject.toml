@@ -122,10 +122,10 @@ warn_unused_ignores = false
 # JSON boundary. Keeps the strict policy elsewhere.
 [[tool.mypy.overrides]]
 module = [
-    "squeaky_clean.application.use_cases.architecture_spec_serializer",
-    "squeaky_clean.application.use_cases.module_implementation_serializer",
-    "squeaky_clean.application.use_cases.test_architecture_serializer",
-    "squeaky_clean.application.use_cases.checkpoint_reader",
+    "squeaky_clean.application.generation.notation.architecture_spec_serializer",
+    "squeaky_clean.application.generation.notation.module_implementation_serializer",
+    "squeaky_clean.application.generation.testgen.test_architecture_serializer",
+    "squeaky_clean.application.evaluation.eval.resume.checkpoint_reader",
 ]
 disallow_any_explicit = false
 
@@ -138,10 +138,10 @@ select = ["E", "F", "I", "W", "B", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
 # Embedded-code template lines that can't reasonably wrap.
-"squeaky_clean/application/use_cases/language_toolkit_factory.py" = ["E501"]
-"squeaky_clean/application/use_cases/dashboard_generator.py" = ["E501"]
-"squeaky_clean/application/use_cases/run_eval_pipeline.py" = ["E501"]
-"squeaky_clean/application/use_cases/techspec_composer.py" = ["E501"]
+"squeaky_clean/application/shared/language/language_toolkit_factory.py" = ["E501"]
+"squeaky_clean/application/evaluation/eval/report/dashboard_generator.py" = ["E501"]
+"squeaky_clean/application/evaluation/eval/run/run_eval_pipeline.py" = ["E501"]
+"squeaky_clean/application/generation/techspec/techspec_composer.py" = ["E501"]
 "squeaky_clean/infrastructure/testing/maven_test_runner.py" = ["E501"]
 "squeaky_clean/interface/cli/language_adapter_registry.py" = ["E501"]
 # Test code: relax style rules that mask test intent.

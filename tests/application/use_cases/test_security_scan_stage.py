@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.secret_path_scanner import SecretPathScanner
-from squeaky_clean.application.use_cases.security_scan_stage import SecurityScanStage
+from squeaky_clean.application.generation.security.secret_path_scanner import SecretPathScanner
+from squeaky_clean.application.generation.security.security_scan_stage import SecurityScanStage
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.value_objects.sast_report import SastFinding, SastReport

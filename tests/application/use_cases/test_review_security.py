@@ -1,10 +1,12 @@
 """Tests for ReviewSecurity use case."""
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.security_review_context import SecurityReviewContext
-from squeaky_clean.application.use_cases.llm_call_deps import LLMCallDeps
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
-from squeaky_clean.application.use_cases.review_security import ReviewSecurity
+from squeaky_clean.application.generation.security.review_security import ReviewSecurity
+from squeaky_clean.application.generation.security.security_review_context import (
+    SecurityReviewContext,
+)
+from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway

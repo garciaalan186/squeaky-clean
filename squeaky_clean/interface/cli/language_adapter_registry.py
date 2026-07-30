@@ -5,37 +5,37 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from squeaky_clean.application.use_cases.go_integration_bootstrap import (
-    GoIntegrationBootstrap,
-)
-from squeaky_clean.application.use_cases.java_integration_bootstrap import (
-    JavaIntegrationBootstrap,
-)
-from squeaky_clean.application.use_cases.javascript_integration_bootstrap import (
-    JavaScriptIntegrationBootstrap,
-)
-from squeaky_clean.application.use_cases.parsers.go_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.go_implemented_class_parser import (
     GoImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.java_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.java_implemented_class_parser import (
     JavaImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.javascript_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.javascript_implemented_class_parser import (
     JavaScriptImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.python_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.python_implemented_class_parser import (
     PythonImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.parsers.rust_implemented_class_parser import (
+from squeaky_clean.application.generation.emission.parsers.rust_implemented_class_parser import (
     RustImplementedClassParser,
 )
-from squeaky_clean.application.use_cases.python_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.go_integration_bootstrap import (
+    GoIntegrationBootstrap,
+)
+from squeaky_clean.application.generation.integration.bootstrap.java_integration_bootstrap import (
+    JavaIntegrationBootstrap,
+)
+from squeaky_clean.application.generation.integration.bootstrap.javascript_integration_bootstrap import (
+    JavaScriptIntegrationBootstrap,
+)
+from squeaky_clean.application.generation.integration.bootstrap.python_integration_bootstrap import (
     PythonIntegrationBootstrap,
 )
-from squeaky_clean.application.use_cases.rust_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.rust_integration_bootstrap import (
     RustIntegrationBootstrap,
 )
-from squeaky_clean.application.use_cases.typescript_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.typescript_integration_bootstrap import (
     TypeScriptIntegrationBootstrap,
 )
 from squeaky_clean.domain.interfaces.implemented_class_parser import (

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.spec_version_stamp import SpecVersionStamp
+from squeaky_clean.application.generation.emission.spec_version_stamp import SpecVersionStamp
 
 
 def test_reads_explicit_version(tmp_path: Path) -> None:

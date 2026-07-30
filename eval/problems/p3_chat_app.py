@@ -1,6 +1,6 @@
 """P3 Chat Application: highest-tier benchmark — multi-entity, authorization, events."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P3: ProblemSpec = ProblemSpec(

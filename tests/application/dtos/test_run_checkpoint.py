@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
+from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
 
 
 def test_defaults_are_started_or_empty() -> None:

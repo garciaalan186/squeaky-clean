@@ -2,11 +2,11 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.recovery.class_record import ClassRecord
-from squeaky_clean.application.use_cases.recovery.javascript_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
+from squeaky_clean.application.generation.recovery.extraction.javascript_catalog_extractor import (
     JavaScriptClassCatalogExtractor,
 )
-from squeaky_clean.application.use_cases.recovery.typescript_catalog_extractor import (
+from squeaky_clean.application.generation.recovery.extraction.typescript_catalog_extractor import (
     TypeScriptClassCatalogExtractor,
 )
 

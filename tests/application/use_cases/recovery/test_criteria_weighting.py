@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.recovery.criteria_weighting import (
+from squeaky_clean.application.generation.recovery.refactor.criteria_weighting import (
     CriteriaWeighting,
 )
 

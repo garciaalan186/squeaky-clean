@@ -4,8 +4,10 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from squeaky_clean.application.dtos.class_assignment import ClassAssignment
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
+from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType

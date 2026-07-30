@@ -1,6 +1,6 @@
 """P4 Twitter Clone: multi-module web app with auth, posts, timeline."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 P4: ProblemSpec = ProblemSpec(

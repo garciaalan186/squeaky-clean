@@ -1,10 +1,10 @@
 """Tests for the Refactor phase: FrameworkCouplingTransform + RefactorPhase."""
 
-from squeaky_clean.application.dtos.recovery.refactor_plan import RefactorPlan
-from squeaky_clean.application.use_cases.recovery.framework_coupling_transform import (
+from squeaky_clean.application.generation.recovery.decomposition.framework_coupling_transform import (
     FrameworkCouplingTransform,
 )
-from squeaky_clean.application.use_cases.recovery.refactor_phase import RefactorPhase
+from squeaky_clean.application.generation.recovery.refactor.refactor_phase import RefactorPhase
+from squeaky_clean.application.generation.recovery.refactor.refactor_plan import RefactorPlan
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

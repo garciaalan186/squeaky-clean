@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.parse_notation import ParseNotation
+from squeaky_clean.application.generation.notation.parse_notation import ParseNotation
 from squeaky_clean.eval.agent_scorers.test_architect_scorer import TestArchitectScorer
 
 _FIX_TA = Path(__file__).parent / "fixtures" / "test_architect"

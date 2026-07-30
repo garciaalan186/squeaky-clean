@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.tech_spec_html_extractor import (
+from squeaky_clean.application.generation.techspec.tech_spec_html_extractor import (
     TechDocFormatUnknownError,
     TechSpecHTMLExtractor,
 )

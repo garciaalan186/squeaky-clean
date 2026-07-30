@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.use_cases.meta_eval_paths import MetaEvalPaths
+from squeaky_clean.application.evaluation.eval.run.meta_eval_paths import MetaEvalPaths
 
 
 def test_allocate_creates_monotonic_run_dir(tmp_path: Path) -> None:

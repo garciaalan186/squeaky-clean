@@ -2,15 +2,15 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.test_obligation import TestObligation
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.use_cases.repair_obligation_gaps import (
+from squeaky_clean.application.generation.repair.repair_obligation_gaps import (
     ObligationRepairRequest,
     RepairObligationGaps,
 )
-from squeaky_clean.application.use_cases.repair_test_file import RepairTestFile
+from squeaky_clean.application.generation.repair.repair_test_file import RepairTestFile
+from squeaky_clean.application.generation.testgen.test_obligation import TestObligation
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

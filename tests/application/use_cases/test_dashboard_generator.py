@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.dashboard_generator import DashboardGenerator
+from squeaky_clean.application.evaluation.eval.report.dashboard_generator import DashboardGenerator
 
 
 def _make_run(root: Path, name: str, summary: str) -> None:

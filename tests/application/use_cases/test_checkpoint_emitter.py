@@ -3,9 +3,9 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.dtos.test_architecture import TestArchitecture
-from squeaky_clean.application.use_cases.checkpoint_emitter import CheckpointEmitter
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_emitter import CheckpointEmitter
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
+from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
 from tests.application.use_cases.run_eval_stub_deps import _impl
 
 

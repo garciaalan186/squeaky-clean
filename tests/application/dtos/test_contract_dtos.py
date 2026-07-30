@@ -2,9 +2,9 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.contract import Contract
-from squeaky_clean.application.dtos.contract_field import ContractField
-from squeaky_clean.application.dtos.contract_ref import ContractRef
+from squeaky_clean.application.generation.validation.contract import Contract
+from squeaky_clean.application.generation.validation.contract_field import ContractField
+from squeaky_clean.application.generation.validation.contract_ref import ContractRef
 
 
 def test_contract_field_rejects_empty_name() -> None:

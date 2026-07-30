@@ -4,11 +4,11 @@ import json
 from pathlib import Path
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
-from squeaky_clean.application.use_cases.checkpoint_checksum import CheckpointChecksum
-from squeaky_clean.application.use_cases.checkpoint_writer import CheckpointWriter
-from squeaky_clean.application.use_cases.resume_run import ResumeRun
-from squeaky_clean.application.use_cases.run_eval import RunEval
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_checksum import CheckpointChecksum
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_writer import CheckpointWriter
+from squeaky_clean.application.evaluation.eval.resume.resume_run import ResumeRun
+from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
+from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
 from tests.application.use_cases.run_eval_stub_deps import build_stub_deps
 
 

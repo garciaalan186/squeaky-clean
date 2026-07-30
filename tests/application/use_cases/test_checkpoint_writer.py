@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.run_checkpoint import RunCheckpoint
-from squeaky_clean.application.use_cases.checkpoint_writer import CheckpointWriter
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_writer import CheckpointWriter
+from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
 
 
 def test_write_emits_atomic_json(tmp_path: Path) -> None:

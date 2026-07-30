@@ -1,10 +1,10 @@
 """Tests for ProjectTestObligations — deterministic spec -> obligations."""
 
-from squeaky_clean.application.dtos.expected_outcome import ExpectedOutcome
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.project_test_obligations import (
+from squeaky_clean.application.evaluation.mcda.expected_outcome import ExpectedOutcome
+from squeaky_clean.application.generation.testgen.project_test_obligations import (
     ProjectTestObligations,
 )
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

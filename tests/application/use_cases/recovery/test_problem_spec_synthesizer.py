@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.recovery.problem_spec_synthesizer import (
+from squeaky_clean.application.generation.recovery.decomposition.problem_spec_synthesizer import (
     ProblemSpecSynthesizer,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

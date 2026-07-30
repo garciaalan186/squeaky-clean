@@ -2,8 +2,8 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.cost_budget import CostBudget
-from squeaky_clean.application.use_cases.cost_gate import BudgetExceededError, CostGate
+from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
+from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError, CostGate
 
 
 def test_unlimited_budget_never_raises() -> None:
@@ -65,12 +65,12 @@ def test_default_constructor_uses_default_budget() -> None:
 
 
 def _budget(cap: float):
-    from squeaky_clean.application.dtos.cost_budget import CostBudget
+    from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
     return CostBudget(max_cost_usd=cap)
 
 
 def test_seed_carries_prior_spend() -> None:
-    from squeaky_clean.application.use_cases.cost_gate import CostGate
+    from squeaky_clean.application.shared.gateways.cost_gate import CostGate
     gate = CostGate(_budget(5.0))
     gate.seed(4.0)
     assert gate.spent_usd() == 4.0
@@ -81,7 +81,7 @@ def test_reserve_blocks_parallel_overshoot() -> None:
     """Concurrent reservers can never collectively exceed the cap."""
     import threading
 
-    from squeaky_clean.application.use_cases.cost_gate import (
+    from squeaky_clean.application.shared.gateways.cost_gate import (
         BudgetExceededError,
         CostGate,
     )
@@ -106,7 +106,7 @@ def test_reserve_blocks_parallel_overshoot() -> None:
 
 
 def test_settle_reconciles_reservation() -> None:
-    from squeaky_clean.application.use_cases.cost_gate import CostGate
+    from squeaky_clean.application.shared.gateways.cost_gate import CostGate
     gate = CostGate(_budget(10.0))
     reserved = gate.reserve(5.0)
     gate.settle(reserved, 0.3)

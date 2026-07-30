@@ -1,6 +1,6 @@
 """Tests for filter_criteria_for_module."""
 
-from squeaky_clean.application.use_cases.per_module_criterion_filter import (
+from squeaky_clean.application.evaluation.mcda.per_module_criterion_filter import (
     filter_criteria_for_module,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec

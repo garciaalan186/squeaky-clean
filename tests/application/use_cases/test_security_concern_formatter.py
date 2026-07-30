@@ -1,9 +1,11 @@
 """Tests for SecurityConcernFormatter."""
 
-from squeaky_clean.application.dtos.security_concern import SecurityConcern
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
-from squeaky_clean.application.use_cases.security_concern_formatter import (
+from squeaky_clean.application.generation.security.security_concern import SecurityConcern
+from squeaky_clean.application.generation.security.security_concern_formatter import (
     SecurityConcernFormatter,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage

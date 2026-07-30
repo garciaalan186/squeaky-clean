@@ -2,15 +2,15 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.derived_infrastructure_choice import (
+from squeaky_clean.application.generation.techspec.derived_infrastructure_choice import (
     DerivedInfrastructureChoice,
 )
-from squeaky_clean.application.dtos.infrastructure_choice import InfrastructureChoice
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.select_infrastructure_choices import (
+from squeaky_clean.application.generation.techspec.infrastructure_choice import InfrastructureChoice
+from squeaky_clean.application.generation.techspec.select_infrastructure_choices import (
     MissingInfrastructureChoiceError,
     select_infrastructure_choices,
 )
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

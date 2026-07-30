@@ -5,7 +5,9 @@ from dataclasses import FrozenInstanceError
 import pytest
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
+from squeaky_clean.application.generation.testgen.test_architecture_context import (
+    TestArchitectureContext,
+)
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType

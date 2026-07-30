@@ -2,14 +2,14 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.dtos.class_assignment import ClassAssignment
-from squeaky_clean.application.dtos.implemented_class import ImplementedClass
-from squeaky_clean.application.use_cases.assign_patterns import AssignPatterns
-from squeaky_clean.application.use_cases.implement_class import ImplementClass
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
+from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
+from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
+from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
-from squeaky_clean.application.use_cases.orchestrate_module import OrchestrateModule
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway

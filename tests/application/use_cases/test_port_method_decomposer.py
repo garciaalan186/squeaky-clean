@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from squeaky_clean.application.use_cases.port_method_decomposer import (
+from squeaky_clean.application.generation.emission.port_method_decomposer import (
     decompose_class,
     decompose_module_for_tier_c,
 )

@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.cross_module_dependency_error import (
+from squeaky_clean.application.evaluation.eval.run.run_eval_pipeline import RunEvalPipeline
+from squeaky_clean.application.generation.architecture.cross_module_dependency_error import (
     CrossModuleDependencyError,
 )
-from squeaky_clean.application.use_cases.run_eval_pipeline import RunEvalPipeline
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

@@ -1,6 +1,6 @@
 """Tests for derive_required_categories (H3)."""
 
-from squeaky_clean.application.use_cases.derive_required_categories import (
+from squeaky_clean.application.generation.techspec.derive_required_categories import (
     derive_required_categories,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph

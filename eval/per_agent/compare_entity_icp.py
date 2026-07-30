@@ -24,7 +24,7 @@ from eval.per_agent.entity_icp_metric import (  # noqa: E402
     EntitySpec,
     score_entity_output,
 )
-from squeaky_clean.application.use_cases.load_agent_spec import LoadAgentSpec  # noqa: E402
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec  # noqa: E402
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest  # noqa: E402
 from squeaky_clean.infrastructure.dspy.entity_icp_dspy import (  # noqa: E402
     EntityICPModule,

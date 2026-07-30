@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.typescript_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.typescript_integration_bootstrap import (
     TypeScriptIntegrationBootstrap,
 )
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem

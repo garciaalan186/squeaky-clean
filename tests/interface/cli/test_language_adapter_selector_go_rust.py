@@ -1,13 +1,13 @@
 """Tests: LanguageAdapterSelector returns correct bundles for Go and Rust."""
 
-from squeaky_clean.application.use_cases.go_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.go_integration_bootstrap import (
     GoIntegrationBootstrap,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.use_cases.rust_integration_bootstrap import (
+from squeaky_clean.application.generation.integration.bootstrap.rust_integration_bootstrap import (
     RustIntegrationBootstrap,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.rules.go_granularity_rule import GoGranularityRule
 from squeaky_clean.domain.rules.rust_granularity_rule import RustGranularityRule

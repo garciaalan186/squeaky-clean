@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.use_cases.mcda_registry import MCDARegistry
+from squeaky_clean.application.evaluation.mcda.mcda_registry import MCDARegistry
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _SCORES_ROOT = _REPO_ROOT / "eval" / "mcda_scores"

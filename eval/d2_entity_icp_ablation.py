@@ -11,7 +11,7 @@ from __future__ import annotations
 import statistics
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.load_agent_spec import LoadAgentSpec
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.eval.agent_scorers.prompt_optimizer import (
     OptimizationFixture,
     PromptOptimizer,

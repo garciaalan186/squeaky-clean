@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.use_cases.atomic_write import atomic_write_text
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
 
 def test_writes_content_and_creates_parents(tmp_path: Path) -> None:

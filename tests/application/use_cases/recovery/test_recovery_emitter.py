@@ -2,10 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
-from squeaky_clean.application.use_cases.recovery.recovery_emitter import RecoveryEmitter
+from squeaky_clean.application.generation.recovery.refactor.recovery_emitter import RecoveryEmitter
 
 _FILES = {
     "shop/__init__.py": "",

@@ -2,7 +2,7 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.parse_architecture_notation import (
+from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
 from squeaky_clean.domain.entities.notation_parse_error import NotationParseError

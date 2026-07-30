@@ -1,15 +1,19 @@
 """Tests for GenerateSecurityTests use case."""
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.security_concern import SecurityConcern
-from squeaky_clean.application.dtos.security_review import SecurityReview
-from squeaky_clean.application.dtos.security_test_context import SecurityTestContext
-from squeaky_clean.application.use_cases.generate_security_tests import GenerateSecurityTests
-from squeaky_clean.application.use_cases.generate_test_architecture_deps import (
+from squeaky_clean.application.generation.security.generate_security_tests import (
+    GenerateSecurityTests,
+)
+from squeaky_clean.application.generation.security.security_concern import SecurityConcern
+from squeaky_clean.application.generation.security.security_review import SecurityReview
+from squeaky_clean.application.generation.security.security_test_context import SecurityTestContext
+from squeaky_clean.application.generation.testgen.generate_test_architecture_deps import (
     GenerateTestArchitectureDeps,
 )
-from squeaky_clean.application.use_cases.language_toolkit_factory import LanguageToolkitFactory
-from squeaky_clean.application.use_cases.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway

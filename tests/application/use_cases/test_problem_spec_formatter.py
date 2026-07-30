@@ -2,11 +2,16 @@
 
 import pytest
 
-from squeaky_clean.application.dtos.data_classification import DataClassification
-from squeaky_clean.application.dtos.entity_lifecycle import EntityLifecycle, StateTransition
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.dtos.query_semantic import QuerySemantic
-from squeaky_clean.application.use_cases.problem_spec_formatter import ProblemSpecFormatter
+from squeaky_clean.application.evaluation.mcda.data_classification import DataClassification
+from squeaky_clean.application.evaluation.mcda.entity_lifecycle import (
+    EntityLifecycle,
+    StateTransition,
+)
+from squeaky_clean.application.evaluation.mcda.query_semantic import QuerySemantic
+from squeaky_clean.application.generation.architecture.problem_spec_formatter import (
+    ProblemSpecFormatter,
+)
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

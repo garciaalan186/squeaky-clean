@@ -1,13 +1,13 @@
 """Tests for ViolationReportDeserializer (round-trips the serializer)."""
 
-from squeaky_clean.application.dtos.recovery.architectural_violation import (
+from squeaky_clean.application.generation.recovery.scoring.architectural_violation import (
     ArchitecturalViolation,
 )
-from squeaky_clean.application.dtos.recovery.violation_report import ViolationReport
-from squeaky_clean.application.use_cases.recovery.violation_report_deserializer import (
+from squeaky_clean.application.generation.recovery.scoring.violation_report import ViolationReport
+from squeaky_clean.application.generation.recovery.scoring.violation_report_deserializer import (
     ViolationReportDeserializer,
 )
-from squeaky_clean.application.use_cases.recovery.violation_report_serializer import (
+from squeaky_clean.application.generation.recovery.scoring.violation_report_serializer import (
     ViolationReportSerializer,
 )
 

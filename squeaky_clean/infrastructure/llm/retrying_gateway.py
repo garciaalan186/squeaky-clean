@@ -5,7 +5,7 @@ import random
 import time
 from collections.abc import Callable
 
-from squeaky_clean.application.dtos.retry_policy import RetryPolicy
+from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse

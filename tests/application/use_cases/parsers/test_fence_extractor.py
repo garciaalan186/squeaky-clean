@@ -2,10 +2,10 @@
 
 import pytest
 
-from squeaky_clean.application.use_cases.implemented_class_parse_error import (
+from squeaky_clean.application.generation.emission.parsers.fence_extractor import FenceExtractor
+from squeaky_clean.application.generation.emission.parsers.implemented_class_parse_error import (
     ImplementedClassParseError,
 )
-from squeaky_clean.application.use_cases.parsers.fence_extractor import FenceExtractor
 
 
 def test_extracts_first_fence_body() -> None:

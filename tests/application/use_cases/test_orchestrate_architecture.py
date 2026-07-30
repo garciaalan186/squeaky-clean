@@ -1,9 +1,9 @@
 """Unit tests for OrchestrateArchitecture toposort + fan-out."""
 
-from squeaky_clean.application.dtos.module_implementation import ModuleImplementation
-from squeaky_clean.application.use_cases.orchestrate_architecture import (
+from squeaky_clean.application.generation.architecture.orchestrate_architecture import (
     OrchestrateArchitecture,
 )
+from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

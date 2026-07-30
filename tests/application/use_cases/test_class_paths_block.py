@@ -1,12 +1,14 @@
 """Tests for ClassPaths block emission in TestArchitectureContextFormatter."""
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.dtos.test_architecture_context import TestArchitectureContext
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
+from squeaky_clean.application.generation.testgen.test_architecture_context import (
+    TestArchitectureContext,
 )
-from squeaky_clean.application.use_cases.test_architecture_context_formatter import (
+from squeaky_clean.application.generation.testgen.test_architecture_context_formatter import (
     TestArchitectureContextFormatter,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec

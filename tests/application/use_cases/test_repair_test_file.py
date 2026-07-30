@@ -2,12 +2,12 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.use_cases.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.use_cases.repair_test_file import (
+from squeaky_clean.application.generation.repair.repair_test_file import (
     RepairTestFile,
     TestRepairRequest,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
 )
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest

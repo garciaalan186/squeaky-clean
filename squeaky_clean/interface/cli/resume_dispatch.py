@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from squeaky_clean.application.dtos.eval_report_bundle import EvalReportBundle
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.checkpoint_reader import CheckpointReader
-from squeaky_clean.application.use_cases.load_problem_spec_from_file import (
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_reader import CheckpointReader
+from squeaky_clean.application.evaluation.eval.resume.resume_run import ResumeRun
+from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.shared.problem.load_problem_spec_from_file import (
     LoadProblemSpecFromFile,
 )
-from squeaky_clean.application.use_cases.resume_run import ResumeRun
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder

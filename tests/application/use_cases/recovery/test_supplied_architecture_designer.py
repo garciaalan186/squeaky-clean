@@ -1,10 +1,10 @@
 """Tests for SuppliedArchitectureDesigner (Stage-6 architect short-circuit)."""
 
-from squeaky_clean.application.dtos.problem_spec import ProblemSpec
-from squeaky_clean.application.use_cases.design_architecture import DesignArchitecture
-from squeaky_clean.application.use_cases.recovery.supplied_architecture_designer import (
+from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
+from squeaky_clean.application.generation.recovery.decomposition.supplied_architecture_designer import (
     SuppliedArchitectureDesigner,
 )
+from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec

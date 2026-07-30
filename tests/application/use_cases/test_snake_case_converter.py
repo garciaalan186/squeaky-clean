@@ -1,6 +1,6 @@
 """Tests for SnakeCaseConverter."""
 
-from squeaky_clean.application.use_cases.snake_case_converter import SnakeCaseConverter
+from squeaky_clean.application.shared.language.snake_case_converter import SnakeCaseConverter
 
 
 def test_pascal_case_basic() -> None:
