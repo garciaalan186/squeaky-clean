@@ -1,5 +1,6 @@
 """P4 Twitter Clone: multi-module web app with auth, posts, timeline."""
 
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -30,4 +31,19 @@ P4: ProblemSpec = ProblemSpec(
         "Entity", "ValueObject", "Repository", "UseCase",
     ],
     target_language=TargetLanguage.PYTHON,
+    # R5.2 golden: N=3, meta-evaluation_488 (2026-07-30), zero replicate failures.
+    golden_metrics=GoldenMetrics(
+        replicates=3,
+        tests_pass_mean=0.6667, tests_pass_stddev=0.2082,
+        functional_pass_mean=0.6667, functional_pass_stddev=0.2082,
+        security_pass_mean=0.0, security_pass_stddev=0.0,
+        cost_usd_mean=0.4449, cost_usd_stddev=0.0440,
+        model_routing=(
+        "architect=claude-sonnet-5",
+        "fixer=claude-sonnet-5",
+        "icp=claude-haiku-4-5-20251001",
+        "manager=claude-sonnet-5",
+    ),
+        calibrated_run="meta-evaluation_488_20260730-230409",
+    ),
 )

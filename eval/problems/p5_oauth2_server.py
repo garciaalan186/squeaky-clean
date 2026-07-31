@@ -1,6 +1,7 @@
 """P5 OAuth2 Authorization Server: realistic security-sensitive multi-module app."""
 
 from squeaky_clean.application.shared.mcda.data_classification import DataClassification
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -42,5 +43,20 @@ P5: ProblemSpec = ProblemSpec(
         DataClassification(field_ref="AccessToken.value", sensitivity="session_token"),
         DataClassification(field_ref="RefreshToken.value", sensitivity="session_token"),
         DataClassification(field_ref="AuthorizationCode.value", sensitivity="session_token"),
+    ),
+    # R5.2 golden: N=3 (2026-07-30), zero replicate failures.
+    golden_metrics=GoldenMetrics(
+        replicates=3,
+        tests_pass_mean=0.5667, tests_pass_stddev=0.3786,
+        functional_pass_mean=0.5667, functional_pass_stddev=0.3786,
+        security_pass_mean=0.0, security_pass_stddev=0.0,
+        cost_usd_mean=0.4087, cost_usd_stddev=0.0595,
+        model_routing=(
+        "architect=claude-sonnet-5",
+        "fixer=claude-sonnet-5",
+        "icp=claude-haiku-4-5-20251001",
+        "manager=claude-sonnet-5",
+    ),
+        calibrated_run="meta-evaluation_491_20260730-231701",
     ),
 )
