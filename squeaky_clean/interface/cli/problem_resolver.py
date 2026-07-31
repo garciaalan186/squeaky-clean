@@ -24,6 +24,8 @@ from eval.problems.p6_stock_monitor import P6
 from eval.problems.p7_order_lifecycle import P7
 from eval.problems.p8_text_editor import P8
 from eval.problems.p9_drawing_canvas import P9
+from eval.problems.p10_report_builder import P10
+from eval.problems.p11_notification_middleware import P11
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 
 _REGISTRY: dict[str, ProblemSpec] = {
@@ -38,6 +40,10 @@ _REGISTRY: dict[str, ProblemSpec] = {
     # Composite+Visitor). These measure whether the architect *chooses* the
     # right pattern end-to-end, complementing the golden-Squib routing test.
     "P6": P6, "P7": P7, "P8": P8, "P9": P9,
+    # R5.6 expansion: creational (Builder/AbstractFactory/Prototype) and
+    # structural (Decorator/Facade/Adapter + CoR) — pattern families the
+    # benchmark never exercised before.
+    "P10": P10, "P11": P11,
 }
 
 
