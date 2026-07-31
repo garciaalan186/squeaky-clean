@@ -63,7 +63,8 @@ def generate(
         if typed is not None:
             type_deps[typed[0]] = typed[1]
     dev_deps: dict[str, str] = {"jest": "^29.7.0"}
-    if any(s.language == "typescript" for s in npm_specs):
+    ts = problem.target_language.value == "typescript"  # R5.9: pin TS always
+    if ts or any(s.language == "typescript" for s in npm_specs):
         dev_deps["typescript"] = "^5.4.0"
         dev_deps["ts-jest"] = "^29.1.0"
         dev_deps["@types/node"] = "^20.0.0"
