@@ -20,6 +20,8 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 7. **Standard library imports.** If any field/parameter/return type uses `java.util` classes, generate the necessary import statements per the §Notation → Java type table (`Type[]` stays `Type[]` — preserve it exactly as the sibling declares it, never substitute `List<Type>`).
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block.
 2. One class per file — the mapper, nothing else.
 3. Method bodies must be real field-by-field translations, never empty or throwing `UnsupportedOperationException`.

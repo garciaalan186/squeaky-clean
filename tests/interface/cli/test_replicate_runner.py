@@ -10,7 +10,7 @@ from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
-from squeaky_clean.interface.cli.replicate_runner import ReplicateRunner
+from squeaky_clean.interface.cli.replicates.replicate_runner import ReplicateRunner
 from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
 
 

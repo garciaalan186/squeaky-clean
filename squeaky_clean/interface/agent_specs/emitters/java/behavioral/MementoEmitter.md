@@ -10,6 +10,7 @@ ICP
 A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends`, `implements`, `concretes`, plus an optional JUnit 5 test skeleton for reference. If `methods:` declares a `save()`-style method returning a Memento AND a `restore(memento)`-style method, the ClassSpec IS the Originator. Otherwise the ClassSpec IS the immutable Memento snapshot.
 
 ## Output Contract
+2a. **NO `record` SYNTAX.** The file MUST declare `public final class <Name>` with explicit private final fields, a constructor, and getters. A `record` declaration is a HARD FAILURE (target JDKs below 14 must compile it).
 Exactly one Java file body inside a single ```java fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
 1. Start with a single-line `//` comment describing the class.
 2. **The very first non-comment line MUST be `package com.example;`** — every Java file in this project lives in the `com.example` package; default package is forbidden.
@@ -19,6 +20,8 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. **Standard library imports.** Sibling classes ARE in `com.example` so they need NO explicit import. Import `java.util` classes only if a field or parameter type requires them.
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
+0b. **JDK-neutral syntax.** Emit plain `public final class` with explicit fields/constructor/getters — do NOT use `record`, `sealed`, or `var` (generated projects must compile on any JDK >= 11).
 0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block.
 2. One type per file — never emit both the Originator and the Memento in one response.

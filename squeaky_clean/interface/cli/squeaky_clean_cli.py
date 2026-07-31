@@ -48,7 +48,7 @@ from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
 from squeaky_clean.interface.cli.micro_eval_command import MicroEvalCommand
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
-from squeaky_clean.interface.cli.replicate_runner import ReplicateRunner
+from squeaky_clean.interface.cli.replicates.replicate_runner import ReplicateRunner
 from squeaky_clean.interface.cli.resume_dispatch import ResumeDispatch
 from squeaky_clean.interface.cli.router_factory import RouterFactory
 from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory

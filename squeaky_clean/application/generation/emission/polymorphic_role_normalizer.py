@@ -36,7 +36,14 @@ class PolymorphicRoleNormalizer:
             if base is not None:
                 implements[cls.name] = base
                 concretes.setdefault(base, []).append(cls.name)
-        if not implements:
+            # implements-driven (pattern-agnostic): a declared `implements:`
+            # target IS an abstract participant — stamp its concretes so the
+            # target's emitter renders an interface, whatever its pattern
+            # (e.g. an Adapter's port declared as SimpleClass — java
+            # "interface expected here", R5.6 micro-eval finding).
+            elif cls.implements and cls.implements in by_name:
+                concretes.setdefault(cls.implements, []).append(cls.name)
+        if not implements and not concretes:
             return module
         classes = tuple(
             self._stamp(c, implements, concretes) for c in module.classes

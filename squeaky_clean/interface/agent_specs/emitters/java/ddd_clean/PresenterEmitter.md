@@ -19,6 +19,8 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. **Standard library imports.** Import `java.util.*` classes only if a field, parameter, or return type requires them. **Sibling classes ARE in `com.example` so they need NO explicit import.**
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block.
 2. **STATELESS.** No instance fields, no constructor, no mutable static state. Every method is `public static` and derives its output purely from its argument.
 3. **No business logic.** Do not validate, compute totals, apply discounts, or make decisions — that belongs to the use case. Only reformat already-computed values.

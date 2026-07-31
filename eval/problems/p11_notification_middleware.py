@@ -1,14 +1,12 @@
 """P11 Notification Middleware: Decorator + Facade + Adapter + CoR (R5.6).
 
-KNOWN FLAKE (2026-07-30): the architect's Squib emission for this brief
-truncates mid-structure ("unbalanced {}") in ~3/5 live attempts (~450
-output tokens, far below max_tokens — early stop, not a cap). When the
-emission parses, the problem passes 1.00 end-to-end (run 471). No golden
-until the truncation is root-caused (candidates: prompt-cache block
-boundaries R3.5, retry-prompt determinism). Replicate calibration also
-needs per-replicate error isolation (dies on first failed replicate).
+Architect-truncation flake RESOLVED 2026-07-30: root cause was sonnet's
+adaptive thinking sharing the 4096 output-token default with the Squib
+text (probe: 4466 tokens needed at end_turn). DesignArchitecture now
+requests 16384; recalibration ran 3/3 with zero architect failures.
 """
 
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -43,4 +41,19 @@ P11: ProblemSpec = ProblemSpec(
         "SimpleClass",
     ],
     target_language=TargetLanguage.PYTHON,
+    # R5.6 golden: N=3, run 477 (2026-07-30), zero replicate failures.
+    golden_metrics=GoldenMetrics(
+        replicates=3,
+        tests_pass_mean=0.7778, tests_pass_stddev=0.3849,
+        functional_pass_mean=0.7778, functional_pass_stddev=0.3849,
+        security_pass_mean=0.0, security_pass_stddev=0.0,
+        cost_usd_mean=0.1326, cost_usd_stddev=0.0934,
+        model_routing=(
+            "architect=claude-sonnet-5",
+            "fixer=claude-sonnet-5",
+            "icp=claude-haiku-4-5-20251001",
+            "manager=claude-sonnet-5",
+        ),
+        calibrated_run="meta-evaluation_477_20260730-220845",
+    ),
 )

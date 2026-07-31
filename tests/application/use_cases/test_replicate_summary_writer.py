@@ -51,3 +51,16 @@ def test_markdown_labels_below_threshold_exploratory(tmp_path: Path) -> None:
     ReplicateSummaryWriter().write(tmp_path, ReplicateReport(_summary(1)))
     md = (tmp_path / "replicate_summary.md").read_text()
     assert "below the claims threshold" in md and "exploratory" in md
+
+
+def test_failures_rendered_in_md_and_json(tmp_path: Path) -> None:
+    path = ReplicateSummaryWriter().write(tmp_path, ReplicateReport(
+        summary=_summary(2),
+        failures=("replicate 1: DesignArchitectureError: unbalanced {}",),
+    ))
+    payload = json.loads(path.read_text())
+    assert payload["failures"] == [
+        "replicate 1: DesignArchitectureError: unbalanced {}",
+    ]
+    md = (tmp_path / "replicate_summary.md").read_text()
+    assert "1 replicate(s) FAILED" in md

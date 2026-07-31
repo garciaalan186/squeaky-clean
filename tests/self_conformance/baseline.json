@@ -291,8 +291,7 @@
   "PythonGranularityRule|squeaky_clean/interface/cli/dependency_builder.py|DependencyBuilder.build has # args (>#)",
   "PythonGranularityRule|squeaky_clean/interface/cli/dependency_builder.py|file has # lines (>#)",
   "PythonGranularityRule|squeaky_clean/interface/cli/language_adapter_registry.py|file has # lines (>#)",
-  "PythonGranularityRule|squeaky_clean/interface/cli/replicate_runner.py|ReplicateRunner.run has # args (>#)",
-  "PythonGranularityRule|squeaky_clean/interface/cli/replicate_runner.py|file declares # classes (>#)",
+  "PythonGranularityRule|squeaky_clean/interface/cli/replicates/replicate_runner.py|ReplicateRunner.run has # args (>#)",
   "PythonGranularityRule|squeaky_clean/interface/cli/run_sweep.py|file has # lines (>#)",
   "PythonGranularityRule|squeaky_clean/interface/cli/squeaky_clean_cli.py|file has # lines (>#)"
 ]

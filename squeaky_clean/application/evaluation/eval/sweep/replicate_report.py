@@ -15,3 +15,5 @@ class ReplicateReport:
 
     summary: ReplicateSummary
     report_paths: tuple[str, ...] = ()
+    # Failed replicates (isolated, not aborting): "replicate N: Error..."
+    failures: tuple[str, ...] = ()

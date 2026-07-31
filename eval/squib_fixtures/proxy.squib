@@ -9,9 +9,10 @@ CLASSES {
     depends: [RealImage]
   }
   Image -> SimpleClass {
-    methods: [describe(): str]
+    methods: [display(): void]
+    concretes: [ImageProxy]
   }
   RealImage -> SimpleClass {
-    methods: [describe(): str]
+    methods: [display(): void]
   }
 }

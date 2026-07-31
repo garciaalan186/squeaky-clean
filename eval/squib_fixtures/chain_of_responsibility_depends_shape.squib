@@ -15,6 +15,7 @@ CLASSES {
     depends: [ApprovalHandler]
   }
   ApprovalRequest -> SimpleClass {
-    methods: [describe(): str]
+    fields: [amount: float]
+    methods: [getAmount(): float]
   }
 }

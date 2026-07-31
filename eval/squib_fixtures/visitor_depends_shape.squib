@@ -4,14 +4,14 @@ EXPORTS [NodeVisitor]
 DEPENDS []
 CLASSES {
   NodeVisitor -> Visitor {
-    methods: [visit(node: TreeNode): void]
+    methods: [visitTreeNode(node: TreeNode): void]
   }
   PrintVisitor -> Visitor {
-    methods: [visit(node: TreeNode): void]
+    methods: [visitTreeNode(node: TreeNode): void]
     depends: [NodeVisitor]
   }
   CountVisitor -> Visitor {
-    methods: [visit(node: TreeNode): void]
+    methods: [visitTreeNode(node: TreeNode): void]
     depends: [NodeVisitor]
   }
   TreeNode -> SimpleClass {

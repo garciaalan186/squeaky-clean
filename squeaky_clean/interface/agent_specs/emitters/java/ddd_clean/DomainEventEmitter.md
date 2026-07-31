@@ -10,6 +10,7 @@ ICP
 A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends`, `implements`, `concretes`, plus an optional JUnit 5 test skeleton for reference.
 
 ## Output Contract
+2a. **NO `record` SYNTAX.** The file MUST declare `public final class <Name>` with explicit private final fields, a constructor, and getters. A `record` declaration is a HARD FAILURE (target JDKs below 14 must compile it).
 Exactly one Java file body inside a single ```java fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
 1. Start with a single-line `//` comment describing the event and the past-tense occurrence it records.
 2. **The very first non-comment line MUST be `package com.example;`** — every Java file in this project lives in the `com.example` package; default package is forbidden.
@@ -20,6 +21,9 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 7. **Standard library imports.** If any component uses `java.util` or `java.time` classes, generate the necessary import statements. **Sibling classes ARE in `com.example` so they need NO explicit import.**
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
+0b. **JDK-neutral syntax.** Emit plain `public final class` with explicit fields/constructor/getters — do NOT use `record`, `sealed`, or `var` (generated projects must compile on any JDK >= 11).
 1. Emit ONLY the fenced java block. Any text outside the fence is a violation.
 2. **IMMUTABLE.** `record` components are implicitly `private final` with no setters — never add a mutator method or a non-final field.
 3. **Accessors only.** Extra methods may read or derive from components (e.g. `summary()`); none may write to a component.
