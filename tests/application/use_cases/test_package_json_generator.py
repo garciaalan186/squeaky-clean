@@ -82,3 +82,21 @@ def test_aggregates_unique_deps_across_specs(tmp_path: Path) -> None:
     assert out is not None
     body = json.loads(out.read_text())
     assert body["dependencies"] == {"ioredis": "^5.3.0", "axios": "^1.6.0"}
+
+
+def test_ts_target_language_pins_typescript_without_tech_specs(
+    tmp_path: Path,
+) -> None:
+    # R5.9: plain TS problems (no infra TechSpecs) must still pin the TS
+    # toolchain — otherwise `npx tsc` floats to whatever resolves that day.
+    problem = ProblemSpec(
+        id="X", tier=0, slug="plain_ts", description="d",
+        required_bounded_contexts=[], acceptance_criteria=[],
+        expected_module_count=(0, 1), expected_class_count=(0, 1),
+        required_patterns=[], target_language=TargetLanguage.TYPESCRIPT,
+    )
+    out = generate(_arch(), {}, tmp_path, problem)
+    assert out is not None
+    body = json.loads(out.read_text())
+    assert body["devDependencies"]["typescript"] == "^5.4.0"
+    assert "@types/node" in body["devDependencies"]
