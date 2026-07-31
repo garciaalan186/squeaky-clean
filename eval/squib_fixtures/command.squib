@@ -7,4 +7,10 @@ CLASSES {
     methods: [execute(): void]
     concretes: [InsertCommand, DeleteCommand]
   }
+  DeleteCommand -> SimpleClass {
+    methods: [describe(): str]
+  }
+  InsertCommand -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

@@ -8,4 +8,10 @@ CLASSES {
     methods: [display(): void]
     depends: [RealImage]
   }
+  Image -> SimpleClass {
+    methods: [describe(): str]
+  }
+  RealImage -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

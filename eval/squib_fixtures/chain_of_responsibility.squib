@@ -7,4 +7,16 @@ CLASSES {
     methods: [handle(ticket: Ticket): Result]
     concretes: [Tier1Handler, Tier2Handler]
   }
+  Result -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Ticket -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Tier1Handler -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Tier2Handler -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

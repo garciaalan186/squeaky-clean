@@ -7,4 +7,13 @@ CLASSES {
     methods: [interpret(context: Context): int]
     concretes: [NumberExpr, AddExpr]
   }
+  AddExpr -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Context -> SimpleClass {
+    methods: [describe(): str]
+  }
+  NumberExpr -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

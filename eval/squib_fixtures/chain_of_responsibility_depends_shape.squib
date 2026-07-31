@@ -1,0 +1,20 @@
+MODULE ApprovalHandlerMod
+LAYER Domain
+EXPORTS [ApprovalHandler]
+DEPENDS []
+CLASSES {
+  ApprovalHandler -> ChainOfResponsibility {
+    methods: [handle(request: ApprovalRequest): bool]
+  }
+  ManagerApproval -> ChainOfResponsibility {
+    methods: [handle(request: ApprovalRequest): bool]
+    depends: [ApprovalHandler]
+  }
+  DirectorApproval -> ChainOfResponsibility {
+    methods: [handle(request: ApprovalRequest): bool]
+    depends: [ApprovalHandler]
+  }
+  ApprovalRequest -> SimpleClass {
+    methods: [describe(): str]
+  }
+}

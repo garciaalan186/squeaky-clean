@@ -8,4 +8,10 @@ CLASSES {
     methods: [add_line(line: OrderLine): void, total(): Money]
     invariants: ["order total must be non-negative"]
   }
+  Money -> SimpleClass {
+    methods: [describe(): str]
+  }
+  OrderLine -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

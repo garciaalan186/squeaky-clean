@@ -7,4 +7,13 @@ CLASSES {
     methods: [import_records(raw: str): Record]
     concretes: [CsvImporter, JsonImporter]
   }
+  CsvImporter -> SimpleClass {
+    methods: [describe(): str]
+  }
+  JsonImporter -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Record -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

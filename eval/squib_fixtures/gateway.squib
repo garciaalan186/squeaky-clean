@@ -6,4 +6,10 @@ CLASSES {
   PaymentGateway -> Gateway {
     methods: [charge(amount: Money): Result]
   }
+  Money -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Result -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

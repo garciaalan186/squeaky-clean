@@ -7,4 +7,13 @@ CLASSES {
     methods: [update(event: Event): void]
     concretes: [EmailObserver, SmsObserver]
   }
+  EmailObserver -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Event -> SimpleClass {
+    methods: [describe(): str]
+  }
+  SmsObserver -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

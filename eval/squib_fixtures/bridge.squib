@@ -7,4 +7,7 @@ CLASSES {
     methods: [draw(): void]
     depends: [Renderer]
   }
+  Renderer -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

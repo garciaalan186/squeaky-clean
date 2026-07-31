@@ -1,0 +1,17 @@
+MODULE EditCommandMod
+LAYER Domain
+EXPORTS [EditCommand]
+DEPENDS []
+CLASSES {
+  EditCommand -> Command {
+    methods: [execute(): void]
+  }
+  CutCommand -> Command {
+    methods: [execute(): void]
+    depends: [EditCommand]
+  }
+  PasteCommand -> Command {
+    methods: [execute(): void]
+    depends: [EditCommand]
+  }
+}

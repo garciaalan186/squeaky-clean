@@ -7,4 +7,13 @@ CLASSES {
     methods: [visit_number(node: NumberNode): int, visit_add(node: AddNode): int]
     concretes: [EvalVisitor]
   }
+  AddNode -> SimpleClass {
+    methods: [describe(): str]
+  }
+  EvalVisitor -> SimpleClass {
+    methods: [describe(): str]
+  }
+  NumberNode -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

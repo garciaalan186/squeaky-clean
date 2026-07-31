@@ -6,4 +6,10 @@ CLASSES {
   UserMapper -> DTOMapper {
     methods: [to_dto(user: User): UserDto, to_domain(dto: UserDto): User]
   }
+  User -> SimpleClass {
+    methods: [describe(): str]
+  }
+  UserDto -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

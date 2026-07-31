@@ -7,4 +7,7 @@ CLASSES {
     fields: [items: Event]
     methods: [next(): Event, has_next(): bool]
   }
+  Event -> SimpleClass {
+    methods: [describe(): str]
+  }
 }
