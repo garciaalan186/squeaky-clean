@@ -55,6 +55,7 @@ from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
+from squeaky_clean.infrastructure.llm.cache_miss_raiser import CacheMissRaiser
 from squeaky_clean.infrastructure.llm.caching_llm_gateway import CachingLLMGateway
 from squeaky_clean.infrastructure.llm.claude_cli_gateway import ClaudeCLIGateway
 from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cost
@@ -97,12 +98,17 @@ class DependencyBuilder:
         # Cache dir lives next to meta-evaluation-results, anchored relative
         # to the framework checkout so this runs from any clone.
         framework_root = Path(__file__).resolve().parents[3]
-        cache_dir = framework_root.parent / "meta-evaluation-results" / "cache"
+        # R5.7: SQUEAKY_CACHE_DIR lets CI point at a committed replay bundle.
+        cache_dir = Path(os.environ.get(
+            "SQUEAKY_CACHE_DIR",
+            framework_root.parent / "meta-evaluation-results" / "cache",
+        ))
         cost_gate = CostGate(rc.cost_budget)
         gateway: LLMGateway = BudgetedGateway(
             CachingLLMGateway(
                 RetryingGateway(
-                    self._select_inner_gateway(rc), rc.retry_policy,
+                    (CacheMissRaiser() if rc.replay_only
+                     else self._select_inner_gateway(rc)), rc.retry_policy,
                 ),
                 cache_dir,
             ),
