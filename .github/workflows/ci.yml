@@ -65,3 +65,15 @@ jobs:
       # the default addopts in pyproject.toml and stay opt-in.
       - name: Unit test suite
         run: pytest -q
+
+      # R5.7: $0 end-to-end eval gate. Replays P0 from the committed cache
+      # bundle — the full pipeline (parse, routing, emission, integration,
+      # generated-project pytest, scoring) runs with every LLM call served
+      # from disk. Any prompt/spec drift surfaces as a loud
+      # ReplayCacheMissError; harness regressions surface as score changes.
+      # No API key needed or used.
+      - name: Eval replay gate (P0, $0)
+        env:
+          SQUEAKY_CACHE_DIR: ${{ github.workspace }}/tests/ci_replay_cache
+        run: |
+          python -m squeaky_clean.interface.cli --problem P0 --replay-only

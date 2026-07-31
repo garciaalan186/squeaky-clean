@@ -208,6 +208,7 @@ class SqueakyCleanCLI:
         deps = RunSweepDeps(
             dependency_builder=DependencyBuilder(),
             router=router,
+            run_config=RunConfigFactory().build(args, replicate_id=0),
         )
         result = RunSweep(deps, JSONLogger()).execute(SweepRequest(
             problems=problems, max_parallel=args.max_parallel,

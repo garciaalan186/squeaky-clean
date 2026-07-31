@@ -21,6 +21,9 @@ from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededEr
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.infrastructure.llm.replay_cache_miss_error import (
+    ReplayCacheMissError,
+)
 from squeaky_clean.interface.cli.run_sweep_deps import RunSweepDeps
 
 _FRAMEWORK_ROOT = Path(__file__).resolve().parents[3]
@@ -109,6 +112,13 @@ class RunSweep:
                                tests_pass=bundle.metrics.tests_pass,
                                cost_usd=bundle.metrics.estimated_cost_usd)
             return bundle
+        except ReplayCacheMissError:
+            # R5.7: a replay-only miss is an infrastructure signal (prompt
+            # drift / stale bundle), not a problem failure — abort loudly so
+            # the CI gate goes red instead of reporting a green sweep.
+            self._logger.event("replay_cache_miss", problem=problem.id,
+                               error=traceback.format_exc().splitlines()[-1])
+            raise
         except BudgetExceededError:
             # A budget breach is fatal to the whole sweep, not one problem:
             # the shared cap is spent, so remaining problems would only fail
@@ -125,7 +135,9 @@ class RunSweep:
     def _one(
         self, problem: ProblemSpec, run_dir: Path,
     ) -> EvalReportBundle:
-        deps = self._deps.dependency_builder.build(self._deps.router, problem)
+        deps = self._deps.dependency_builder.build(
+            self._deps.router, problem, self._deps.run_config,
+        )
         return RunEval(deps, run_root=self._deps.run_root).execute_in(
             problem, run_dir,
         )
