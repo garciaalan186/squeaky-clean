@@ -84,6 +84,8 @@ class EvalMetrics:
     cache_hit_count: int = 0
     cache_miss_count: int = 0
     llm_timeouts: int = 0
+    # R5.5: architect Squib constructions absent from the fixture corpus.
+    notation_novelty: int = 0
 
     cache_create_architect_tokens: int = 0
     cache_read_architect_tokens: int = 0

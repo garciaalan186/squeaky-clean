@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.run.toolchain_probe import probe
 from squeaky_clean.application.generation.emission.spec_version_stamp import SpecVersionStamp
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
@@ -32,6 +33,7 @@ class RunManifest:
             "models": dict(models),
             "replicate_id": replicate_id,
             "framework_sha": self._git_sha(),
+            "toolchains": probe(),
             "spec_library_version": self._stamp(spec_dirs),
             "spec_hashes": self._hash_spec_dirs(spec_dirs),
         }
