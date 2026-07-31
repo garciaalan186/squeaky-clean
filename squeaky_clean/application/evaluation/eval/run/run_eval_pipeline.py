@@ -20,6 +20,9 @@ from squeaky_clean.application.evaluation.eval.report.percentile_summary_rendere
 )
 from squeaky_clean.application.evaluation.eval.resume.checkpoint_emitter import CheckpointEmitter
 from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.evaluation.eval.run.notation_novelty_reporter import (
+    NotationNoveltyReporter,
+)
 from squeaky_clean.application.evaluation.eval.run.pipeline_outputs import PipelineOutputs
 from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.evaluation.eval.run.run_eval_metrics_builder import (
@@ -276,6 +279,7 @@ class RunEvalPipeline:
         metrics.dependency_install_failed = self._dep_install_failed
         metrics.http_convention_violations = self._http_violations
         metrics.architect_retries = self._architect_retries
+        metrics.notation_novelty = getattr(self, "_notation_novelty", 0)
         metrics.test_criteria_filtered = self._test_criteria_filtered
         metrics.compile_errors = compile_result.compile_errors
         metrics.spec_conformance_violations = len(
@@ -426,7 +430,11 @@ class RunEvalPipeline:
     def _persist_notation(self, output_dir: Path) -> None:
         path = output_dir / "architecture.notation"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(self._deps.design_architecture.last_raw_notation)
+        notation = self._deps.design_architecture.last_raw_notation
+        path.write_text(notation)
+        self._notation_novelty = NotationNoveltyReporter().report(
+            output_dir, notation,
+        )
 
     def _write_percentiles(self, output_dir: Path) -> None:
         """Write per-tier latency + cost percentiles to LATENCY_PERCENTILES.md."""

@@ -1,5 +1,6 @@
 """P9 Drawing Canvas: exercises Composite (shape tree) + Visitor (area traversal)."""
 
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -25,4 +26,19 @@ P9: ProblemSpec = ProblemSpec(
     expected_class_count=(5, 14),
     required_patterns=["Composite", "Visitor", "ValueObject", "SimpleClass"],
     target_language=TargetLanguage.PYTHON,
+    # R5.2 golden: N=3 (2026-07-30), zero replicate failures.
+    golden_metrics=GoldenMetrics(
+        replicates=3,
+        tests_pass_mean=1.0000, tests_pass_stddev=0.0000,
+        functional_pass_mean=1.0000, functional_pass_stddev=0.0000,
+        security_pass_mean=0.0, security_pass_stddev=0.0,
+        cost_usd_mean=0.0360, cost_usd_stddev=0.0050,
+        model_routing=(
+        "architect=claude-sonnet-5",
+        "fixer=claude-sonnet-5",
+        "icp=claude-haiku-4-5-20251001",
+        "manager=claude-sonnet-5",
+    ),
+        calibrated_run="meta-evaluation_503_20260730-233818",
+    ),
 )

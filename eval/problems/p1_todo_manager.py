@@ -1,5 +1,6 @@
 """P1 Todo Manager: second-tier benchmark — in-memory CRUD + persistence."""
 
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -23,4 +24,19 @@ P1: ProblemSpec = ProblemSpec(
     expected_class_count=(5, 12),
     required_patterns=["Entity", "ValueObject", "UseCase", "Repository"],
     target_language=TargetLanguage.PYTHON,
+    # R5.2 golden: N=3, meta-evaluation_482 (2026-07-30), zero replicate failures.
+    golden_metrics=GoldenMetrics(
+        replicates=3,
+        tests_pass_mean=1.0000, tests_pass_stddev=0.0000,
+        functional_pass_mean=1.0000, functional_pass_stddev=0.0000,
+        security_pass_mean=0.0, security_pass_stddev=0.0,
+        cost_usd_mean=0.1335, cost_usd_stddev=0.0195,
+        model_routing=(
+        "architect=claude-sonnet-5",
+        "fixer=claude-sonnet-5",
+        "icp=claude-haiku-4-5-20251001",
+        "manager=claude-sonnet-5",
+    ),
+        calibrated_run="meta-evaluation_482_20260730-225636",
+    ),
 )
