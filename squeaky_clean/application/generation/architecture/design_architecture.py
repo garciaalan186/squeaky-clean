@@ -22,6 +22,13 @@ from squeaky_clean.domain.entities.notation_parse_error import NotationParseErro
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
+# R5.6 follow-up: sonnet's adaptive thinking shares the output-token budget
+# with the Squib text. On multi-pattern briefs (P11) thinking alone exceeded
+# the 4096 gateway default, so the text truncated mid-structure ("unbalanced
+# {}") or never started (empty response). Probed fix: 4466 tokens total on
+# P11 at end_turn — 16384 leaves honest headroom and bills only actual use.
+_MAX_OUTPUT_TOKENS: int = 16384
+
 _ARCHITECT_SPEC: str = "RequirementCompiler"
 
 
@@ -68,7 +75,7 @@ class DesignArchitecture:
             system_prompt=system, user_prompt=user,
             temperature=sampling.temperature, seed=sampling.seed,
             replicate_id=self._deps.run_config.replicate_id,
-            tier="architect",
+            tier="architect", max_tokens=_MAX_OUTPUT_TOKENS,
         )
         response = self._deps.gateway.complete(request)
         self._deps.recorder.record(response, "architect")

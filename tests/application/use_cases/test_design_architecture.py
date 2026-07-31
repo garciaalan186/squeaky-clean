@@ -89,3 +89,12 @@ def test_execute_raises_on_invalid_spec() -> None:
     uc = DesignArchitecture(_deps(gateway))
     with pytest.raises(DesignArchitectureError):
         uc.execute(P0)
+
+
+def test_architect_request_carries_thinking_headroom() -> None:
+    # R5.6 follow-up: adaptive thinking shares the output budget; the 4096
+    # gateway default truncated multi-pattern Squibs (P11). Guard the bump.
+    from squeaky_clean.application.generation.architecture.design_architecture import (
+        _MAX_OUTPUT_TOKENS,
+    )
+    assert _MAX_OUTPUT_TOKENS >= 8192
