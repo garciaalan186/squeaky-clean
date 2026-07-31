@@ -6,4 +6,7 @@ CLASSES {
   ReportBuilder -> Builder {
     methods: [with_title(title: str): ReportBuilder, build(): Report]
   }
+  Report -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

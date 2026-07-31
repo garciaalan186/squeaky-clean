@@ -8,4 +8,16 @@ CLASSES {
     methods: [charge(amount: Money): Result]
     depends: [StripeSdk]
   }
+  Money -> SimpleClass {
+    methods: [describe(): str]
+  }
+  PaymentPort -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Result -> SimpleClass {
+    methods: [describe(): str]
+  }
+  StripeSdk -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

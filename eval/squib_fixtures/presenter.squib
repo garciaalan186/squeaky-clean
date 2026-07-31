@@ -6,4 +6,10 @@ CLASSES {
   OrderPresenter -> Presenter {
     methods: [present(order: Order): OrderViewModel]
   }
+  Order -> SimpleClass {
+    methods: [describe(): str]
+  }
+  OrderViewModel -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

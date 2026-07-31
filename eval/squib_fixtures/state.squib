@@ -7,4 +7,13 @@ CLASSES {
     methods: [next(order: Order): OrderState]
     concretes: [PendingState, ShippedState]
   }
+  Order -> SimpleClass {
+    methods: [describe(): str]
+  }
+  PendingState -> SimpleClass {
+    methods: [describe(): str]
+  }
+  ShippedState -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

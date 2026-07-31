@@ -7,4 +7,7 @@ CLASSES {
     fields: [children: Node]
     methods: [size(): int, add(child: Node): void]
   }
+  Node -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

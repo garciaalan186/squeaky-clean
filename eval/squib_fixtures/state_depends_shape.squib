@@ -1,0 +1,17 @@
+MODULE PhaseStateMod
+LAYER Domain
+EXPORTS [PhaseState]
+DEPENDS []
+CLASSES {
+  PhaseState -> State {
+    methods: [advance(): void]
+  }
+  DraftPhase -> State {
+    methods: [advance(): void]
+    depends: [PhaseState]
+  }
+  FinalPhase -> State {
+    methods: [advance(): void]
+    depends: [PhaseState]
+  }
+}

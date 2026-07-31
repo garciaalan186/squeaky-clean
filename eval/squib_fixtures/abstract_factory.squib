@@ -7,4 +7,16 @@ CLASSES {
     methods: [create_button(): Button, create_checkbox(): Checkbox]
     concretes: [DarkWidgetFactory, LightWidgetFactory]
   }
+  Button -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Checkbox -> SimpleClass {
+    methods: [describe(): str]
+  }
+  DarkWidgetFactory -> SimpleClass {
+    methods: [describe(): str]
+  }
+  LightWidgetFactory -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

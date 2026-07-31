@@ -1,0 +1,17 @@
+MODULE PricingStrategyMod
+LAYER Domain
+EXPORTS [PricingStrategy]
+DEPENDS []
+CLASSES {
+  PricingStrategy -> Strategy {
+    methods: [price(amount: float): float]
+  }
+  FlatPricing -> Strategy {
+    methods: [price(amount: float): float]
+    depends: [PricingStrategy]
+  }
+  TieredPricing -> Strategy {
+    methods: [price(amount: float): float]
+    depends: [PricingStrategy]
+  }
+}

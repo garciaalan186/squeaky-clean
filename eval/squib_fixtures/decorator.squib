@@ -8,4 +8,7 @@ CLASSES {
     methods: [write(data: str): void]
     depends: [DataStream]
   }
+  DataStream -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

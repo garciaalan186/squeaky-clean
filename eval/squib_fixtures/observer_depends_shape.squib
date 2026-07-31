@@ -1,0 +1,20 @@
+MODULE AlertObserverMod
+LAYER Domain
+EXPORTS [AlertObserver]
+DEPENDS []
+CLASSES {
+  AlertObserver -> Observer {
+    methods: [notify(event: AlertEvent): void]
+  }
+  LogAlert -> Observer {
+    methods: [notify(event: AlertEvent): void]
+    depends: [AlertObserver]
+  }
+  PageAlert -> Observer {
+    methods: [notify(event: AlertEvent): void]
+    depends: [AlertObserver]
+  }
+  AlertEvent -> SimpleClass {
+    methods: [describe(): str]
+  }
+}

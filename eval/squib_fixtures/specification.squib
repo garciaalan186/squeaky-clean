@@ -6,4 +6,7 @@ CLASSES {
   InStockSpec -> Specification {
     methods: [is_satisfied_by(product: Product): bool]
   }
+  Product -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

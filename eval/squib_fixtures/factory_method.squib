@@ -7,4 +7,13 @@ CLASSES {
     methods: [create_document(): Document]
     concretes: [PdfCreator, HtmlCreator]
   }
+  Document -> SimpleClass {
+    methods: [describe(): str]
+  }
+  HtmlCreator -> SimpleClass {
+    methods: [describe(): str]
+  }
+  PdfCreator -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

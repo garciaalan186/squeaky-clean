@@ -7,4 +7,16 @@ CLASSES {
     methods: [place_order(command: OrderCommand): Result]
     depends: [Inventory, Billing]
   }
+  Billing -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Inventory -> SimpleClass {
+    methods: [describe(): str]
+  }
+  OrderCommand -> SimpleClass {
+    methods: [describe(): str]
+  }
+  Result -> SimpleClass {
+    methods: [describe(): str]
+  }
 }

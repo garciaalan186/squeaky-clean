@@ -1,0 +1,17 @@
+MODULE ExportJobMod
+LAYER Domain
+EXPORTS [ExportJob]
+DEPENDS []
+CLASSES {
+  ExportJob -> TemplateMethod {
+    methods: [run(): void]
+  }
+  CsvExport -> TemplateMethod {
+    methods: [run(): void]
+    depends: [ExportJob]
+  }
+  XmlExport -> TemplateMethod {
+    methods: [run(): void]
+    depends: [ExportJob]
+  }
+}

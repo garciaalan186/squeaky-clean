@@ -4,6 +4,7 @@ EXPORTS [OrderPlaced]
 DEPENDS []
 CLASSES {
   OrderPlaced -> DomainEvent {
+    invariants: ["order_id is set at construction and never changes"]
     fields: [order_id: str, occurred_on: str]
   }
 }
