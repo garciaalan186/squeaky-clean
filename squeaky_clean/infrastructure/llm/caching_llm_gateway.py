@@ -62,7 +62,10 @@ class CachingLLMGateway(LLMGateway):
         )
 
     def _store(self, path: Path, response: LLMResponse) -> None:
-        if response.timed_out:
+        # Never cache a failure: a timed-out or EMPTY response stored here
+        # poisons every future run of the same prompt (R5.6 finding — a
+        # failed architect call replayed as empty forever).
+        if response.timed_out or not response.content.strip():
             return
         payload = {"content": response.content}
         path.write_text(json.dumps(payload))
