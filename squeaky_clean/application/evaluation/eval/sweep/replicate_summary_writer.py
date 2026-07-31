@@ -26,11 +26,15 @@ class ReplicateSummaryWriter:
         """Persist ``report``; return the JSON path."""
         payload = asdict(report.summary)
         payload["reports"] = list(report.report_paths)
+        payload["failures"] = list(report.failures)
         json_path = out_dir / "replicate_summary.json"
         atomic_write_text(json_path, json.dumps(payload, indent=2))
+        lines = self._md(report.summary)
+        if report.failures:
+            lines.append(f"- **{len(report.failures)} replicate(s) FAILED** "
+                         "(excluded from stats): " + "; ".join(report.failures))
         atomic_write_text(
-            out_dir / "replicate_summary.md",
-            "\n".join(self._md(report.summary)),
+            out_dir / "replicate_summary.md", "\n".join(lines),
         )
         return json_path
 
