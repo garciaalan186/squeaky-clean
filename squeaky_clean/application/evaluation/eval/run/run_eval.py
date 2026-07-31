@@ -5,6 +5,9 @@ import logging
 from dataclasses import asdict
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.metrics.unmeasured_nulls import (
+    null_unmeasured,
+)
 from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.evaluation.eval.run.eval_result_dto import EvalResult
 from squeaky_clean.application.evaluation.eval.run.meta_eval_paths import MetaEvalPaths
@@ -56,7 +59,9 @@ class RunEval:
         )
         atomic_write_text(
             run_dir / "metrics.json",
-            json.dumps(asdict(bundle.metrics), indent=2, default=str),
+            json.dumps(
+                null_unmeasured(asdict(bundle.metrics)), indent=2, default=str,
+            ),
         )
         return self._result(problem, bundle, run_dir)
 

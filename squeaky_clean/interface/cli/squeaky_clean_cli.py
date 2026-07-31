@@ -46,6 +46,7 @@ from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.micro_eval_command import MicroEvalCommand
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
 from squeaky_clean.interface.cli.replicate_runner import ReplicateRunner
 from squeaky_clean.interface.cli.resume_dispatch import ResumeDispatch
@@ -71,6 +72,8 @@ class SqueakyCleanCLI:
         try:
             if args.rebuild_dashboard:
                 return self._rebuild_dashboard()
+            if args.micro_evals:
+                return MicroEvalCommand().run(args)
             if args.triage is not None:
                 return self._triage(args)
             if args.refactor is not None:
@@ -85,6 +88,11 @@ class SqueakyCleanCLI:
             if args.problem_file is not None:
                 problem = LoadProblemSpecFromFile().load(Path(args.problem_file))
                 return self._dispatch(router, problem, args)
+            if args.replicates > 1 and args.problem_ids:
+                # Replicates route explicitly: the old routing required
+                # --max-parallel 1 as well, silently sending --replicates
+                # runs through the N=1 sweep path (R5.1).
+                return self._replicated(router, args)
             if len(args.problem_ids) == 1 and args.max_parallel <= 1:
                 return self._single(router, args.problem_ids[0], args)
             return self._sweep(router, args)
@@ -100,6 +108,14 @@ class SqueakyCleanCLI:
         return self._dispatch(
             router, ProblemResolver().resolve(problem_id), args,
         )
+
+    def _replicated(self, router: ModelRouter, args: CLIArgs) -> int:
+        """Run every requested problem through the N-replicate path."""
+        codes = [
+            self._dispatch(router, ProblemResolver().resolve(pid), args)
+            for pid in args.problem_ids
+        ]
+        return max(codes)
 
     def _dispatch(
         self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,

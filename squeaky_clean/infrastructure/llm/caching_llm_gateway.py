@@ -11,8 +11,11 @@ from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 class CachingLLMGateway(LLMGateway):
     """Wraps an LLMGateway with a persistent content-addressed cache.
 
-    Cache key = LLMRequest.cache_key() (sha256 of model+prompts+temperature+replicate).
-    Cache hits return a stored LLMResponse with cache_hit=True and cost/duration zeroed.
+    Cache key = LLMRequest.cache_key(): sha256 of model + prompts +
+    replicate_id. Temperature and seed are deliberately EXCLUDED — neither is
+    sent to the API, so including them would only fragment the cache
+    (see LLMRequest.cache_key docs, R3.3/R5.3). Cache hits return a stored
+    LLMResponse with cache_hit=True and cost/duration zeroed.
     """
 
     def __init__(

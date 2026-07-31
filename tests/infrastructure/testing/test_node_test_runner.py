@@ -1,8 +1,17 @@
 """Tests for NodeTestRunner."""
 
+import shutil
 from pathlib import Path
 
+import pytest
+
 from squeaky_clean.infrastructure.testing.node_test_runner import NodeTestRunner
+
+# R5.9: these tests invoke the real `node` binary; skip (don't fail) on
+# machines without it so the suite is honest about what it measured.
+pytestmark = pytest.mark.skipif(
+    shutil.which("node") is None, reason="node not on PATH",
+)
 
 
 def _bootstrap(tmp_path: Path) -> None:

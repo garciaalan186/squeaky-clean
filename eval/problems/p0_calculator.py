@@ -1,5 +1,6 @@
 """P0 Calculator: the smallest benchmark problem in the eval suite."""
 
+from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -20,4 +21,19 @@ P0: ProblemSpec = ProblemSpec(
     expected_class_count=(3, 6),
     required_patterns=["SimpleClass", "ValueObject"],
     target_language=TargetLanguage.PYTHON,
+    # R5.2 golden: N=3 replicates, run 457 (2026-07-30), seeds 0-2.
+    golden_metrics=GoldenMetrics(
+        replicates=3,
+        tests_pass_mean=1.0, tests_pass_stddev=0.0,
+        functional_pass_mean=1.0, functional_pass_stddev=0.0,
+        security_pass_mean=0.0, security_pass_stddev=0.0,
+        cost_usd_mean=0.0187, cost_usd_stddev=0.0113,
+        model_routing=(
+            "architect=claude-sonnet-5",
+            "fixer=claude-sonnet-5",
+            "icp=claude-haiku-4-5-20251001",
+            "manager=claude-sonnet-5",
+        ),
+        calibrated_run="meta-evaluation_457_20260730-164556",
+    ),
 )

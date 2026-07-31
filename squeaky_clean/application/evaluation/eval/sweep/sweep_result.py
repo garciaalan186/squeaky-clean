@@ -14,3 +14,5 @@ class SweepResult:
     bundles: tuple[EvalReportBundle, ...]
     total_cost_usd: float
     total_duration_ms: int
+    # R5.2: one human-readable regression-gate verdict per bundle.
+    regression_verdicts: tuple[str, ...] = ()

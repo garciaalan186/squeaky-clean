@@ -22,13 +22,14 @@ class CLIArgsParser:
         ns = parser.parse_args(argv)
         ids = self._resolve_ids(ns)
         if (not ids and not ns.problem_file and not ns.rebuild_dashboard
+                and not ns.micro_evals
                 and ns.resume_run_dir is None and ns.squib_file is None
                 and ns.recover_from is None and ns.triage is None
                 and ns.refactor is None):
             parser.error(
                 "one of --problem, --problems, --sweep, --problem-file, "
                 "--recover-from, --triage, --refactor, --squib-file, "
-                "--rebuild-dashboard, or --resume required"
+                "--rebuild-dashboard, --micro-evals, or --resume required"
             )
         return CLIArgs(
             problem_ids=ids,
@@ -64,6 +65,7 @@ class CLIArgsParser:
                 t.strip() for t in str(ns.prompt_cache_tiers).split(",") if t.strip()
             ),
             rebuild_dashboard=bool(ns.rebuild_dashboard),
+            micro_evals=bool(ns.micro_evals),
             resume_run_dir=(
                 str(ns.resume_run_dir) if ns.resume_run_dir is not None else None
             ),
@@ -165,6 +167,10 @@ class CLIArgsParser:
             "--prompt-cache-tiers", dest="prompt_cache_tiers",
             default="architect,manager,icp,fixer",
             help="CSV subset of tiers to cache (default: all four)",
+        )
+        parser.add_argument(
+            "--micro-evals", dest="micro_evals", action="store_true",
+            help="R5.4: emit+compile every squib fixture per language; exit",
         )
         parser.add_argument(
             "--rebuild-dashboard", dest="rebuild_dashboard",

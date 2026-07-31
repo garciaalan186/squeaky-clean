@@ -45,6 +45,12 @@ class RunEvalSummaryWriter:
             f"| {m.total_wall_clock_ms} |"
         )
         lines.append("")
+        lines.append(
+            "> pass rate = functional acceptance criteria only. "
+            "single sample (N=1) — exploratory; fix/regression claims "
+            "require N>=3 replicates (`--replicates 3`)."
+        )
+        lines.append("")
         lines.append("## Aggregate Totals")
         lines.append("- problems run: 1")
         lines.append(f"- total cost USD: {m.estimated_cost_usd:.4f}")

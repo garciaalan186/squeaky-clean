@@ -32,6 +32,14 @@ jobs:
         with:
           node-version: "20"
 
+      # R5.9: pin the JDK too — the java compiler/runner tests and the
+      # micro-eval javac gate must not float with the runner image.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Install (dev extras)
         run: pip install -e '.[dev]'
 
