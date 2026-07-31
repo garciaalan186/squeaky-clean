@@ -15,14 +15,16 @@ _EMITTERS = (
     / "squeaky_clean" / "interface" / "agent_specs" / "emitters"
 )
 
-_JAVA_BEHAVIORAL = sorted(
-    p.name for p in (_EMITTERS / "java" / "behavioral").glob("*.md")
+_JAVA_PATTERN_SPECS = sorted(
+    str(p.relative_to(_EMITTERS / "java"))
+    for sub in ("behavioral", "structural", "creational", "ddd_clean")
+    for p in (_EMITTERS / "java" / sub).glob("*.md")
 )
 
 
-@pytest.mark.parametrize("spec_name", _JAVA_BEHAVIORAL)
+@pytest.mark.parametrize("spec_name", _JAVA_PATTERN_SPECS)
 def test_java_behavioral_specs_map_float_to_double(spec_name: str) -> None:
-    text = (_EMITTERS / "java" / "behavioral" / spec_name).read_text()
+    text = (_EMITTERS / "java" / spec_name).read_text()
     assert "`float` → `double`" in text or "`float` -> `double`" in text, (
         f"{spec_name}: missing §Notation float→double fidelity rule "
         "(P2JAVA lossy-conversion regression, R0.11)"

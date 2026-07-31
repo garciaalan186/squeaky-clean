@@ -7,9 +7,11 @@ CLASSES {
     methods: [present(order: Order): OrderViewModel]
   }
   Order -> SimpleClass {
-    methods: [describe(): str]
+    fields: [id: str, total: float, status: str]
+    methods: [getId(): str, getTotal(): float, getStatus(): str]
   }
   OrderViewModel -> SimpleClass {
-    methods: [describe(): str]
+    fields: [id: str, formattedTotal: str, status: str]
+    invariants: ["view model holds id, formatted total, and status"]
   }
 }

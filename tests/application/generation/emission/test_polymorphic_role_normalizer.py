@@ -75,3 +75,14 @@ def test_declared_concretes_merge_without_duplicates() -> None:
     ))
     by = {c.name: c for c in mod.classes}
     assert by["Handler"].concretes == ("AuthHandler", "LogHandler")
+
+
+def test_declared_implements_stamps_target_concretes_cross_pattern() -> None:
+    # An Adapter's port declared as SimpleClass must still become an
+    # interface: implements-driven stamping is pattern-agnostic (R5.6).
+    mod = PolymorphicRoleNormalizer().normalize(_module(
+        _cls("StripeAdapter", "Adapter", implements="PaymentPort"),
+        _cls("PaymentPort", "SimpleClass"),
+    ))
+    by = {c.name: c for c in mod.classes}
+    assert by["PaymentPort"].concretes == ("StripeAdapter",)

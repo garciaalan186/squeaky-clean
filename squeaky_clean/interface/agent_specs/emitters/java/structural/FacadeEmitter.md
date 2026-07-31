@@ -21,6 +21,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 8. **Standard library imports.** If any field/parameter/return type uses `java.util` classes, import them. **Sibling classes ARE in `com.example`** so they need NO explicit import.
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
 0. **§Notation type -> Java type fidelity.** `dict` -> `Map<K, V>`; `list`/`Type[]` -> `List<Type>` for internal use but preserve `Type[]` verbatim in any method signature that declares it; `str` -> `String`, `int` -> `int`, `float` -> `double`, `bool` -> `boolean`, `None` -> `void`.
 1. Emit ONLY the fenced java block.
 2. Never reimplement subsystem logic inline — every operation delegates to a `this.<subsystem>` collaborator method call.

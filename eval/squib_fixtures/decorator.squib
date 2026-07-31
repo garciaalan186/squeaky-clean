@@ -9,6 +9,7 @@ CLASSES {
     depends: [DataStream]
   }
   DataStream -> SimpleClass {
-    methods: [describe(): str]
+    methods: [write(data: str): void]
+    concretes: [CompressingStream]
   }
 }

@@ -4,10 +4,12 @@ EXPORTS [Directory]
 DEPENDS []
 CLASSES {
   Directory -> Composite {
+    implements: Node
     fields: [children: Node]
     methods: [size(): int, add(child: Node): void]
   }
   Node -> SimpleClass {
-    methods: [describe(): str]
+    methods: [size(): int, add(child: Node): void]
+    concretes: [Directory]
   }
 }

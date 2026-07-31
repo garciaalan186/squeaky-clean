@@ -19,6 +19,9 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 6. **Standard library imports.** `import java.util.Map;` and `import java.util.HashMap;` for the Factory. **Sibling classes ARE in `com.example`** so they need no explicit import.
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
+0b. **JDK-neutral syntax.** Emit plain `public final class` with explicit fields/constructor/getters — do NOT use `record`, `sealed`, or `var` (generated projects must compile on any JDK >= 11).
 1. Emit ONLY the fenced java block.
 2. One type per file — never emit both the Flyweight and the FlyweightFactory in one response.
 3. Method bodies must be real implementations.

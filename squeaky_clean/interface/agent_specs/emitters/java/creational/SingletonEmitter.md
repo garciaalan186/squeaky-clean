@@ -21,6 +21,8 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 8. **Standard library imports.** If any field, parameter, or return type uses `java.util` classes, generate the necessary import statements. Sibling classes ARE in `com.example` so they need NO explicit import.
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
+0. **§Notation type → Java type fidelity.** `str` → `String`, `int` → `int`, `float` → `double` (NEVER Java `float` — mixing `float` fields with `double` arithmetic is a lossy-conversion compile error), `bool` → `boolean`, `None` → `void`; `Type[]` → `List<Type>` (import `java.util.List`), `dict` → `Map<K, V>`. Apply the SAME rendering everywhere the type is referenced — fields, params, returns.
 1. Emit ONLY the fenced java block.
 2. **The constructor MUST be `private`.** No caller outside the class may invoke `new <Name>(...)`.
 3. **Use the static-holder idiom exactly as specified.** Do NOT use eagerly-initialized `public static final <Name> INSTANCE = new <Name>()` directly on the outer class, and do NOT use unsynchronized lazy `if (instance == null) instance = new <Name>();` — both are either non-lazy or a data race. The nested `Holder` class is the required safe idiom.

@@ -12,10 +12,12 @@ CLASSES {
     methods: [describe(): str]
   }
   PaymentPort -> SimpleClass {
-    methods: [describe(): str]
+    methods: [charge(amount: Money): Result]
+    concretes: [StripeAdapter]
   }
   Result -> SimpleClass {
-    methods: [describe(): str]
+    fields: [ok: bool, message: str]
+    invariants: ["result carries an ok flag and a message"]
   }
   StripeSdk -> SimpleClass {
     methods: [describe(): str]

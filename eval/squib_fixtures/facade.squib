@@ -17,6 +17,7 @@ CLASSES {
     methods: [describe(): str]
   }
   Result -> SimpleClass {
-    methods: [describe(): str]
+    fields: [summary: str]
+    invariants: ["result summarizes the subsystem outcomes"]
   }
 }

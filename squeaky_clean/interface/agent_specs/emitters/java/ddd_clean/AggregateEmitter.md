@@ -23,6 +23,7 @@ Exactly one Java file body inside a single ```java fenced block. NO prose, NO ex
 10. **Standard library imports.** Import `java.util.List`, `java.util.ArrayList`, `java.util.Collections` as needed, and `java.util.Objects` if using `Objects.hash()`/`Objects.equals()`. Sibling classes ARE in `com.example`, so they need NO explicit import.
 
 ## Constraints
+0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
 0. **§Notation type -> Java type fidelity (CRITICAL).** `Type[]` -> `List<Type>` (always `import java.util.List;`); `dict`/`dict[K, V]` -> `Map<K, V>`; `str` -> `String`, `int` -> `int`, `float` -> `double`, `bool` -> `boolean`. Apply the SAME rendering everywhere the type is referenced.
 1. Emit ONLY the fenced java block. Any text outside the fence is a violation.
 2. **Implement every `invariants:` entry — three kinds.**

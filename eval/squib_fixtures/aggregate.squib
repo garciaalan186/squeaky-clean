@@ -9,9 +9,11 @@ CLASSES {
     invariants: ["order total must be non-negative"]
   }
   Money -> SimpleClass {
-    methods: [describe(): str]
+    fields: [amount: float]
+    methods: [zero(): Money, add(other: Money): Money, isNegative(): bool]
   }
   OrderLine -> SimpleClass {
-    methods: [describe(): str]
+    fields: [amount: Money]
+    methods: [getAmount(): Money]
   }
 }
