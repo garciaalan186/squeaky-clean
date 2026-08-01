@@ -28,6 +28,22 @@ class ClassSpec:
     fields: tuple[str, ...] = field(default_factory=tuple)
     invariants: tuple[str, ...] = field(default_factory=tuple)
 
+    def notation_presence(self) -> dict[str, bool]:
+        """Which §Notation class fields this spec populates.
+
+        Keys mirror SQUIB_SCHEMA.class_field_names() (asserted by test);
+        the R5.5 shape classifier reads this instead of re-encoding the
+        field list itself.
+        """
+        return {
+            "fields": bool(self.fields),
+            "methods": bool(self.methods),
+            "depends": bool(self.depends),
+            "concretes": bool(self.concretes),
+            "implements": bool(self.implements),
+            "invariants": bool(self.invariants),
+        }
+
     def role(self) -> ClassRole:
         """Polymorphic role: ABSTRACT if concretes declared, CONCRETE if
         an implements target is set, PLAIN otherwise."""

@@ -4,25 +4,26 @@ from squeaky_clean.application.generation.notation.notation_class_block_iterator
     NotationClassBlockIterator,
 )
 from squeaky_clean.application.generation.notation.notation_field_parser import NotationFieldParser
-from squeaky_clean.application.generation.notation.notation_invariants_parser import (
-    NotationInvariantsParser,
-)
-from squeaky_clean.application.generation.notation.notation_list_splitter import (
-    NotationListSplitter,
+from squeaky_clean.application.generation.notation.notation_field_value_parser import (
+    NotationFieldValueParser,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.notation_parse_error import NotationParseError
+from squeaky_clean.domain.value_objects.notation.notation_schema import SQUIB_SCHEMA
 from squeaky_clean.domain.value_objects.pattern_name import ALL_PATTERNS
 
 
 class NotationClassParser:
-    """Parses the inside of a `CLASSES { ... }` block into ClassSpec list."""
+    """Parses the inside of a `CLASSES { ... }` block into ClassSpec list.
+
+    Each field body is parsed per the kind SQUIB_SCHEMA declares for it
+    (R6.1c) — the splitter choice is no longer hardcoded here.
+    """
 
     def __init__(self) -> None:
         self._blocks: NotationClassBlockIterator = NotationClassBlockIterator()
         self._fields: NotationFieldParser = NotationFieldParser()
-        self._split: NotationListSplitter = NotationListSplitter()
-        self._invars: NotationInvariantsParser = NotationInvariantsParser()
+        self._values: NotationFieldValueParser = NotationFieldValueParser()
 
     def parse(self, body: str) -> tuple[ClassSpec, ...]:
         """Return the tuple of ClassSpec entries declared in body."""
@@ -44,9 +45,15 @@ class NotationClassParser:
             name=name_part.strip(),
             pattern=pattern,
             implements=fields.get("implements"),
-            methods=self._split.method_tuple(fields.get("methods", "")),
-            depends=self._split.plain_tuple(fields.get("depends", "")),
-            concretes=self._split.plain_tuple(fields.get("concretes", "")),
-            fields=self._split.plain_tuple(fields.get("fields", "")),
-            invariants=self._invars.parse(fields.get("invariants", "")),
+            methods=self._sequence(fields, "methods"),
+            depends=self._sequence(fields, "depends"),
+            concretes=self._sequence(fields, "concretes"),
+            fields=self._sequence(fields, "fields"),
+            invariants=self._sequence(fields, "invariants"),
         )
+
+    def _sequence(
+        self, fields: dict[str, str], name: str
+    ) -> tuple[str, ...]:
+        kind = SQUIB_SCHEMA.class_field(name).kind
+        return self._values.sequence(fields.get(name, ""), kind)

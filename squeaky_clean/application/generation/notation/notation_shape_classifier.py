@@ -9,16 +9,19 @@ from squeaky_clean.application.generation.notation.parse_architecture_notation i
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
+from squeaky_clean.domain.value_objects.notation.notation_schema import SQUIB_SCHEMA
 
 
 def _signature(c: ClassSpec) -> str:
-    """Shape of one class construction: pattern + which fields it uses."""
+    """Shape of one class construction: pattern + which fields it uses.
+
+    Bit order is SQUIB_SCHEMA's class-field order (R6.1c) — the schema,
+    not this module, owns the grammar's field list.
+    """
+    presence = c.notation_presence()
     bits = "".join(
-        "1" if flag else "0"
-        for flag in (
-            bool(c.fields), bool(c.methods), bool(c.depends),
-            bool(c.concretes), bool(c.implements), bool(c.invariants),
-        )
+        "1" if presence[name] else "0"
+        for name in SQUIB_SCHEMA.class_field_names()
     )
     return f"{c.pattern}:{bits}"
 
