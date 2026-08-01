@@ -8,10 +8,13 @@ from squeaky_clean.application.evaluation.eval.metrics.model.cost_breakdown impo
 from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
 from squeaky_clean.application.evaluation.eval.run.eval_result_dto import EvalResult
+from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
+from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
-from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.invocations.infra_settings import InfraSettings
+from squeaky_clean.interface.cli.invocations.run_settings import RunSettings
 from squeaky_clean.interface.cli.replicates.replicate_runner import ReplicateRunner
 from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
 
@@ -47,19 +50,20 @@ def _result(run_dir: Path, tests_pass: float, cost: float) -> EvalResult:
 
 
 def test_with_seed_preserves_every_flag() -> None:
-    # Rebuilding CLIArgs field-by-field silently dropped cost caps and
+    # Rebuilding settings field-by-field silently dropped cost caps and
     # security flags on replicate runs; replace() must keep them all.
-    args = CLIArgs(
-        problem_ids=("P2",), model_override=None, replicates=3,
-        max_cost_usd=5.0, enable_security_tests=True, enable_sast=True,
-        max_fixer_passes=2, infrastructure_mode="auto",
+    settings = RunSettings(
+        budget=CostBudget(max_cost_usd=5.0),
+        enable_security_tests=True, enable_sast=True,
+        retry=RetryPolicy(max_fixer_passes=2),
+        infra=InfraSettings(infrastructure_mode="auto"),
     )
-    seeded = ReplicateRunner._with_seed(args, 2)
+    seeded = ReplicateRunner._with_seed(settings, 2)
     assert seeded.seed == 2
-    for f in dataclasses.fields(CLIArgs):
+    for f in dataclasses.fields(RunSettings):
         if f.name == "seed":
             continue
-        assert getattr(seeded, f.name) == getattr(args, f.name), f.name
+        assert getattr(seeded, f.name) == getattr(settings, f.name), f.name
 
 
 def test_write_summary_aggregates_all_metrics(tmp_path: Path) -> None:

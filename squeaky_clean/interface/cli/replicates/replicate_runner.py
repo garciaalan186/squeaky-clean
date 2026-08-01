@@ -15,8 +15,9 @@ from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededEr
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.llm.replay_cache_miss_error import ReplayCacheMissError
-from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.invocations.run_invocation import RunInvocation
+from squeaky_clean.interface.cli.invocations.run_settings import RunSettings
 from squeaky_clean.interface.cli.replicates.replicate_calibration_error import (
     ReplicateCalibrationError,
 )
@@ -36,13 +37,13 @@ class ReplicateRunner:
         self._writer: ReplicateSummaryWriter = ReplicateSummaryWriter()
 
     def run(
-        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, invocation: RunInvocation,
     ) -> ReplicateRunOutcome:
-        """Run ``args.replicates`` replicates; write replicate_summary.{json,md}."""
+        """Run ``invocation.replicates`` replicates; write replicate_summary.{json,md}."""
         results: list[EvalResult] = []
         failures: list[str] = []
-        for r in range(args.replicates):
-            rc = self._rc_factory.build(self._with_seed(args, r), replicate_id=r)
+        for r in range(invocation.replicates):
+            rc = self._rc_factory.build(self._with_seed(invocation.settings, r), replicate_id=r)
             deps = self._builder.build(router, problem, rc)
             try:
                 results.append(RunEval(deps).execute(problem))
@@ -52,15 +53,15 @@ class ReplicateRunner:
                 failures.append(f"replicate {r}: {type(exc).__name__}: {exc}")
         if not results:
             raise ReplicateCalibrationError(
-                f"{problem.id}: all {args.replicates} replicates failed — "
+                f"{problem.id}: all {invocation.replicates} replicates failed — "
                 + "; ".join(failures)
             )
         return self._write_summary(problem, results, tuple(failures))
 
     @staticmethod
-    def _with_seed(args: CLIArgs, replicate: int) -> CLIArgs:
+    def _with_seed(settings: RunSettings, replicate: int) -> RunSettings:
         # replace() preserves every flag (rebuilding field-by-field dropped them).
-        return replace(args, seed=replicate)
+        return replace(settings, seed=replicate)
 
     def _write_summary(
         self, problem: ProblemSpec, results: list[EvalResult],

@@ -186,7 +186,7 @@ class DependencyBuilder:
             run_logger=logger,
             verify_layer=(VerifyLayer(call_deps, loader)
                           if rc.verify_layers else None),
-            tech_spec_resolver=self._tech_spec_resolver(rc),
+            tech_spec_resolver=self._tech_spec_resolver(rc, logger),
             infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
             dependency_installer=adapters.dependency_installer,
             project_compiler=LanguageCompilerFactory().for_language(
@@ -215,7 +215,7 @@ class DependencyBuilder:
 
     @staticmethod
     def _tech_spec_resolver(
-        rc: RunConfig,
+        rc: RunConfig, logger: JSONLogger,
     ) -> TechSpecResolver | None:
         if rc.infrastructure_mode != "auto":
             return None
@@ -226,7 +226,9 @@ class DependencyBuilder:
         if not schema_path.is_file():
             return None
         validator = JSONSchemaTechSpecValidator(schema_path)
-        fs_resolver = FilesystemTechSpecResolver(eval_root, validator)
+        fs_resolver = FilesystemTechSpecResolver(
+            eval_root, validator, run_logger=logger,
+        )
         return CompositeTechSpecResolver(
             fs_resolver, validator,
             cache_root=eval_root / ".cache",
@@ -234,6 +236,7 @@ class DependencyBuilder:
             mcp_fetcher=MCPTechDocFetcher(),
             web_fetcher=WebFetchTechDocFetcher(),
             allowlist_registry=load_allowlist_registry(eval_root),
+            run_logger=logger,
         )
 
     @staticmethod
