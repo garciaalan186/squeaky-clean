@@ -1,6 +1,8 @@
 """B1: shared TestArchitect.md composes correctly for every supported language."""
 
-from squeaky_clean.application.generation.emission.compose_agent_spec import ComposeAgentSpec
+from squeaky_clean.application.generation.emission.composition.compose_agent_spec import (
+    ComposeAgentSpec,
+)
 from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,

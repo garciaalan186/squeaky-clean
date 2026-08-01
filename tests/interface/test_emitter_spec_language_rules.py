@@ -10,6 +10,18 @@ from pathlib import Path
 
 import pytest
 
+from squeaky_clean.application.generation.emission.composition.compose_emitter_spec import (
+    ComposeEmitterSpec,
+)
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
+from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
+    MapPatternToEmitter,
+)
+from squeaky_clean.application.shared.language.language_toolkit_factory import (
+    LanguageToolkitFactory,
+)
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+
 _EMITTERS = (
     Path(__file__).resolve().parents[2]
     / "squeaky_clean" / "interface" / "agent_specs" / "emitters"
@@ -40,12 +52,30 @@ def test_ts_specs_forbid_mutating_valueobject_siblings(spec_name: str) -> None:
     )
 
 
+def _composed(pattern: str, lang: str) -> str:
+    """Compose a cut-over pattern's spec the way production does (R6.1a)."""
+    language = TargetLanguage(lang)
+    toolkit = LanguageToolkitFactory().for_language(language)
+    spec_name = MapPatternToEmitter().map(pattern, toolkit)
+    return ComposeEmitterSpec(LoadAgentSpec()).load(spec_name, toolkit)
+
+
 @pytest.mark.parametrize("lang", ["java", "typescript"])
 def test_strategy_specs_key_interface_emission_on_concretes(lang: str) -> None:
     """The abstract-participant contract PolymorphicRoleNormalizer feeds."""
-    text = (_EMITTERS / lang / "behavioral" / "StrategyEmitter.md").read_text()
+    text = _composed("Strategy", lang)
     assert "concretes" in text and "implements" in text, (
-        f"{lang}/StrategyEmitter.md no longer keys the abstract/concrete "
+        f"composed {lang} Strategy spec no longer keys the abstract/concrete "
         "role on `concretes`/`implements` — PolymorphicRoleNormalizer "
         "depends on that contract (R0.11)"
+    )
+
+
+def test_composed_java_strategy_keeps_float_to_double_rule() -> None:
+    """R6.1a: the R0.11 drift guard moves from 4 file copies to ONE
+    template+profile assertion for every cut-over pattern."""
+    text = _composed("Strategy", "java")
+    assert "`float` → `double`" in text or "`float` -> `double`" in text, (
+        "composed java Strategy spec lost the §Notation float→double "
+        "fidelity rule (P2JAVA lossy-conversion regression, R0.11)"
     )

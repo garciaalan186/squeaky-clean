@@ -11,4 +11,5 @@ class MicroEvalInvocation:
 
     enabled: bool = False
     model_override: str | None = None
+    patterns: tuple[str, ...] = ()
     settings: RunSettings = field(default_factory=RunSettings)

@@ -29,6 +29,15 @@ _DEFAULT_RUN_ROOT = _FRAMEWORK_ROOT.parent / "meta-evaluation-results"
 class MicroEvalCommand:
     """Composition root for `squeaky --micro-evals` (R5.4 middle tier)."""
 
+    @staticmethod
+    def select(
+        fixtures: list[Path], patterns: tuple[str, ...],
+    ) -> list[Path]:
+        """R6.1a: keep fixtures whose stem starts with any prefix (all if none)."""
+        if not patterns:
+            return fixtures
+        return [f for f in fixtures if f.stem.startswith(patterns)]
+
     def run(self, invocation: MicroEvalInvocation) -> int:
         """Emit + compile every squib fixture in every language; report."""
         rc = RunConfigFactory().build(invocation.settings, replicate_id=0)
@@ -40,8 +49,9 @@ class MicroEvalCommand:
             out_root=run_dir / "micro-evals",
             extra_files=EXTRA_FILES,
         ))
-        fixtures = sorted(
-            (_FRAMEWORK_ROOT / "eval" / "squib_fixtures").glob("*.squib"),
+        fixtures = self.select(
+            sorted((_FRAMEWORK_ROOT / "eval" / "squib_fixtures").glob("*.squib")),
+            invocation.patterns,
         )
         cells = tuple(
             runner.run_cell(fixture, language)
