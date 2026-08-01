@@ -16,6 +16,10 @@ import pytest
 
 import squeaky_clean
 from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
+from squeaky_clean.application.generation.emission.composition.compose_emitter_spec import (
+    ComposeEmitterSpec,
+)
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
     ACTIVE_EMITTER_LANGUAGES,
 )
@@ -73,8 +77,17 @@ def test_golden_squib_routes_focal_class_to_dedicated_icp(
     assert not focal.emitter_spec_name.endswith("SimpleClassEmitter"), (
         f"{pattern} ({language.value}) degraded to the SimpleClass escape hatch"
     )
-    assert (_ICPS_ROOT / f"{focal.emitter_spec_name}.md").is_file(), (
-        f"routed spec {focal.emitter_spec_name} has no file on disk"
+    # R6.1a: the routed spec may live as a per-language file OR compose from
+    # the shared template + language profile — resolve like production does.
+    try:
+        text = ComposeEmitterSpec(LoadAgentSpec()).load(
+            focal.emitter_spec_name, toolkit,
+        )
+    except FileNotFoundError:
+        text = ""
+    assert text.startswith("# Role:"), (
+        f"routed spec {focal.emitter_spec_name} neither exists per-language "
+        "nor composes from a shared template"
     )
 
 

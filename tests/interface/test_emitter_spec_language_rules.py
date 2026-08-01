@@ -71,11 +71,19 @@ def test_strategy_specs_key_interface_emission_on_concretes(lang: str) -> None:
     )
 
 
-def test_composed_java_strategy_keeps_float_to_double_rule() -> None:
+_CUT_OVER_PATTERNS = sorted(
+    p.stem.removesuffix("Emitter")
+    for sub in ("behavioral", "structural", "creational", "ddd_clean")
+    for p in (_EMITTERS / "_shared" / sub).glob("*Emitter.md")
+) if (_EMITTERS / "_shared").is_dir() else []
+
+
+@pytest.mark.parametrize("pattern", _CUT_OVER_PATTERNS)
+def test_composed_java_specs_keep_float_to_double_rule(pattern: str) -> None:
     """R6.1a: the R0.11 drift guard moves from 4 file copies to ONE
     template+profile assertion for every cut-over pattern."""
-    text = _composed("Strategy", "java")
+    text = _composed(pattern, "java")
     assert "`float` → `double`" in text or "`float` -> `double`" in text, (
-        "composed java Strategy spec lost the §Notation float→double "
+        f"composed java {pattern} spec lost the §Notation float→double "
         "fidelity rule (P2JAVA lossy-conversion regression, R0.11)"
     )
