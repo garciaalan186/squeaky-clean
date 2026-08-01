@@ -56,7 +56,7 @@ def test_reservation_released_when_inner_raises() -> None:
     with pytest.raises(RuntimeError):
         g.complete(_req())
     assert gate.spent_usd() == 0.0
-    assert not gate.would_exceed(9.9)  # reservation was released
+    gate.settle(gate.reserve(9.9), 0.0)  # reservation was released
 
 
 def test_records_each_call() -> None:

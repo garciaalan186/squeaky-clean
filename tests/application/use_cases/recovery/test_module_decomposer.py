@@ -108,7 +108,7 @@ def test_emitted_squib_round_trips_and_validates(tmp_path: Path) -> None:
 def test_classified_patterns_thread_into_specs(tmp_path: Path) -> None:
     catalog, layers = _ingest(tmp_path)
     patterns = PatternClassifier().classify_all(catalog, layers)
-    spec = ModuleDecomposer().decompose(catalog, layers, patterns)
+    spec = ModuleDecomposer(patterns).decompose(catalog, layers)
     by_name = {c.name: c.pattern for m in spec.modules for c in m.classes}
     assert by_name["Order"] == "Entity"
     assert by_name["LineItem"] == "ValueObject"

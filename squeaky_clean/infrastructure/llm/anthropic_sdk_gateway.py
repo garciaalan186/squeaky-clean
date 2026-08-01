@@ -13,14 +13,16 @@ import os
 import time
 
 import anthropic
-from anthropic.types import MessageParam, TextBlockParam
 
 from squeaky_clean.application.shared.gateways.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.infrastructure.llm.anthropic_prompt_blocks import AnthropicPromptBlocks
+from squeaky_clean.infrastructure.llm.anthropic_response_mapper import (
+    AnthropicResponseMapper,
+)
 from squeaky_clean.infrastructure.llm.llm_gateway_error import LLMGatewayError
-from squeaky_clean.infrastructure.llm.model_pricing import estimate_cost_usd
 from squeaky_clean.infrastructure.llm.token_bucket_rate_limiter import (
     TokenBucketRateLimiter,
 )
@@ -64,6 +66,8 @@ class AnthropicSDKGateway(LLMGateway):
             if prompt_cache_config is not None
             else PromptCacheConfig()
         )
+        self._blocks: AnthropicPromptBlocks = AnthropicPromptBlocks()
+        self._mapper: AnthropicResponseMapper = AnthropicResponseMapper()
 
     def complete(self, request: LLMRequest) -> LLMResponse:
         """Call messages.create with optional cache_control blocks."""
@@ -80,8 +84,8 @@ class AnthropicSDKGateway(LLMGateway):
             msg = self._client.messages.create(
                 model=request.model,
                 max_tokens=request.max_tokens or self._max_tokens,
-                system=self._build_system(request, cache_on),
-                messages=self._build_messages(request, cache_on),
+                system=self._blocks.build_system(request, cache_on),
+                messages=self._blocks.build_messages(request, cache_on),
             )
         except anthropic.APITimeoutError as exc:
             if self._graceful:
@@ -94,71 +98,9 @@ class AnthropicSDKGateway(LLMGateway):
             raise LLMGatewayError(f"sdk timeout: {exc}") from exc
         except anthropic.APIError as exc:
             raise LLMGatewayError(f"anthropic api error: {exc}") from exc
-        return self._build_response(msg, start)
+        return self._mapper.map(msg, start)
 
     def _cache_enabled_for(self, request: LLMRequest) -> bool:
         if request.tier is None:
             return self._cache_cfg.enabled
         return self._cache_cfg.is_enabled_for(request.tier)
-
-    def _build_system(
-        self, request: LLMRequest, cache_on: bool,
-    ) -> list[TextBlockParam]:
-        if cache_on:
-            block: TextBlockParam = {
-                "type": "text", "text": request.system_prompt,
-                "cache_control": {"type": "ephemeral"},
-            }
-        else:
-            block = {"type": "text", "text": request.system_prompt}
-        return [block]
-
-    def _build_messages(
-        self, request: LLMRequest, cache_on: bool,
-    ) -> list[MessageParam]:
-        prefix = request.cacheable_user_prefix
-        if not cache_on or not prefix:
-            return [{"role": "user", "content": request.user_prompt}]
-        suffix = request.user_prompt[len(prefix):] if (
-            request.user_prompt.startswith(prefix)
-        ) else request.user_prompt
-        prefix_block: TextBlockParam = {
-            "type": "text", "text": prefix,
-            "cache_control": {"type": "ephemeral"},
-        }
-        suffix_block: TextBlockParam = {"type": "text", "text": suffix}
-        return [{"role": "user", "content": [prefix_block, suffix_block]}]
-
-    def _build_response(
-        self, msg: anthropic.types.Message, start: float,
-    ) -> LLMResponse:
-        text = self._extract_text(msg)
-        usage = msg.usage
-        cache_create = int(getattr(usage, "cache_creation_input_tokens", 0) or 0)
-        cache_read = int(getattr(usage, "cache_read_input_tokens", 0) or 0)
-        plain_in = int(usage.input_tokens)
-        out = int(usage.output_tokens)
-        cost = estimate_cost_usd(
-            model=str(msg.model),
-            input_tokens=plain_in,
-            output_tokens=out,
-            cache_creation_tokens=cache_create,
-            cache_read_tokens=cache_read,
-        )
-        return LLMResponse(
-            content=text,
-            input_tokens=plain_in + cache_create + cache_read,
-            output_tokens=out,
-            cost_usd=cost,
-            duration_ms=int((time.monotonic() - start) * 1000),
-            cache_creation_input_tokens=cache_create,
-            cache_read_input_tokens=cache_read,
-            truncated=(getattr(msg, "stop_reason", None) == "max_tokens"),
-        )
-
-    def _extract_text(self, msg: anthropic.types.Message) -> str:
-        for block in msg.content:
-            text = getattr(block, "text", None)
-            if isinstance(text, str):
-                return text
-        return ""

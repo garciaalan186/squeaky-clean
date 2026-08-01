@@ -10,30 +10,21 @@ that must not be silently rewritten away.
 """
 
 import re
-from dataclasses import dataclass
-from pathlib import Path
 
+from squeaky_clean.application.generation.repair.failing_tests_request import (
+    FailingTestsRequest,
+)
 from squeaky_clean.application.generation.repair.fixer_stage import FixerStageResult
-from squeaky_clean.application.generation.repair.repair_test_file import (
-    RepairTestFile,
+from squeaky_clean.application.generation.repair.repair_test_file import RepairTestFile
+from squeaky_clean.application.generation.repair.test_repair_request import (
     TestRepairRequest,
 )
-from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 
 # "<path>:<line>: <ErrorType>" — pytest/traceback error-location line.
 _LOC = re.compile(r"^(\S+?\.(?:py|ts|js|java)):\d+: (\w*(?:Error|Exception))",
                   re.MULTILINE)
 # A failed assertion may signal a real source bug — never rewrite it away.
 _ASSERTION = frozenset({"AssertionError"})
-
-
-@dataclass(frozen=True)
-class FailingTestsRequest:
-    """Inputs to one failing-test repair pass."""
-
-    raw_output: str
-    output_dir: Path
-    toolkit: LanguageToolkit | None
 
 
 def _is_test_file(name: str) -> bool:

@@ -46,7 +46,7 @@ class FinalizeStage:
             except OSError as exc:
                 self._logger.event("percentiles_write_failed", error=str(exc))
         self._register_produced(ctx)
-        ctx.emitter.complete(metrics.estimated_cost_usd)
+        ctx.emitter.progress.complete(metrics.estimated_cost_usd)
         return metrics
 
     def _register_produced(self, ctx: PipelineContext) -> None:

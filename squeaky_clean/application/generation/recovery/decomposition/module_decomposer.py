@@ -36,30 +36,24 @@ class ModuleDecomposer:
     greenfield path. Fully deterministic — no LLM participates.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, patterns: dict[str, PatternName] | None = None) -> None:
+        """``patterns`` maps each class FQN to its Stage-3 pattern; when
+        omitted every class defaults to SimpleClass, keeping this stage
+        fully deterministic."""
         self._scc: DomainSCCFinder = DomainSCCFinder()
-        self._assigner: ModuleAssigner = ModuleAssigner()
-        self._depends: SquibDependsRenderer = SquibDependsRenderer()
-        self._classes: ClassSpecBuilder = ClassSpecBuilder()
+        self._classes: ClassSpecBuilder = ClassSpecBuilder(patterns)
         self._exports: ModuleExportsBuilder = ModuleExportsBuilder()
         self._graph: ModuleGraphBuilder = ModuleGraphBuilder()
 
     def decompose(
-        self,
-        catalog: ClassCatalog,
-        layers: dict[str, LayerType],
-        patterns: dict[str, PatternName] | None = None,
+        self, catalog: ClassCatalog, layers: dict[str, LayerType],
     ) -> ArchitectureSpec:
-        """Return the ArchitectureSpec recovered from catalog + layers.
-
-        ``patterns`` maps each class FQN to its Stage-3 pattern; when
-        omitted every class defaults to SimpleClass, keeping this stage
-        fully deterministic.
-        """
-        asg = self._assigner.assign(catalog, layers, self._scc.components(catalog, layers))
+        """Return the ArchitectureSpec recovered from catalog + layers."""
+        assigner = ModuleAssigner(self._scc.components(catalog, layers))
+        asg = assigner.assign(catalog, layers)
         exports = self._exports.build(catalog, asg.module_of)
         depends, edges = self._graph.build(catalog, asg.module_of)
-        grouped = self._group(catalog, asg.module_of, patterns or {})
+        grouped = self._group(catalog, asg.module_of)
         modules = tuple(
             ModuleSpec(
                 name=mod, layer=asg.layer_of[mod],
@@ -71,16 +65,12 @@ class ModuleDecomposer:
         return ArchitectureSpec(modules=modules, graph=ArchitectureGraph(edges=edges))
 
     def _group(
-        self,
-        catalog: ClassCatalog,
-        module_of: dict[str, str],
-        patterns: dict[str, PatternName],
+        self, catalog: ClassCatalog, module_of: dict[str, str],
     ) -> dict[str, list[ClassSpec]]:
+        renderer = SquibDependsRenderer(catalog, module_of)
         grouped: dict[str, list[ClassSpec]] = {}
         for record in catalog.classes:
-            depends = self._depends.render(record.fqn, catalog, module_of)
-            pattern = patterns.get(record.fqn, "SimpleClass")
-            spec = self._classes.build(record, depends, pattern)
+            spec = self._classes.build(record, renderer.render(record.fqn))
             grouped.setdefault(module_of[record.fqn], []).append(spec)
         return grouped
 

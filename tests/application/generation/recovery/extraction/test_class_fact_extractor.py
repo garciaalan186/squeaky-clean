@@ -19,13 +19,13 @@ def test_public_methods_drop_self_and_render_arg_names() -> None:
         "    def pay(self, amount, currency): ...\n"
         "    def _helper(self): ...\n",
     )
-    record = ClassFactExtractor().record(node, "p.C", ())
+    record = ClassFactExtractor().record(node, "p.C")
     assert record.methods == ("pay(amount, currency)",)
 
 
 def test_bases_and_fqn_and_imports_carry_through() -> None:
     node = _class_node("class C(Base, abc.ABC): ...\n")
-    record = ClassFactExtractor().record(node, "p.C", ("p.base.Base",))
+    record = ClassFactExtractor(("p.base.Base",)).record(node, "p.C")
     assert record.fqn == "p.C"
     assert record.bases == ("Base", "abc.ABC")
     assert record.imports == ("p.base.Base",)
@@ -37,7 +37,7 @@ def test_decorators_include_method_level_route_signals() -> None:
         "    @app.route('/x')\n"
         "    def index(self): ...\n",
     )
-    record = ClassFactExtractor().record(node, "p.C", ())
+    record = ClassFactExtractor().record(node, "p.C")
     assert record.decorators == ("app.route('/x')",)
 
 
@@ -48,5 +48,5 @@ def test_class_level_decorators_come_before_method_level() -> None:
         "    @cached\n"
         "    def m(self): ...\n",
     )
-    record = ClassFactExtractor().record(node, "p.C", ())
+    record = ClassFactExtractor().record(node, "p.C")
     assert record.decorators == ("dataclass", "cached")

@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
+from squeaky_clean.application.evaluation.eval.metrics.file_stats import FileStats
+from squeaky_clean.application.evaluation.eval.metrics.tier_cache_tokens import (
     TierCacheTokens,
 )
-from squeaky_clean.application.evaluation.eval.metrics.file_stats import FileStats
 from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult

@@ -27,30 +27,27 @@ _RESUMABLE_STAGES = frozenset({"icps_done", "integrated", "tested", "fixed"})
 
 
 class ResumeRunExecutor:
-    """Build a stubbed RunEvalDependencies bundle then run the pipeline."""
+    """Run the pipeline for one checkpoint, stubbing already-completed stages."""
 
-    def __init__(self, deps: RunEvalDependencies) -> None:
+    def __init__(
+        self, deps: RunEvalDependencies, cp: RunCheckpoint | None = None,
+    ) -> None:
         self._deps: RunEvalDependencies = deps
+        self._cp: RunCheckpoint | None = cp
 
-    def run_full(
-        self, problem: ProblemSpec, run_dir: Path,
-    ) -> EvalReportBundle:
-        """Restart the pipeline from scratch in the existing run_dir."""
-        return RunEvalPipeline(self._deps).run(problem, run_dir)
-
-    def resume_from(
-        self, cp: RunCheckpoint, problem: ProblemSpec, run_dir: Path,
-    ) -> EvalReportBundle:
-        """Resume the pipeline using checkpoint state for completed stages."""
-        if cp.stage not in _RESUMABLE_STAGES:
-            return self.run_full(problem, run_dir)
-        arch = self._load_architecture(cp)
-        test_arch = self._load_test_arch(cp.test_architecture_path)
-        sec_arch = self._load_test_arch(cp.security_test_architecture_path)
-        impls = self._load_impls(cp)
-        deps = ResumeStubFactory().build(
-            self._deps, arch, test_arch, sec_arch, impls,
-            prior_cost_usd=cp.cost_spent_usd,
+    def resume(self, problem: ProblemSpec, run_dir: Path) -> EvalReportBundle:
+        """Resume from the held checkpoint; restart from scratch without one."""
+        cp = self._cp
+        if cp is None or cp.stage not in _RESUMABLE_STAGES:
+            return RunEvalPipeline(self._deps).run(problem, run_dir)
+        deps = (
+            ResumeStubFactory(self._deps, self._load_architecture(cp))
+            .with_test_archs(
+                self._load_test_arch(cp.test_architecture_path),
+                self._load_test_arch(cp.security_test_architecture_path),
+            )
+            .with_impls(self._load_impls(cp))
+            .build(cp.cost_spent_usd)
         )
         return RunEvalPipeline(deps).run(problem, run_dir)
 

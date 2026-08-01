@@ -17,12 +17,13 @@ class CostGate:
     estimated cost (atomically checked against the cap) BEFORE spending, then
     settles the actual cost afterward. This bounds parallel overshoot to the
     reservation estimate rather than letting racing threads each read a
-    below-cap total and all proceed. ``check``/``record`` remain for callers
-    that only need post-hoc accounting.
+    below-cap total and all proceed. ``record`` remains for callers that
+    only need post-hoc accounting. ``budget`` is a read-only attribute (the
+    CostBudget itself is frozen).
     """
 
     def __init__(self, budget: CostBudget | None = None) -> None:
-        self._budget: CostBudget = budget or CostBudget()
+        self.budget: CostBudget = budget or CostBudget()
         self._spent_usd: float = 0.0
         self._reserved_usd: float = 0.0
         self._warned: bool = False
@@ -37,7 +38,7 @@ class CostGate:
         """Atomically check+hold ``estimate_usd`` against the cap; raise if over."""
         est = max(estimate_usd, 0.0)
         with self._lock:
-            cap = self._budget.max_cost_usd
+            cap = self.budget.max_cost_usd
             projected = self._spent_usd + self._reserved_usd + est
             if cap is not None and projected > cap:
                 raise BudgetExceededError(
@@ -51,48 +52,22 @@ class CostGate:
         with self._lock:
             self._reserved_usd = max(self._reserved_usd - reserved_usd, 0.0)
             self._spent_usd += max(actual_usd, 0.0)
-            spent, cap = self._spent_usd, self._budget.max_cost_usd
-            warn_at = self._budget.warn_threshold_usd()
+            spent, cap = self._spent_usd, self.budget.max_cost_usd
+            warn_at = self.budget.warn_threshold_usd()
             warn = warn_at is not None and not self._warned and spent >= warn_at
             if warn:
                 self._warned = True
         if warn:
             print(f"[squeaky] WARN cost ${spent:.4f} >= "
-                  f"{int(self._budget.warn_at_pct * 100)}% of cap ${cap:.4f}")
+                  f"{int(self.budget.warn_at_pct * 100)}% of cap ${cap:.4f}")
         if cap is not None and spent > cap:
             raise BudgetExceededError(f"spend ${spent:.4f} exceeded cap ${cap:.4f}")
-
-    def check(self, additional_usd: float) -> None:
-        """Raise BudgetExceededError if recording ``additional_usd`` would over-spend."""
-        if self.would_exceed(additional_usd):
-            with self._lock:
-                projected = self._spent_usd + self._reserved_usd + max(
-                    additional_usd, 0.0
-                )
-                cap = self._budget.max_cost_usd
-            raise BudgetExceededError(
-                f"projected spend ${projected:.4f} exceeds cap ${cap:.4f}"
-            )
 
     def record(self, actual_usd: float) -> None:
         """Add ``actual_usd`` to the running total; raise if cap now exceeded."""
         self.settle(0.0, actual_usd)
 
-    def would_exceed(self, additional_usd: float) -> bool:
-        """Return True iff ``spent + reserved + additional`` would tip over the cap."""
-        cap = self._budget.max_cost_usd
-        if cap is None:
-            return False
-        with self._lock:
-            return (
-                self._spent_usd + self._reserved_usd + max(additional_usd, 0.0)
-            ) > cap
-
     def spent_usd(self) -> float:
         """Return cumulative spend in USD."""
         with self._lock:
             return self._spent_usd
-
-    def budget(self) -> CostBudget:
-        """Return the configured CostBudget."""
-        return self._budget

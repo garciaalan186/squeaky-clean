@@ -7,16 +7,19 @@ cache miss — never an error, so the resolver can log every failure loudly.
 
 from pathlib import Path
 
+from squeaky_clean.application.generation.techspec.tech_doc_format_unknown_error import (
+    TechDocFormatUnknownError,
+)
 from squeaky_clean.application.generation.techspec.tech_doc_sanitizer import (
     TechDocPoisonedError,
     sanitize,
 )
 from squeaky_clean.application.generation.techspec.tech_spec_html_extractor import (
-    TechDocFormatUnknownError,
     TechSpecHTMLExtractor,
 )
-from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetcher, TechDocFetchError
+from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetcher
 from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidator
+from squeaky_clean.domain.interfaces.techspec.tech_doc_fetch_error import TechDocFetchError
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_fetch_failed import TechSpecFetchFailed
 from squeaky_clean.domain.value_objects.tech_spec_poisoned import TechSpecPoisoned
@@ -42,16 +45,13 @@ def fetch_one(
         outcome = build_from_payload(clean, attempt, is_html, extractor, validator)
     except TechDocPoisonedError as exc:
         return TechSpecPoisoned(f"{url}: {exc}")
-    except (TechDocFetchError, TechDocFormatUnknownError,
-            ValueError, TypeError) as exc:
+    except (TechDocFetchError, TechDocFormatUnknownError, ValueError, TypeError) as exc:
         return TechSpecFetchFailed(f"{url}: {exc}")
     if isinstance(outcome, TechSpecPoisoned):
         return TechSpecPoisoned(f"{url}: {outcome.reason}")
     if isinstance(outcome, TechSpecFetchFailed):
         return TechSpecFetchFailed(f"{url}: {outcome.reason}")
-    cache.write(
-        cache_path, spec_to_dict(outcome, clean, is_html), (url,), cache.now_utc(),
-    )
+    cache.write(cache_path, cache.entry_for(spec_to_dict(outcome, clean, is_html), (url,)))
     return outcome
 
 

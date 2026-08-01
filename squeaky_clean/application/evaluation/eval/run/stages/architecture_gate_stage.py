@@ -15,8 +15,10 @@ from squeaky_clean.application.generation.validation.contract_fidelity_error imp
     ContractFidelityError,
 )
 from squeaky_clean.application.generation.validation.contract_registry import ContractRegistry
-from squeaky_clean.application.generation.validation.validate_architecture_against_spec import (  # noqa: E501
+from squeaky_clean.application.generation.validation.spec_conformance_error import (
     SpecConformanceError,
+)
+from squeaky_clean.application.generation.validation.validate_architecture_against_spec import (  # noqa: E501
     ValidateArchitectureAgainstSpec,
 )
 from squeaky_clean.application.generation.validation.validate_contract_fidelity import (

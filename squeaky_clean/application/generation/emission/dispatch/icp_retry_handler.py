@@ -32,9 +32,10 @@ class ICPRetryHandler:
         self._parser: ParseImplementedClass = parser or ParseImplementedClass()
 
     def run(
-        self, request: LLMRequest, class_name: str, first: LLMResponse,
+        self, request: LLMRequest, class_name: str,
     ) -> tuple[LLMResponse, int]:
-        """Validate ``first``; on timeout/parse failure, retry with backoff."""
+        """Issue the call; on timeout/parse failure, retry with backoff."""
+        first = self._gateway.complete(request)
         last_err = self._failure(first, class_name)
         if last_err is None:
             return first, 0

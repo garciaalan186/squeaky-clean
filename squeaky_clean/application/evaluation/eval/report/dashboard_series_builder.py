@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
 
+from squeaky_clean.application.evaluation.eval.report.metric_series import MetricSeries
 from squeaky_clean.application.evaluation.eval.report.series_statistics import SeriesStatistics
 from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
 
@@ -14,17 +14,6 @@ _METRIC_KEYS: tuple[str, ...] = (
     "cross_module_dependency_violations",
     "secret_leaks_detected", "sast_high_findings",
 )
-
-
-@dataclass(frozen=True)
-class MetricSeries:
-    """Per-metric values, rolling mean, and flagged-regression run numbers."""
-
-    name: str
-    labels: tuple[str, ...]
-    values: tuple[float, ...]
-    rolling_mean: tuple[float, ...]
-    regressions: tuple[int, ...]
 
 
 class DashboardSeriesBuilder:

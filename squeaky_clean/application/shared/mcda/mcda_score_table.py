@@ -2,15 +2,11 @@
 
 from dataclasses import dataclass
 
-
-@dataclass(frozen=True)
-class MCDAScoreRow:
-    """One candidate technology's per-criterion scores + weighted total."""
-
-    technology: str
-    version_pin: str
-    scores: dict[str, int]
-    weighted_score: float
+# Re-export: mcda_scorer (owned by a parallel batch) still imports the row
+# type from this module; the class now lives in its own file.
+from squeaky_clean.application.shared.mcda.mcda_score_row import (
+    MCDAScoreRow as MCDAScoreRow,
+)
 
 
 @dataclass(frozen=True)

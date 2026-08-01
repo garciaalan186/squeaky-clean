@@ -37,40 +37,35 @@ def _request() -> LLMRequest:
 
 
 def test_parseable_first_response_needs_no_retry() -> None:
-    gateway = _ScriptedGateway([])
     first = _response(_GOOD)
-    result, attempts = ICPRetryHandler(gateway, _POLICY).run(_request(), "Foo", first)
+    gateway = _ScriptedGateway([first])
+    result, attempts = ICPRetryHandler(gateway, _POLICY).run(_request(), "Foo")
     assert (result, attempts) == (first, 0)
-    assert gateway.requests == []
+    assert len(gateway.requests) == 1
+    assert "RETRY" not in gateway.requests[0].user_prompt
 
 
 def test_parse_failure_retries_with_error_appended_to_prompt() -> None:
-    gateway = _ScriptedGateway([_response(_GOOD)])
-    result, attempts = ICPRetryHandler(gateway, _POLICY).run(
-        _request(), "Foo", _response(_BAD),
-    )
+    gateway = _ScriptedGateway([_response(_BAD), _response(_GOOD)])
+    result, attempts = ICPRetryHandler(gateway, _POLICY).run(_request(), "Foo")
     assert attempts == 1
     assert result.content == _GOOD
-    retry_prompt = gateway.requests[0].user_prompt
+    retry_prompt = gateway.requests[1].user_prompt
     assert retry_prompt.startswith("implement Foo")
     assert "RETRY" in retry_prompt
 
 
 def test_timed_out_first_response_triggers_retry() -> None:
-    gateway = _ScriptedGateway([_response(_GOOD)])
-    _, attempts = ICPRetryHandler(gateway, _POLICY).run(
-        _request(), "Foo", _response("", timed_out=True),
-    )
+    gateway = _ScriptedGateway([_response("", timed_out=True), _response(_GOOD)])
+    _, attempts = ICPRetryHandler(gateway, _POLICY).run(_request(), "Foo")
     assert attempts == 1
-    assert "timed out" in gateway.requests[0].user_prompt
+    assert "timed out" in gateway.requests[1].user_prompt
 
 
 def test_exhausted_retries_returns_last_response_and_max_count() -> None:
     last = _response(_BAD)
-    gateway = _ScriptedGateway([_response(_BAD), last])
-    result, attempts = ICPRetryHandler(gateway, _POLICY).run(
-        _request(), "Foo", _response(_BAD),
-    )
+    gateway = _ScriptedGateway([_response(_BAD), _response(_BAD), last])
+    result, attempts = ICPRetryHandler(gateway, _POLICY).run(_request(), "Foo")
     assert attempts == _POLICY.max_icp_retries
     assert result is last
-    assert len(gateway.requests) == 2
+    assert len(gateway.requests) == 3

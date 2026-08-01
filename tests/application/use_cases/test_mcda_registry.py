@@ -7,6 +7,8 @@ import pytest
 
 from squeaky_clean.application.shared.mcda.mcda_registry import (
     MCDARegistry,
+)
+from squeaky_clean.application.shared.mcda.mcda_registry_entry_missing_error import (
     MCDARegistryEntryMissingError,
 )
 

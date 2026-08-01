@@ -39,7 +39,7 @@ def _run(tmp: Path) -> object:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(body)
     out = tmp / "out" / "recovered.squib"
-    return RecoveryEmitter(LocalFileSystem()).emit(tmp, out, _PURITY_FIRST)
+    return RecoveryEmitter(LocalFileSystem(), _PURITY_FIRST).emit(tmp, out)
 
 
 def test_excludes_test_classes_from_catalog(tmp_path: Path) -> None:

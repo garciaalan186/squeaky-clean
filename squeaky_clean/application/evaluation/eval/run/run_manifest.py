@@ -14,37 +14,39 @@ from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.domain.interfaces.provenance.git_info import GitInfo
 from squeaky_clean.domain.interfaces.provenance.toolchain_info import ToolchainInfo
 
+_FRAMEWORK_ROOT = Path(__file__).resolve().parents[5]
+_DEFAULT_SPEC_DIRS: tuple[Path, ...] = (
+    _FRAMEWORK_ROOT / "squeaky_clean" / "interface" / "agent_specs",
+)
+
 
 class RunManifest:
     """Captures model IDs, spec hashes, framework SHA, replicate seeds.
 
-    Provenance probes (git SHA, toolchain versions) arrive via the
-    ``GitInfo`` / ``ToolchainInfo`` ports (R6.4c) — the composition root
-    injects the subprocess adapters; unwired they degrade to unknown/{}.
-    """
+    Provenance probes (git SHA, toolchains) arrive via the ``GitInfo`` /
+    ``ToolchainInfo`` ports (R6.4c); unwired they degrade to unknown/{}.
+    ``spec_dirs``/``replicate_id`` are per-manifest configuration and
+    default to the framework spec library / replicate 0."""
 
     def __init__(
-        self,
-        git_info: GitInfo | None = None,
+        self, git_info: GitInfo | None = None,
         toolchain_info: ToolchainInfo | None = None,
+        *, spec_dirs: Sequence[Path] = _DEFAULT_SPEC_DIRS, replicate_id: int = 0,
     ) -> None:
         self._git: GitInfo | None = git_info
         self._toolchains: ToolchainInfo | None = toolchain_info
+        self._spec_dirs: Sequence[Path] = spec_dirs
+        self._replicate_id: int = replicate_id
 
-    def write(
-        self,
-        run_dir: Path,
-        models: dict[str, str],
-        spec_dirs: Sequence[Path],
-        replicate_id: int,
-    ) -> Path:
+    def write(self, run_dir: Path, models: dict[str, str]) -> Path:
         """Write run_dir/manifest.json and return its path."""
+        spec_dirs = self._spec_dirs
         manifest = {
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             "platform": platform.platform(),
             "python_version": platform.python_version(),
             "models": dict(models),
-            "replicate_id": replicate_id,
+            "replicate_id": self._replicate_id,
             "framework_sha": self._git.head_sha() if self._git else "unknown",
             "toolchains": self._toolchains.versions() if self._toolchains else {},
             "spec_library_version": self._stamp(spec_dirs),

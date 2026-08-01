@@ -27,12 +27,12 @@ _CONSTRUCTABLE = frozenset({"Entity", "ValueObject", "Aggregate"})
 class RewriteJavaFieldAccess:
     """Rewrites direct field reads on VO/Entity variables into getter calls."""
 
-    def rewrite(
-        self, arch: ArchitectureSpec, output_dir: Path,
-        toolkit: LanguageToolkit,
-    ) -> int:
+    def __init__(self, toolkit: LanguageToolkit) -> None:
+        self._toolkit: LanguageToolkit = toolkit
+
+    def rewrite(self, arch: ArchitectureSpec, output_dir: Path) -> int:
         """Rewrite `<var>.<field>` -> getter in Java src; return count."""
-        if toolkit.language.value != "java":
+        if self._toolkit.language.value != "java":
             return 0
         getters = self._getters(arch)
         if not getters:

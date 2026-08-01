@@ -28,23 +28,22 @@ from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
 class ReplicateRunner:
     """Run a problem with seeds 0..N-1; aggregate metrics into mean ± stddev."""
 
-    def __init__(
-        self, builder: DependencyBuilder, rc_factory: RunConfigFactory,
-    ) -> None:
-        self._builder: DependencyBuilder = builder
-        self._rc_factory: RunConfigFactory = rc_factory
+    def __init__(self, router: ModelRouter, invocation: RunInvocation) -> None:
+        self._router: ModelRouter = router
+        self._invocation: RunInvocation = invocation
+        self._rc_factory: RunConfigFactory = RunConfigFactory()
         self._aggregator: ReplicateAggregator = ReplicateAggregator()
         self._writer: ReplicateSummaryWriter = ReplicateSummaryWriter()
 
-    def run(
-        self, router: ModelRouter, problem: ProblemSpec, invocation: RunInvocation,
-    ) -> ReplicateRunOutcome:
-        """Run ``invocation.replicates`` replicates; write replicate_summary.{json,md}."""
+    def run(self, problem: ProblemSpec) -> ReplicateRunOutcome:
+        """Run the invocation's replicates; write replicate_summary.{json,md}."""
         results: list[EvalResult] = []
         failures: list[str] = []
-        for r in range(invocation.replicates):
-            rc = self._rc_factory.build(self._with_seed(invocation.settings, r), replicate_id=r)
-            deps = self._builder.build(router, problem, rc)
+        for r in range(self._invocation.replicates):
+            rc = self._rc_factory.build(
+                self._with_seed(self._invocation.settings, r), replicate_id=r,
+            )
+            deps = DependencyBuilder(self._router, rc).build(problem)
             try:
                 results.append(RunEval(deps).execute(problem))
             except (BudgetExceededError, ReplayCacheMissError):
@@ -53,8 +52,8 @@ class ReplicateRunner:
                 failures.append(f"replicate {r}: {type(exc).__name__}: {exc}")
         if not results:
             raise ReplicateCalibrationError(
-                f"{problem.id}: all {invocation.replicates} replicates failed — "
-                + "; ".join(failures)
+                f"{problem.id}: all {self._invocation.replicates} replicates "
+                "failed — " + "; ".join(failures)
             )
         return self._write_summary(problem, results, tuple(failures))
 

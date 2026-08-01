@@ -26,31 +26,32 @@ def test_over_cap_raises() -> None:
         g.record(2.0)
 
 
-def test_check_raises_when_projection_over() -> None:
+def test_reserve_raises_when_projection_over() -> None:
     g = CostGate(CostBudget(max_cost_usd=5.0))
     g.record(4.0)
     with pytest.raises(BudgetExceededError):
-        g.check(2.0)
+        g.reserve(2.0)
 
 
-def test_check_does_not_raise_when_under() -> None:
+def test_reserve_does_not_raise_when_under() -> None:
     g = CostGate(CostBudget(max_cost_usd=5.0))
     g.record(2.0)
-    g.check(2.5)
+    g.settle(g.reserve(2.5), 0.0)
 
 
-def test_would_exceed_arithmetic() -> None:
+def test_reserve_arithmetic_at_the_cap_boundary() -> None:
     g = CostGate(CostBudget(max_cost_usd=10.0))
     g.record(7.0)
-    assert g.would_exceed(3.5) is True
-    assert g.would_exceed(2.0) is False
-    assert g.would_exceed(3.0) is False
+    with pytest.raises(BudgetExceededError):
+        g.reserve(3.5)
+    g.settle(g.reserve(2.0), 0.0)   # under cap: allowed
+    g.settle(g.reserve(3.0), 0.0)   # exactly at cap: allowed
 
 
-def test_would_exceed_unlimited_is_false() -> None:
+def test_reserve_unlimited_never_raises() -> None:
     g = CostGate(CostBudget())
     g.record(1.0)
-    assert g.would_exceed(99999.0) is False
+    g.settle(g.reserve(99999.0), 0.0)
 
 
 def test_negative_record_clamped_to_zero() -> None:
@@ -61,7 +62,7 @@ def test_negative_record_clamped_to_zero() -> None:
 
 def test_default_constructor_uses_default_budget() -> None:
     g = CostGate()
-    assert g.budget().is_unlimited()
+    assert g.budget.is_unlimited()
 
 
 def _budget(cap: float):
@@ -74,7 +75,8 @@ def test_seed_carries_prior_spend() -> None:
     gate = CostGate(_budget(5.0))
     gate.seed(4.0)
     assert gate.spent_usd() == 4.0
-    assert gate.would_exceed(1.5)  # only $1 of headroom remains
+    with pytest.raises(BudgetExceededError):
+        gate.reserve(1.5)  # only $1 of headroom remains
 
 
 def test_reserve_blocks_parallel_overshoot() -> None:
@@ -111,4 +113,4 @@ def test_settle_reconciles_reservation() -> None:
     reserved = gate.reserve(5.0)
     gate.settle(reserved, 0.3)
     assert gate.spent_usd() == 0.3
-    assert not gate.would_exceed(9.0)  # reservation freed
+    gate.settle(gate.reserve(9.0), 0.0)  # reservation freed: room for $9

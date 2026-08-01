@@ -11,6 +11,7 @@ from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidato
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_fetch_failed import TechSpecFetchFailed
 from squeaky_clean.domain.value_objects.tech_spec_resolution import TechSpecResolution
+from squeaky_clean.domain.value_objects.tech_spec_target import TechSpecTarget
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
 
 AllowlistRegistry = dict[tuple[str, str], tuple[str, ...]]
@@ -35,9 +36,10 @@ def build_from_payload(
     ``TechSpecFetchFailed(reason)`` so the resolver can log it (R6.8).
     """
     if is_html:
-        draft = extractor.extract(
-            payload, attempt.category, attempt.technology, attempt.version,
-        )
+        draft = extractor.extract(payload, TechSpecTarget(
+            category=attempt.category, technology=attempt.technology,
+            version_pin=attempt.version,
+        ))
     else:
         parsed = json.loads(payload)
         if not isinstance(parsed, dict):

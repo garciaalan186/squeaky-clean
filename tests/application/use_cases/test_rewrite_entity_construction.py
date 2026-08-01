@@ -31,7 +31,7 @@ def _run(tmp_path: Path, src: str) -> str:
     f = tmp_path / "src" / "adapter.ts"
     f.write_text(src)
     tk = LanguageToolkitFactory().for_language(TargetLanguage.TYPESCRIPT)
-    RewriteEntityConstruction().rewrite(_arch(), tmp_path, tk)
+    RewriteEntityConstruction(tk).rewrite(_arch(), tmp_path)
     return f.read_text()
 
 
@@ -56,5 +56,5 @@ def test_python_is_untouched(tmp_path: Path) -> None:
     f = tmp_path / "src" / "x.py"
     f.write_text("return {'id': 1}\n")
     tk = LanguageToolkitFactory().for_language(TargetLanguage.PYTHON)
-    n = RewriteEntityConstruction().rewrite(_arch(), tmp_path, tk)
+    n = RewriteEntityConstruction(tk).rewrite(_arch(), tmp_path)
     assert n == 0

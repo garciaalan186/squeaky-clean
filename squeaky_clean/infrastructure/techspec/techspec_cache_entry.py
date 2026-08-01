@@ -16,6 +16,7 @@ class CacheEntry:
     fetched_at: datetime
     expires_at: datetime
     content_hash: str
+    source_urls: tuple[str, ...] = ()
 
     def is_fresh(self, now: datetime) -> bool:
         """True iff now < expires_at."""

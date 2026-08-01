@@ -14,7 +14,7 @@ class ClassAssignmentFormatter:
     """Turns a ClassAssignment into the user prompt text an ICP consumes."""
 
     def __init__(self, toolkit: LanguageToolkit) -> None:
-        self._siblings: SiblingInterfaceFormatter = SiblingInterfaceFormatter(toolkit)
+        self._toolkit: LanguageToolkit = toolkit
         self._tech: TechSpecBlockFormatter = TechSpecBlockFormatter()
 
     def format(self, assignment: ClassAssignment) -> str:
@@ -25,10 +25,9 @@ class ClassAssignmentFormatter:
         depends = ", ".join(spec.depends) if spec.depends else ""
         concretes = ", ".join(spec.concretes) if spec.concretes else ""
         implements = spec.implements or ""
-        siblings = self._siblings.format(
-            assignment.module, spec.name, spec.depends,
-            architecture=assignment.architecture,
-        )
+        siblings = SiblingInterfaceFormatter(
+            self._toolkit, assignment.architecture,
+        ).format(assignment.module, spec)
         lines: list[str] = [
             f"CLASS {spec.name}",
             f"PATTERN {spec.pattern}",

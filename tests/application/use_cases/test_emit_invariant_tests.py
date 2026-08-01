@@ -29,8 +29,7 @@ def _module(cls: ClassSpec) -> ModuleSpec:
 def _render(lang: TargetLanguage) -> tuple[str, str]:
     tk = LanguageToolkitFactory().for_language(lang)
     cls = _cls()
-    return InvariantTestRenderer(tk).render(
-        cls, _module(cls), cls.invariants)
+    return InvariantTestRenderer(tk, _module(cls)).render(cls, cls.invariants)
 
 
 def test_python_empty_and_numeric_bound() -> None:

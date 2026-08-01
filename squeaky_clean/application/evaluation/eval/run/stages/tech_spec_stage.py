@@ -18,11 +18,12 @@ from squeaky_clean.application.generation.techspec.infrastructure_choice import 
 from squeaky_clean.application.generation.techspec.select_infrastructure_choices import (
     select_infrastructure_choices,
 )
-from squeaky_clean.domain.interfaces.tech_spec_resolver import (
+from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
+from squeaky_clean.domain.interfaces.techspec.tech_spec_resolution_error import (
     TechSpecResolutionError,
-    TechSpecResolver,
 )
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec_target import TechSpecTarget
 
 
 class TechSpecStage:
@@ -54,24 +55,21 @@ class TechSpecStage:
         derived_count = max(0, len(choices) - explicit_count)
         specs = self._resolve_all(resolver, choices)
         self._orchestrator.register_tech_specs(specs)
-        return replace(ctx,
-            tech_specs={s.category: s for s in specs},
-            counters=replace(ctx.counters,
-                infra_explicit=explicit_count,
-                infra_derived=derived_count,
-                mcda_runs=derived_count,
-            ),
-        )
+        counters = replace(ctx.counters, infra_explicit=explicit_count,
+                           infra_derived=derived_count, mcda_runs=derived_count)
+        return replace(ctx, tech_specs={s.category: s for s in specs},
+                       counters=counters)
 
     def _resolve_all(
         self, resolver: TechSpecResolver, choices: tuple[InfrastructureChoice, ...],
     ) -> tuple[TechSpec, ...]:
         """Resolve every choice; failure logs reasons, then fails the run (R6.8)."""
+        targets = (
+            TechSpecTarget(c.category, c.technology, c.version_pin)
+            for c in choices
+        )
         try:
-            return tuple(
-                resolver.resolve(c.category, c.technology, c.version_pin)
-                for c in choices
-            )
+            return tuple(resolver.resolve(t) for t in targets)
         except TechSpecResolutionError as exc:
             self._deps.run_logger.event(
                 "tech_spec_resolution_failed",

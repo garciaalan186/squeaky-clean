@@ -46,9 +46,9 @@ def _spec(category: str, technology: str, package: str,
 def test_returns_none_when_no_java_tech_specs(tmp_path: Path) -> None:
     py_spec = _spec("rest_server_handler", "fastapi", "fastapi==0.110",
                     language="python")
-    result = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"rest_server_handler": py_spec}, tmp_path, _problem(),
-    )
+    result = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"rest_server_handler": py_spec}, tmp_path)
     assert result is None
     assert not (tmp_path / "pom.xml").exists()
 
@@ -56,9 +56,9 @@ def test_returns_none_when_no_java_tech_specs(tmp_path: Path) -> None:
 def test_writes_pom_for_spring_boot_with_parent(tmp_path: Path) -> None:
     rest = _spec("rest_server_handler", "spring_boot",
                  "org.springframework.boot:spring-boot-starter-web:3.2.0")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"rest_server_handler": rest}, tmp_path, _problem("svc"),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem("svc"),
+    ).generate({"rest_server_handler": rest}, tmp_path)
     assert path == tmp_path / "pom.xml"
     body = path.read_text()
     assert "<artifactId>svc</artifactId>" in body
@@ -72,9 +72,9 @@ def test_writes_pom_for_spring_boot_with_parent(tmp_path: Path) -> None:
 def test_writes_pom_with_kafka_dependency(tmp_path: Path) -> None:
     kp = _spec("message_queue_producer", "spring_kafka",
                "spring-kafka==3.1")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"mq": kp}, tmp_path, _problem(),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"mq": kp}, tmp_path)
     assert path is not None
     body = path.read_text()
     assert "<groupId>org.springframework.kafka</groupId>" in body
@@ -84,9 +84,9 @@ def test_writes_pom_with_kafka_dependency(tmp_path: Path) -> None:
 
 def test_writes_pom_without_parent_for_non_spring(tmp_path: Path) -> None:
     other = _spec("blob_storage", "local_disk", "junit:junit:4.13")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"blob": other}, tmp_path, _problem(),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"blob": other}, tmp_path)
     assert path is not None
     body = path.read_text()
     assert "spring-boot-starter-parent" not in body
@@ -97,9 +97,9 @@ def test_writes_pom_without_parent_for_non_spring(tmp_path: Path) -> None:
 def test_j1_writes_spring_data_jdbc_dependency(tmp_path: Path) -> None:
     db = _spec("relational_db", "spring_data_jdbc",
                "spring-boot-starter-data-jdbc==2.7")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"db": db}, tmp_path, _problem(),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"db": db}, tmp_path)
     assert path is not None
     body = path.read_text()
     assert "<groupId>org.springframework.boot</groupId>" in body
@@ -110,9 +110,9 @@ def test_j1_writes_spring_data_jdbc_dependency(tmp_path: Path) -> None:
 
 def test_j1_writes_lettuce_redis_dependency(tmp_path: Path) -> None:
     cache = _spec("kv_cache", "lettuce", "lettuce-core==6.3")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"cache": cache}, tmp_path, _problem(),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"cache": cache}, tmp_path)
     assert path is not None
     body = path.read_text()
     assert "<groupId>io.lettuce</groupId>" in body
@@ -122,9 +122,9 @@ def test_j1_writes_lettuce_redis_dependency(tmp_path: Path) -> None:
 
 def test_j1_writes_grpc_netty_dependency(tmp_path: Path) -> None:
     rpc = _spec("grpc_client", "grpc_java", "grpc-netty-shaded==1.62")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"rpc": rpc}, tmp_path, _problem(),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"rpc": rpc}, tmp_path)
     assert path is not None
     body = path.read_text()
     assert "<groupId>io.grpc</groupId>" in body
@@ -134,9 +134,9 @@ def test_j1_writes_grpc_netty_dependency(tmp_path: Path) -> None:
 
 def test_j1_writes_kafka_streams_dependency(tmp_path: Path) -> None:
     stream = _spec("stream_processor", "kafka_streams", "kafka-streams==3.6")
-    path = BuildManifestGenerator(LocalFileSystem()).generate(
-        _arch(), {"stream": stream}, tmp_path, _problem(),
-    )
+    path = BuildManifestGenerator(
+        LocalFileSystem(), _problem(),
+    ).generate({"stream": stream}, tmp_path)
     assert path is not None
     body = path.read_text()
     assert "<groupId>org.apache.kafka</groupId>" in body

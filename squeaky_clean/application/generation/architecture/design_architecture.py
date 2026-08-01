@@ -53,7 +53,10 @@ class DesignArchitecture:
         (e.g. constraint #22) rejected the previous output.
         """
         mode = self._deps.run_config.architect_mode
-        spec = _ARCHITECT_SPEC + ("Free" if mode == "free" else "")
+        # R6.9: patterned (full mandate) | scoped (DDD mandated, GoF
+        # advisory — the recorded ablation decision) | free (all SimpleClass).
+        suffix = {"free": "Free", "scoped": "Scoped"}.get(mode, "")
+        spec = _ARCHITECT_SPEC + suffix
         system = self._loader.load(spec)
         user = self._formatter.format(problem)
         if prior_violations:

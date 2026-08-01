@@ -7,12 +7,13 @@ from pathlib import Path
 
 from squeaky_clean.application.shared.problem.custom_pattern_manifest import (
     CustomPatternManifest,
+)
+from squeaky_clean.application.shared.problem.custom_pattern_manifest_entry import (
     CustomPatternManifestEntry,
 )
-
-
-class CustomPatternManifestError(ValueError):
-    """Raised when a custom-pattern manifest file is malformed."""
+from squeaky_clean.application.shared.problem.custom_pattern_manifest_error import (
+    CustomPatternManifestError,
+)
 
 
 class LoadCustomPatterns:

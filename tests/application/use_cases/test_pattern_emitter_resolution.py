@@ -46,7 +46,7 @@ def test_every_pattern_resolves_to_an_existing_spec(
     # file OR the shared template + language profile — loaded through the
     # same ComposeEmitterSpec path production uses.
     toolkit = LanguageToolkitFactory().for_language(language)
-    spec_name = MapPatternToEmitter().map(pattern, toolkit)
+    spec_name = MapPatternToEmitter(toolkit).map(pattern)
     try:
         text = ComposeEmitterSpec(LoadAgentSpec()).load(spec_name, toolkit)
     except FileNotFoundError:
@@ -61,9 +61,9 @@ def test_every_pattern_resolves_to_an_existing_spec(
 def test_no_catalog_pattern_silently_degrades_to_simpleclass(
     pattern: str, language: TargetLanguage,
 ) -> None:
-    spec_name = MapPatternToEmitter().map(
-        pattern, LanguageToolkitFactory().for_language(language),
-    )
+    spec_name = MapPatternToEmitter(
+        LanguageToolkitFactory().for_language(language),
+    ).map(pattern)
     if pattern != "SimpleClass":
         assert not spec_name.endswith("SimpleClassEmitter"), (
             f"{pattern} ({language.value}) degraded to the SimpleClass "

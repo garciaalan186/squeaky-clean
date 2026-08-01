@@ -1,24 +1,10 @@
-"""SastReport / SastFinding DTOs: SAST scan results for a generated project."""
+"""SastReport DTO: SAST scan results for a generated project."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
 
-Severity = Literal["LOW", "MEDIUM", "HIGH"]
-Confidence = Literal["LOW", "MEDIUM", "HIGH"]
-
-
-@dataclass(frozen=True)
-class SastFinding:
-    """One SAST finding (e.g. one bandit issue) on a generated source file."""
-
-    severity: Severity
-    confidence: Confidence
-    rule_id: str
-    file_path: str
-    line: int
-    message: str
+from squeaky_clean.domain.value_objects.sast_finding import SastFinding, Severity
 
 
 @dataclass(frozen=True)

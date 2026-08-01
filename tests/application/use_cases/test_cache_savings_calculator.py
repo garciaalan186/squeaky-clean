@@ -4,6 +4,8 @@ import pytest
 
 from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
     CacheSavingsCalculator,
+)
+from squeaky_clean.application.evaluation.eval.metrics.tier_cache_tokens import (
     TierCacheTokens,
 )
 

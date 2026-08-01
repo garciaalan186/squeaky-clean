@@ -1,17 +1,7 @@
 """DependencyBuilder: constructs RunEvalDependencies for the CLI."""
-import os
-from pathlib import Path
-
 from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.evaluation.eval.run.run_manifest import RunManifest
 from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
-from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
-from squeaky_clean.application.generation.emission.implement_class import ImplementClass
-from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
-from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
-from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
-    ParseImplementedClass,
-)
 from squeaky_clean.application.generation.integration.integrate_module import IntegrateModule
 from squeaky_clean.application.generation.repair.fix_failing_classes import FixFailingClasses
 from squeaky_clean.application.generation.repair.fix_failing_classes_deps import (
@@ -22,236 +12,89 @@ from squeaky_clean.application.generation.security.generate_security_tests impor
     GenerateSecurityTests,
 )
 from squeaky_clean.application.generation.security.review_security import ReviewSecurity
-from squeaky_clean.application.generation.techspec.infrastructure_choice_architect import (
-    InfrastructureChoiceArchitect,
-)
-from squeaky_clean.application.generation.techspec.techspec_composer import TechSpecComposer
 from squeaky_clean.application.generation.testgen.generate_test_architecture import (
     GenerateTestArchitecture,
 )
 from squeaky_clean.application.generation.testgen.generate_test_architecture_deps import (
     GenerateTestArchitectureDeps,
 )
-from squeaky_clean.application.generation.validation.rule_runner import RuleRunner
 from squeaky_clean.application.generation.validation.validate_architecture import (
     ValidateArchitecture,
 )
 from squeaky_clean.application.generation.validation.verify_layer import VerifyLayer
 from squeaky_clean.application.shared.config.run_config import RunConfig
-from squeaky_clean.application.shared.gateways.budgeted_gateway import BudgetedGateway
-from squeaky_clean.application.shared.gateways.cost_gate import CostGate
-from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
-from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
-from squeaky_clean.application.shared.language.language_toolkit_factory import (
-    LanguageToolkitFactory,
-)
-from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistry
-from squeaky_clean.application.shared.mcda.mcda_scorer import MCDAScorer
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
-from squeaky_clean.domain.interfaces.rule import Rule
-from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
-from squeaky_clean.domain.rules.dependency_rule import DependencyRule
-from squeaky_clean.domain.rules.pattern_conformance import PatternConformanceRule
-from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.domain.value_objects.target_language import TargetLanguage
-from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
-from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
-from squeaky_clean.infrastructure.llm.cache_miss_raiser import CacheMissRaiser
-from squeaky_clean.infrastructure.llm.caching_llm_gateway import CachingLLMGateway
-from squeaky_clean.infrastructure.llm.claude_cli_gateway import ClaudeCLIGateway
-from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cost
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
-from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
 from squeaky_clean.infrastructure.observability.git_info_adapter import GitInfoAdapter
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.infrastructure.observability.toolchain_probe_adapter import (
     ToolchainProbeAdapter,
 )
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
-from squeaky_clean.infrastructure.techspec.allowlist_loader import (
-    load_allowlist_registry,
-)
-from squeaky_clean.infrastructure.techspec.composite_techspec_resolver import (
-    CompositeTechSpecResolver,
-)
-from squeaky_clean.infrastructure.techspec.filesystem_techspec_resolver import (
-    FilesystemTechSpecResolver,
-)
-from squeaky_clean.infrastructure.techspec.jsonschema_techspec_validator import (
-    JSONSchemaTechSpecValidator,
-)
-from squeaky_clean.infrastructure.techspec.mcp_tech_doc_fetcher import MCPTechDocFetcher
-from squeaky_clean.infrastructure.techspec.webfetch_tech_doc_fetcher import (
-    WebFetchTechDocFetcher,
-)
-from squeaky_clean.interface.cli.language_adapter_selector import LanguageAdapterSelector
 from squeaky_clean.interface.cli.language_compiler_factory import (
     LanguageCompilerFactory,
 )
+from squeaky_clean.interface.cli.wiring.emission_wiring import EmissionWiring
+from squeaky_clean.interface.cli.wiring.rule_runner_factory import RuleRunnerFactory
+from squeaky_clean.interface.cli.wiring.techspec_wiring import TechSpecWiring
+from squeaky_clean.interface.cli.wiring.wiring_context import WiringContext
 
 
 class DependencyBuilder:
-    """Builds a fully-wired RunEvalDependencies from a router + problem."""
+    """Builds a fully-wired RunEvalDependencies for one problem run."""
 
-    def build(
-        self, router: ModelRouter, problem: ProblemSpec,
-        run_config: RunConfig | None = None,
-    ) -> RunEvalDependencies:
+    def __init__(
+        self, router: ModelRouter, run_config: RunConfig | None = None,
+    ) -> None:
+        self._router: ModelRouter = router
+        self._run_config: RunConfig | None = run_config
+
+    def build(self, problem: ProblemSpec) -> RunEvalDependencies:
         """Return a RunEvalDependencies with every collaborator instantiated."""
-        rc = run_config or RunConfig()
-        # Cache dir lives next to meta-evaluation-results, anchored relative
-        # to the framework checkout so this runs from any clone.
-        framework_root = Path(__file__).resolve().parents[3]
-        # R5.7: SQUEAKY_CACHE_DIR lets CI point at a committed replay bundle.
-        cache_dir = Path(os.environ.get(
-            "SQUEAKY_CACHE_DIR",
-            framework_root.parent / "meta-evaluation-results" / "cache",
-        ))
-        cost_gate = CostGate(rc.cost_budget)
-        gateway: LLMGateway = BudgetedGateway(
-            CachingLLMGateway(
-                RetryingGateway(
-                    (CacheMissRaiser() if rc.replay_only
-                     else self._select_inner_gateway(rc)), rc.retry_policy,
-                ),
-                cache_dir,
-            ),
-            cost_gate,
-            estimator=estimate_request_cost,
-        )
-        fs = LocalFileSystem()
-        logger = JSONLogger()
-        loader = LoadAgentSpec()
-        toolkit = LanguageToolkitFactory().for_language(problem.target_language)
-        adapters = LanguageAdapterSelector(logger).select(toolkit, fs)
-        assigner = AssignPatterns(
-            toolkit, Path(""),
-            infrastructure_mode=rc.infrastructure_mode,
-        )
-        icp_router = self._icp_router(router, problem.target_language)
-        composer = (
-            TechSpecComposer(gateway, router, loader=loader)
-            if rc.infrastructure_mode == "auto" else None
-        )
-        parser = ParseImplementedClass(adapters.parser)
-        orchestrator = OrchestrateModule(
-            ImplementClass(
-                gateway, icp_router, rc, composer=composer, parser=parser,
-                loader=loader,
-            ),
-            assigner,
-        )
-        recorder = LLMUsageRecorder()
-        call_deps = LLMCallDeps(
-            gateway=gateway, router=router, recorder=recorder, run_config=rc,
-        )
+        rc = self._run_config or RunConfig()
+        ctx = WiringContext.create(self._router, rc)
+        em = EmissionWiring(ctx).wire(problem)
         ta_deps = GenerateTestArchitectureDeps(
-            gateway=gateway, router=router, toolkit=toolkit, recorder=recorder,
-            run_config=rc,
+            gateway=ctx.gateway, router=ctx.router, toolkit=em.toolkit,
+            recorder=ctx.recorder, run_config=rc,
         )
-        rules: tuple[Rule, ...] = (adapters.granularity_rule,)
-        if problem.target_language is TargetLanguage.PYTHON:
-            rules = (
-                adapters.granularity_rule,
-                DependencyRule(),
-                PatternConformanceRule(),
-            )
-        rule_runner = RuleRunner(rules, toolkit.file_extension)
-        fixer = FixFailingClasses(FixFailingClassesDeps(
-            gateway=gateway, router=router, recorder=recorder, toolkit=toolkit,
-            run_config=rc,
-        ))
+        techspec = TechSpecWiring()
         return RunEvalDependencies(
-            design_architecture=DesignArchitecture(call_deps, loader),
-            generate_test_architecture=GenerateTestArchitecture(ta_deps, loader),
-            orchestrate_module=orchestrator,
-            integrate_module=IntegrateModule(fs, adapters.bootstrap),
+            design_architecture=DesignArchitecture(ctx.call_deps, ctx.loader),
+            generate_test_architecture=GenerateTestArchitecture(ta_deps, ctx.loader),
+            orchestrate_module=em.orchestrate_module,
+            integrate_module=IntegrateModule(ctx.fs, em.adapters.bootstrap),
             validate_architecture=ValidateArchitecture(
-                rule_runner, toolkit.file_extension
+                RuleRunnerFactory().build(em.adapters, em.toolkit),
+                em.toolkit.file_extension,
             ),
-            test_runner=adapters.test_runner,
+            test_runner=em.adapters.test_runner,
             metric_collector=EvalMetricCollector(),
-            functional_test_runner=adapters.functional_test_runner,
-            llm_usage_recorder=recorder,
-            review_security=ReviewSecurity(call_deps, loader),
-            generate_security_tests=GenerateSecurityTests(ta_deps, loader),
-            fix_failing_classes=fixer,
-            file_system=fs,
+            functional_test_runner=em.adapters.functional_test_runner,
+            llm_usage_recorder=ctx.recorder,
+            review_security=ReviewSecurity(ctx.call_deps, ctx.loader),
+            generate_security_tests=GenerateSecurityTests(ta_deps, ctx.loader),
+            fix_failing_classes=FixFailingClasses(FixFailingClassesDeps(
+                gateway=ctx.gateway, router=ctx.router, recorder=ctx.recorder,
+                toolkit=em.toolkit, run_config=rc,
+            )),
+            file_system=ctx.fs,
             run_config=rc,
-            cost_gate=cost_gate,
+            cost_gate=ctx.cost_gate,
             sast_runner=BanditSastRunner() if rc.enable_sast else None,
-            model_router=router,
-            run_logger=logger,
-            verify_layer=(VerifyLayer(call_deps, loader)
+            model_router=ctx.router,
+            run_logger=ctx.logger,
+            verify_layer=(VerifyLayer(ctx.call_deps, ctx.loader)
                           if rc.verify_layers else None),
-            tech_spec_resolver=self._tech_spec_resolver(rc, logger),
-            infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
-            dependency_installer=adapters.dependency_installer,
+            tech_spec_resolver=techspec.resolver(rc, ctx.logger),
+            infrastructure_choice_architect=techspec.choice_architect(
+                rc, ctx.call_deps,
+            ),
+            dependency_installer=em.adapters.dependency_installer,
             project_compiler=LanguageCompilerFactory().for_language(
                 problem.target_language
             ),
-            test_repairer=RepairTestFile(gateway, router, rc, fs=fs),
-            toolkit=toolkit,
+            test_repairer=RepairTestFile(ctx.gateway, ctx.router, rc, fs=ctx.fs),
+            toolkit=em.toolkit,
             run_manifest=RunManifest(GitInfoAdapter(), ToolchainProbeAdapter()),
         )
-
-    @staticmethod
-    def _infra_choice_architect(
-        rc: RunConfig, call_deps: LLMCallDeps,
-    ) -> InfrastructureChoiceArchitect | None:
-        if rc.infrastructure_mode != "auto" or not rc.infer_infrastructure:
-            return None
-        scores_root = (
-            Path(__file__).resolve().parents[3] / "eval" / "mcda_scores"
-        )
-        if not scores_root.is_dir():
-            return None
-        return InfrastructureChoiceArchitect(
-            call_deps.gateway, MCDARegistry(scores_root), MCDAScorer(),
-            call_deps.router,
-        )
-
-    @staticmethod
-    def _tech_spec_resolver(
-        rc: RunConfig, logger: JSONLogger,
-    ) -> TechSpecResolver | None:
-        if rc.infrastructure_mode != "auto":
-            return None
-        eval_root = (
-            Path(__file__).resolve().parents[3] / "eval" / "tech_specs"
-        )
-        schema_path = eval_root / "_schema.v1.json"
-        if not schema_path.is_file():
-            return None
-        validator = JSONSchemaTechSpecValidator(schema_path)
-        fs_resolver = FilesystemTechSpecResolver(
-            eval_root, validator, run_logger=logger,
-        )
-        return CompositeTechSpecResolver(
-            fs_resolver, validator,
-            cache_root=eval_root / ".cache",
-            ttl_days=rc.techspec_cache_ttl_days,
-            mcp_fetcher=MCPTechDocFetcher(),
-            web_fetcher=WebFetchTechDocFetcher(),
-            allowlist_registry=load_allowlist_registry(eval_root),
-            run_logger=logger,
-        )
-
-    @staticmethod
-    def _icp_router(base: ModelRouter, lang: TargetLanguage) -> ModelRouter:
-        if lang is not TargetLanguage.JAVA:
-            return base
-        m = {t: base.route(t) for t in ModelTier}
-        m[ModelTier.ICP] = m[ModelTier.MANAGER]
-        return ModelRouter(m)
-
-    @staticmethod
-    def _select_inner_gateway(rc: RunConfig) -> LLMGateway:
-        """Use SDK gateway iff ANTHROPIC_API_KEY is in env, else CLI."""
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            return AnthropicSDKGateway(
-                prompt_cache_config=rc.prompt_cache_config,
-            )
-        return ClaudeCLIGateway()

@@ -1,24 +1,12 @@
-"""RunLogger port: structured event sink for pipeline observability."""
+"""Re-exports: RunLogger and NullRunLogger now live in run_logging/ (R6.11b).
 
-from abc import ABC, abstractmethod
+One class per file forced the split; this module keeps the historical import
+path (``domain.interfaces.run_logger``) working for existing importers.
+"""
 
-
-class RunLogger(ABC):
-    """Port for emitting structured run events.
-
-    Shaped after the infrastructure ``JSONLogger.event`` signature so the
-    application layer can record operational events without importing a
-    concrete logger. ``NullRunLogger`` is the safe default; the composition
-    root injects the real sink.
-    """
-
-    @abstractmethod
-    def event(self, kind: str, **fields: object) -> None:
-        """Emit a structured event named ``kind`` with arbitrary fields."""
-
-
-class NullRunLogger(RunLogger):
-    """No-op RunLogger: the layer-clean default when none is injected."""
-
-    def event(self, kind: str, **fields: object) -> None:
-        """Discard the event (no observability sink wired)."""
+from squeaky_clean.domain.interfaces.run_logging.null_run_logger import (
+    NullRunLogger as NullRunLogger,
+)
+from squeaky_clean.domain.interfaces.run_logging.run_logger import (
+    RunLogger as RunLogger,
+)

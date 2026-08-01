@@ -20,8 +20,8 @@ class AcsEnrichment:
         """Return ``metrics`` with StructureStats ACS fields populated."""
         arch = ctx.arch
         assert arch is not None
-        score = ArchitecturalComplexityScorer().score(
-            ctx.problem, arch, ctx.output_dir / "src",
+        score = ArchitecturalComplexityScorer(ctx.output_dir / "src").score(
+            ctx.problem, arch,
         )
         cost_per_unit, velocity = 0.0, 0.0
         if score.composite > 0:

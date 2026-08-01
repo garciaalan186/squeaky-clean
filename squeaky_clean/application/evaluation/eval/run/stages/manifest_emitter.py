@@ -35,14 +35,13 @@ class ManifestEmitter:
     def __init__(self, logger: RunLogger, fs: ProjectFileSystem) -> None:
         self._logger = logger
         self._fs = fs
-        self._build_manifest = BuildManifestGenerator(fs)
 
     def emit(self, ctx: PipelineContext) -> None:
         arch, specs = ctx.arch, ctx.tech_specs
         assert arch is not None
         emitters: tuple[tuple[str, Callable[[], Path | None]], ...] = (
-            ("build_manifest", lambda: self._build_manifest.generate(
-                arch, specs, ctx.output_dir, ctx.problem)),
+            ("build_manifest", lambda: BuildManifestGenerator(
+                self._fs, ctx.problem).generate(specs, ctx.output_dir)),
             ("go_mod", lambda: generate_go_mod(
                 arch, specs, ctx.output_dir, ctx.problem, fs=self._fs)),
             ("cargo_toml", lambda: generate_cargo_toml(

@@ -77,7 +77,7 @@ def test_wiring_dispatches_javascript_to_index_js(tmp_path: Path) -> None:
     arch = _arch()
     specs = {"rest_server_handler":
              _spec("rest_server_handler", "javascript")}
-    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem(), specs).generate(arch, tmp_path)
     assert path == tmp_path / "index.js"
     body = path.read_text()
     assert "express" in body
@@ -88,7 +88,7 @@ def test_wiring_dispatches_typescript_to_src_index_ts(tmp_path: Path) -> None:
     arch = _arch()
     specs = {"rest_server_handler":
              _spec("rest_server_handler", "typescript")}
-    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem(), specs).generate(arch, tmp_path)
     assert path == tmp_path / "src" / "index.ts"
     body = path.read_text()
     assert "Fastify" in body
@@ -103,5 +103,5 @@ def test_wiring_typescript_takes_precedence_over_javascript(
         "rest_server_handler": _spec("rest_server_handler", "typescript"),
         "kv_cache": _spec("kv_cache", "javascript"),
     }
-    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem(), specs).generate(arch, tmp_path)
     assert path == tmp_path / "src" / "index.ts"

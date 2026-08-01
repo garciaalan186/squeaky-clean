@@ -13,6 +13,7 @@ from squeaky_clean.application.generation.emission.instantiated_icp_prompt impor
 )
 from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.techspec.composer_stats import ComposerStats
+from squeaky_clean.application.generation.techspec.composition_failure import CompositionFailure
 from squeaky_clean.application.generation.techspec.techspec_composer_manager_call import (
     TechSpecComposerManagerCall,
 )
@@ -53,7 +54,9 @@ class TechSpecComposer:
         errors: tuple[str, ...], siblings: frozenset[str],
     ) -> TechSpec:
         self._bump(validation_failures=1, manager_fallback_calls=1)
-        proposal = self._manager.request_correction(assignment, tech_spec, errors)
+        proposal = self._manager.request_correction(
+            CompositionFailure(assignment, tech_spec, errors),
+        )
         if proposal is None:
             return tech_spec  # Manager declined; proceed with original spec
         try:

@@ -8,7 +8,8 @@ from pathlib import Path
 from squeaky_clean.application.generation.security.secret_path_scanner import SecretPathScanner
 from squeaky_clean.application.generation.security.security_scan_stage import SecurityScanStage
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
-from squeaky_clean.domain.value_objects.sast_report import SastFinding, SastReport
+from squeaky_clean.domain.value_objects.sast_finding import SastFinding
+from squeaky_clean.domain.value_objects.sast_report import SastReport
 
 
 class _StubRunner(SastRunner):

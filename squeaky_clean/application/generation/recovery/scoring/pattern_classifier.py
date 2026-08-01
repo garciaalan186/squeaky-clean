@@ -2,7 +2,10 @@
 
 from squeaky_clean.application.generation.recovery.extraction.class_catalog import ClassCatalog
 from squeaky_clean.application.generation.recovery.scoring.pattern_scorer import PatternScorer
-from squeaky_clean.application.generation.recovery.scoring.pattern_tiebreak import PatternTiebreak
+from squeaky_clean.application.generation.recovery.scoring.tiebreak.pattern_tie import PatternTie
+from squeaky_clean.application.generation.recovery.scoring.tiebreak.pattern_tiebreak import (
+    PatternTiebreak,
+)
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.pattern_name import PatternName
 
@@ -40,4 +43,6 @@ class PatternClassifier:
             return winners[0]
         if self._tiebreak is None:
             return "SimpleClass"
-        return self._tiebreak.resolve(record, layers[fqn], winners)
+        return self._tiebreak.resolve(
+            PatternTie(record=record, layer=layers[fqn], candidates=winners),
+        )

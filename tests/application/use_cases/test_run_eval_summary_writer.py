@@ -43,9 +43,9 @@ def _ok_tr() -> TestRunResult:
 def test_write_renders_pass_rate_row_legend_and_routing(tmp_path: Path) -> None:
     bundle = _bundle("ok", _ok_tr(), ValidationReport(violations=(), files_scanned=2))
     path = tmp_path / "SUMMARY.md"
-    RunEvalSummaryWriter().write(path, bundle, models={
+    RunEvalSummaryWriter(models={
         "architect": "claude-opus-4-8", "icp": "claude-haiku-4-5",
-    })
+    }).write(path, bundle)
     text = path.read_text()
     assert "| P0 | 0.75 | 0 | 0.1234 | 4200 |" in text
     assert "single sample (N=1)" in text

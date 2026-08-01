@@ -16,9 +16,13 @@ class RegexDecoratorScanner:
     they are folded into one deduplicated tuple.
     """
 
-    def scan(self, source: str, decl_start: int, body: str) -> tuple[str, ...]:
-        """Return the deduplicated annotation names for the class."""
-        out: list[str] = list(self._leading(source[:decl_start]))
+    def scan(self, before: str, body: str) -> tuple[str, ...]:
+        """Return the deduplicated annotation names for one class.
+
+        ``before`` is the source up to the class declaration; ``body`` is
+        the class body slice.
+        """
+        out: list[str] = list(self._leading(before))
         out.extend(match.group(1) for match in _DECORATOR.finditer(body))
         return tuple(dict.fromkeys(out))
 

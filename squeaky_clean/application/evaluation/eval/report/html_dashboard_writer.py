@@ -13,8 +13,8 @@ from squeaky_clean.application.evaluation.eval.report.dashboard_html_template im
 )
 from squeaky_clean.application.evaluation.eval.report.dashboard_series_builder import (
     DashboardSeriesBuilder,
-    MetricSeries,
 )
+from squeaky_clean.application.evaluation.eval.report.metric_series import MetricSeries
 from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 

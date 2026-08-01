@@ -10,23 +10,24 @@ from squeaky_clean.domain.value_objects.layer_type import LayerType
 class ModuleAssigner:
     """Groups classes into modules: domain SCCs first, then attachment.
 
-    Each domain SCC becomes a DOMAIN module named after its representative
-    class. Every non-domain class attaches to the domain module it depends
-    on most; a class with no domain dependency becomes its own module in
-    its own layer. Module names are made unique deterministically.
+    Each domain SCC (held as per-assigner state) becomes a DOMAIN module
+    named after its representative class. Every non-domain class attaches
+    to the domain module it depends on most; a class with no domain
+    dependency becomes its own module in its own layer. Module names are
+    made unique deterministically.
     """
 
+    def __init__(self, components: tuple[tuple[str, ...], ...] = ()) -> None:
+        self._components: tuple[tuple[str, ...], ...] = components
+
     def assign(
-        self,
-        catalog: ClassCatalog,
-        layers: dict[str, LayerType],
-        components: tuple[tuple[str, ...], ...],
+        self, catalog: ClassCatalog, layers: dict[str, LayerType],
     ) -> ModuleAssignment:
         """Return the FQN -> module and module -> layer assignment."""
         module_of: dict[str, str] = {}
         layer_of: dict[str, LayerType] = {}
         taken: set[str] = set()
-        for comp in components:
+        for comp in self._components:
             name = self._unique(comp[0].rsplit(".", 1)[-1], taken)
             layer_of[name] = LayerType.DOMAIN
             for fqn in comp:

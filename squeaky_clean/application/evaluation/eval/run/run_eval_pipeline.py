@@ -7,65 +7,35 @@ The next harness feature lands as a new stage, not an edit here.
 
 from pathlib import Path
 
-from squeaky_clean.application.evaluation.eval.resume.checkpoint_emitter import (
-    CheckpointEmitter,
-)
-from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import (
-    EvalReportBundle,
-)
-from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import (
-    RunEvalDependencies,
-)
+from squeaky_clean.application.evaluation.eval.resume.checkpoint_emitter import CheckpointEmitter
+from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.evaluation.eval.run.stages.architecture_gate_stage import (
     ArchitectureGateStage,
 )
 from squeaky_clean.application.evaluation.eval.run.stages.build_stage import BuildStage
-from squeaky_clean.application.evaluation.eval.run.stages.design_stage import (
-    DesignStage,
-)
-from squeaky_clean.application.evaluation.eval.run.stages.emission_stage import (
-    EmissionStage,
-)
-from squeaky_clean.application.evaluation.eval.run.stages.finalize_stage import (
-    FinalizeStage,
-)
-from squeaky_clean.application.evaluation.eval.run.stages.integration_stage import (
-    IntegrationStage,
-)
-from squeaky_clean.application.evaluation.eval.run.stages.metrics_stage import (
-    MetricsStage,
-)
-from squeaky_clean.application.evaluation.eval.run.stages.stage_context import (
-    PipelineContext,
-)
-from squeaky_clean.application.evaluation.eval.run.stages.tech_spec_stage import (
-    TechSpecStage,
-)
+from squeaky_clean.application.evaluation.eval.run.stages.design_stage import DesignStage
+from squeaky_clean.application.evaluation.eval.run.stages.emission_stage import EmissionStage
+from squeaky_clean.application.evaluation.eval.run.stages.finalize_stage import FinalizeStage
+from squeaky_clean.application.evaluation.eval.run.stages.integration_stage import IntegrationStage
+from squeaky_clean.application.evaluation.eval.run.stages.metrics_stage import MetricsStage
+from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
+from squeaky_clean.application.evaluation.eval.run.stages.tech_spec_stage import TechSpecStage
 from squeaky_clean.application.evaluation.eval.run.stages.test_architecture_stage import (
     TestArchitectureStage,
 )
-from squeaky_clean.application.evaluation.eval.run.stages.test_fix_stage import (
-    TestFixStage,
-)
-from squeaky_clean.application.generation.architecture.architecture_merger import (
-    ArchitectureMerger,
-)
+from squeaky_clean.application.evaluation.eval.run.stages.test_fix_stage import TestFixStage
+from squeaky_clean.application.generation.architecture.architecture_merger import ArchitectureMerger
 from squeaky_clean.application.generation.architecture.orchestrate_architecture import (
     OrchestrateArchitecture,
 )
 from squeaky_clean.application.generation.repair.compile_gate import CompileGate
 from squeaky_clean.application.generation.repair.fixer_stage import FixerStage
-from squeaky_clean.application.generation.validation.contract_registry import (
-    ContractRegistry,
-)
-from squeaky_clean.application.shared.gateways.budget_exit_handler import (
-    BudgetExitHandler,
-)
+from squeaky_clean.application.generation.validation.contract_registry import ContractRegistry
+from squeaky_clean.application.shared.gateways.budget_exit_handler import BudgetExitHandler
 from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
-    LifecycleTimestampLog,
-)
+from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import LifecycleTimestampLog
 
 
 class RunEvalPipeline:
@@ -80,7 +50,6 @@ class RunEvalPipeline:
         compile_gate = CompileGate(
             deps.project_compiler, fixer, deps.test_repairer,
         )
-        self._budget_exit = BudgetExitHandler(deps.cost_gate)
         self._stages = (
             DesignStage(deps),
             ArchitectureGateStage(deps, contracts),
@@ -99,7 +68,8 @@ class RunEvalPipeline:
         try:
             return self._run_to_completion(problem, output_dir)
         except BudgetExceededError as exc:
-            return self._budget_exit.handle(problem, output_dir, exc)
+            handler = BudgetExitHandler(self._deps.cost_gate, problem)
+            return handler.handle(output_dir, exc)
 
     def _run_to_completion(
         self, problem: ProblemSpec, output_dir: Path,

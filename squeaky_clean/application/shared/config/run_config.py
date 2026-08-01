@@ -6,10 +6,10 @@ from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
 from squeaky_clean.application.shared.gateways.prompt_cache_config import PromptCacheConfig
 from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.domain.value_objects.temperature_policy import (
+from squeaky_clean.domain.value_objects.sampling.temperature_policy import (
     TemperaturePolicy,
-    TierSampling,
 )
+from squeaky_clean.domain.value_objects.sampling.tier_sampling import TierSampling
 
 
 @dataclass(frozen=True)

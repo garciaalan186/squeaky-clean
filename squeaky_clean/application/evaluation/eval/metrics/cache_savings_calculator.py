@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
+from squeaky_clean.application.evaluation.eval.metrics.tier_cache_tokens import TierCacheTokens
 from squeaky_clean.infrastructure.llm.model_pricing import (
     estimate_cost_usd,
     is_priced,
@@ -11,15 +10,6 @@ from squeaky_clean.infrastructure.llm.model_pricing import (
 
 _CACHE_READ_DISCOUNT: float = 0.9
 _CACHE_CREATE_PREMIUM: float = 0.25
-
-
-@dataclass(frozen=True)
-class TierCacheTokens:
-    """Cache create/read totals plus the model used for one tier."""
-
-    create_tokens: int
-    read_tokens: int
-    model: str
 
 
 class CacheSavingsCalculator:

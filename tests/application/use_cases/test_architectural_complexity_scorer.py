@@ -106,8 +106,8 @@ def test_components_dict_carries_raw_dimensions() -> None:
 
 
 def test_codegen_zero_when_source_dir_missing() -> None:
-    score = ArchitecturalComplexityScorer().score(
-        _problem(), _arch(), source_dir=None,
+    score = ArchitecturalComplexityScorer(source_dir=None).score(
+        _problem(), _arch(),
     )
     assert score.codegen == 0.0
 

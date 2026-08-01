@@ -3,9 +3,11 @@
 import json
 import os
 
-from squeaky_clean.domain.interfaces.tech_doc_fetcher import (
+from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetcher
+from squeaky_clean.domain.interfaces.techspec.mcp_not_configured_error import (
     MCPNotConfiguredError,
-    TechDocFetcher,
+)
+from squeaky_clean.domain.interfaces.techspec.tech_doc_fetch_error import (
     TechDocFetchError,
 )
 from squeaky_clean.infrastructure.techspec.webfetch_tech_doc_fetcher import (

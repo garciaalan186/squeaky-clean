@@ -45,12 +45,16 @@ class RecoveryEmitter:
     regeneration and no refactoring run — those are downstream phases.
     """
 
-    def __init__(self, fs: ProjectFileSystem) -> None:
+    def __init__(
+        self, fs: ProjectFileSystem, ranking: tuple[str, ...],
+        language: TargetLanguage = TargetLanguage.PYTHON,
+    ) -> None:
         self._fs: ProjectFileSystem = fs
+        self._ranking: tuple[str, ...] = ranking
+        self._language: TargetLanguage = language
         self._extractors: ClassCatalogExtractorFactory = ClassCatalogExtractorFactory()
         self._layers: LayerAssigner = LayerAssigner()
         self._patterns: PatternClassifier = PatternClassifier()
-        self._decomposer: ModuleDecomposer = ModuleDecomposer()
         self._gate: SquibReviewGate = SquibReviewGate(fs)
         self._analysis: ViolationAnalysis = ViolationAnalysis()
         self._serializer: ViolationReportSerializer = ViolationReportSerializer()
@@ -58,16 +62,13 @@ class RecoveryEmitter:
         self._weighting: CriteriaWeighting = CriteriaWeighting()
         self._decider: RefactorDecider = RefactorDecider()
 
-    def emit(
-        self, root: Path, out_path: Path, ranking: tuple[str, ...],
-        language: TargetLanguage = TargetLanguage.PYTHON,
-    ) -> RecoverySummary:
+    def emit(self, root: Path, out_path: Path) -> RecoverySummary:
         """Emit the Squib + violations report; return a RecoverySummary."""
-        catalog = self._extractors.for_language(language).extract(root)
+        catalog = self._extractors.for_language(self._language).extract(root)
         layers = self._layers.assign(catalog)
-        spec = self._decomposer.decompose(
-            catalog, layers, self._patterns.classify_all(catalog, layers),
-        )
+        spec = ModuleDecomposer(
+            self._patterns.classify_all(catalog, layers),
+        ).decompose(catalog, layers)
         self._gate.emit(spec, out_path)
         report = self._analysis.analyze(RecoveryArtifact(catalog, layers, spec))
         vpath = out_path.with_name(out_path.name + ".violations.json")
@@ -76,7 +77,7 @@ class RecoveryEmitter:
             out_path.with_name(out_path.name + ".violations.md"),
             self._renderer.render(report),
         )
-        outcome = self._decider.decide(self._weighting.from_ranking(ranking))
+        outcome = self._decider.decide(self._weighting.from_ranking(self._ranking))
         return RecoverySummary(
             classes=len(catalog.classes), modules=len(spec.modules),
             violations=len(report.violations),

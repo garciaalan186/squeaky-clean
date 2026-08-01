@@ -32,7 +32,7 @@ def test_resume_complete_short_circuits(tmp_path: Path) -> None:
     run_dir = _allocate(tmp_path)
     ps_dir = run_dir / "problem-set-0-calculator_python-code"
     deps = build_stub_deps()
-    bundle = ResumeRun().resume(ps_dir, P0, deps)
+    bundle = ResumeRun(deps).resume(ps_dir, P0)
     assert "resumed" in bundle.test_run_result.raw_output
     assert deps.design_architecture.execute.call_count == 0  # type: ignore[attr-defined]
 
@@ -43,7 +43,7 @@ def test_resume_checksum_mismatch_falls_back(tmp_path: Path) -> None:
     cp = RunCheckpoint(stage="icps_done", problem_id="P0", checksum="WRONG")
     CheckpointWriter().write(cp, ps_dir)
     deps = build_stub_deps()
-    bundle = ResumeRun().resume(ps_dir, P0, deps)
+    bundle = ResumeRun(deps).resume(ps_dir, P0)
     # Fallback runs full pipeline → architect IS called
     assert deps.design_architecture.execute.call_count == 1  # type: ignore[attr-defined]
     assert bundle.metrics.estimated_cost_usd > 0
@@ -58,7 +58,7 @@ def test_resume_from_icps_done_skips_architect(tmp_path: Path) -> None:
     data["stage"] = "icps_done"
     (ps_dir / "CHECKPOINT.json").write_text(json.dumps(data))
     deps = build_stub_deps()
-    ResumeRun().resume(ps_dir, P0, deps)
+    ResumeRun(deps).resume(ps_dir, P0)
     assert deps.design_architecture.execute.call_count == 0  # type: ignore[attr-defined]
     assert deps.orchestrate_module.execute.call_count == 0  # type: ignore[attr-defined]
 
@@ -75,7 +75,7 @@ def test_resume_missing_checkpoint_runs_full(tmp_path: Path) -> None:
     deps = build_stub_deps()
     target = tmp_path / "missing"
     target.mkdir()
-    bundle = ResumeRun().resume(target, P0, deps)
+    bundle = ResumeRun(deps).resume(target, P0)
     # Full run: architect IS called
     assert deps.design_architecture.execute.call_count == 1  # type: ignore[attr-defined]
     assert bundle is not None

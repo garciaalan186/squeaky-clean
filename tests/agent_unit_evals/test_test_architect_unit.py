@@ -13,7 +13,7 @@ def test_good_test_architecture_scores_full() -> None:
     notation = (_FIX_PA / "p0_calculator_good.notation").read_text()
     module = ParseNotation().parse(notation)
     raw = (_FIX_TA / "p0_calculator_good.txt").read_text()
-    score = TestArchitectScorer().score("p0_good", raw, module)
+    score = TestArchitectScorer(module).score("p0_good", raw)
     assert score.parsed is True
     assert score.structural_pass == 1.0
 
@@ -21,7 +21,7 @@ def test_good_test_architecture_scores_full() -> None:
 def test_unparseable_test_architecture_returns_parse_error() -> None:
     notation = (_FIX_PA / "p0_calculator_good.notation").read_text()
     module = ParseNotation().parse(notation)
-    score = TestArchitectScorer().score("garbage", "no headers here", module)
+    score = TestArchitectScorer(module).score("garbage", "no headers here")
     assert score.parsed is False
     assert score.structural_pass == 0.0
 
@@ -48,6 +48,6 @@ def test_unknown() -> None:
 ```
 ---
 """
-    score = TestArchitectScorer().score("bad", raw, module)
+    score = TestArchitectScorer(module).score("bad", raw)
     assert score.parsed is True
     assert any("UnknownClass" in i for i in score.issues)

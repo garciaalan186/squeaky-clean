@@ -10,23 +10,30 @@ _STABILITY_RANK: dict[str, int] = {"ga": 0, "beta": 1, "preview": 2}
 
 
 class MCDAScorer:
-    """Pure-function MCDA scorer (8 criteria; deterministic tie-breaks)."""
+    """Pure MCDA scorer for ONE evaluation's weights (8 criteria;
+    deterministic tie-breaks). Construct per problem — weights and
+    override list are evaluation state, not call arguments (R6.11b)."""
+
+    def __init__(
+        self, weights: dict[str, float],
+        problem_overrides: tuple[str, ...] = (),
+    ) -> None:
+        self._weights: dict[str, float] = weights
+        self._overrides: tuple[str, ...] = problem_overrides
 
     def score(
-        self, category: str,
-        candidates: tuple[MCDARegistryEntry, ...],
-        weights: dict[str, float],
-        problem_overrides: tuple[str, ...] = (),
+        self, category: str, candidates: tuple[MCDARegistryEntry, ...],
     ) -> MCDAScoreTable:
         """Return an MCDAScoreTable sorted by weighted_score desc."""
-        rows = tuple(self._row(c, weights) for c in candidates)
+        rows = tuple(self._row(c, self._weights) for c in candidates)
         stability = {c.technology: c.stability for c in candidates}
         ordered = sorted(
             rows,
-            key=lambda r: self._sort_key(r, problem_overrides, stability),
+            key=lambda r: self._sort_key(r, self._overrides, stability),
         )
         return MCDAScoreTable(
-            category=category, candidates=tuple(ordered), weights=dict(weights),
+            category=category, candidates=tuple(ordered),
+            weights=dict(self._weights),
         )
 
     @staticmethod

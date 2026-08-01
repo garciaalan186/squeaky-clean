@@ -20,7 +20,7 @@ def test_roundtrip_write_read(tmp_path: Path) -> None:
     log = _FakeRunLogger()
     cache = TechSpecCacheMetadata(30, run_logger=log)
     target = tmp_path / "cat" / "tech" / "v1.json"
-    cache.write(target, {"schema_version": "v1"}, ("https://x",), cache.now_utc())
+    cache.write(target, cache.entry_for({"schema_version": "v1"}, ("https://x",)))
     entry = cache.read(target)
     assert entry is not None and entry.spec == {"schema_version": "v1"}
     assert log.events == []
@@ -48,7 +48,7 @@ def test_schema_mismatch_is_logged(tmp_path: Path) -> None:
     log = _FakeRunLogger()
     cache = TechSpecCacheMetadata(30, run_logger=log)
     target = tmp_path / "old.json"
-    cache.write(target, {"schema_version": "v0"}, (), cache.now_utc())
+    cache.write(target, cache.entry_for({"schema_version": "v0"}))
     assert cache.read(target) is None
     assert log.events[0][0] == "techspec_cache_rejected"
     assert "schema_version" in str(log.events[0][1]["reason"])

@@ -28,7 +28,6 @@ _LOG = logging.getLogger(__name__)
 # anchored relative to this file so the framework runs from any checkout.
 _FRAMEWORK_ROOT = Path(__file__).resolve().parents[5]
 _DEFAULT_RUN_ROOT = _FRAMEWORK_ROOT.parent / "meta-evaluation-results"
-_SPEC_DIRS = (_FRAMEWORK_ROOT / "squeaky_clean" / "interface" / "agent_specs",)
 
 
 class RunEval:
@@ -43,7 +42,9 @@ class RunEval:
         self._router = deps.model_router
         self._paths: MetaEvalPaths = MetaEvalPaths(run_root or _DEFAULT_RUN_ROOT)
         self._report_writer: RunEvalReportWriter = RunEvalReportWriter()
-        self._summary_writer: RunEvalSummaryWriter = RunEvalSummaryWriter()
+        self._summary_writer: RunEvalSummaryWriter = RunEvalSummaryWriter(
+            self._models_by_tier(),
+        )
         self._manifest: RunManifest = deps.run_manifest
 
     def _models_by_tier(self) -> dict[str, str]:
@@ -54,9 +55,7 @@ class RunEval:
         """Run one problem in a freshly-allocated run dir; write all artifacts."""
         run_dir = self._paths.allocate()
         bundle = self._run_one(problem, run_dir)
-        self._summary_writer.write(
-            run_dir / "SUMMARY.md", bundle, self._models_by_tier(),
-        )
+        self._summary_writer.write(run_dir / "SUMMARY.md", bundle)
         atomic_write_text(
             run_dir / "metrics.json",
             json.dumps(
@@ -85,12 +84,7 @@ class RunEval:
         """Write the run manifest. Secret scan + SAST run inside the pipeline."""
         del ps_dir  # unused: pipeline writes per-problem security artifacts
         try:
-            self._manifest.write(
-                run_dir=run_dir,
-                models=self._models_by_tier(),
-                spec_dirs=_SPEC_DIRS,
-                replicate_id=0,
-            )
+            self._manifest.write(run_dir, self._models_by_tier())
         except OSError as exc:
             # Manifest loss costs reproducibility, not the run — log, don't die.
             _LOG.warning("run manifest write failed for %s: %s", run_dir, exc)

@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.generation.repair.repair_failing_tests import (
+from squeaky_clean.application.generation.repair.failing_tests_request import (
     FailingTestsRequest,
+)
+from squeaky_clean.application.generation.repair.repair_failing_tests import (
     RepairFailingTests,
 )
 from squeaky_clean.application.generation.repair.repair_test_file import RepairTestFile

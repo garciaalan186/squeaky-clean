@@ -44,8 +44,7 @@ class ImplementClass:
     def execute(self, assignment: ClassAssignment) -> ImplementedClass:
         """Generate code with bounded retry, then build the result."""
         request = self._make_request(assignment)
-        first = self._deps.gateway.complete(request)
-        response, retries = self._retry.run(request, assignment.class_spec.name, first)
+        response, retries = self._retry.run(request, assignment.class_spec.name)
         return self._build(assignment, response, retries)
 
     def _build(

@@ -3,6 +3,7 @@
 from collections import defaultdict
 from threading import Lock
 
+from squeaky_clean.application.shared.gateways.tier_usage import TierUsage
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 
 _EMPTY: list[float] = [0.0, 0.0, 0.0, 0.0]
@@ -22,8 +23,8 @@ class LLMUsageRecorder:
 
     Each bucket stores ``[input_tokens, output_tokens, cost_usd, duration_ms]``.
     ``stats(label)`` returns one bucket; ``stats(None)`` returns the grand total.
-    Side counters track cache hits/misses, timeouts, and cache token totals,
-    and per-tier ``(create, read, model)`` triples for cache savings analysis.
+    Side counters track cache hits/misses, timeouts, and cache token totals;
+    ``tier_stats`` snapshots one routing tier's usage as a TierUsage.
     """
 
     def __init__(self) -> None:
@@ -65,13 +66,13 @@ class LLMUsageRecorder:
             if response.timed_out:
                 self._timeouts += 1
 
-    def tier_samples(
-        self, tier: str,
-    ) -> tuple[tuple[int, ...], tuple[float, ...]]:
-        """Return per-call ``(durations_ms, costs_usd)`` samples for a tier."""
-        return (
-            tuple(self._tier_durations_ms.get(tier, [])),
-            tuple(self._tier_costs_usd.get(tier, [])),
+    def tier_stats(self, tier: str) -> TierUsage:
+        """Return one tier's cache-token totals and per-call samples."""
+        return TierUsage(
+            cache_create_tokens=self._tier_create.get(tier, 0),
+            cache_read_tokens=self._tier_read.get(tier, 0),
+            durations_ms=tuple(self._tier_durations_ms.get(tier, [])),
+            costs_usd=tuple(self._tier_costs_usd.get(tier, [])),
         )
 
     def stats(self, label: str | None = None) -> tuple[int, int, float, int]:
@@ -94,10 +95,6 @@ class LLMUsageRecorder:
             self._cache_create_tokens,
             self._cache_read_tokens,
         )
-
-    def tier_cache_stats(self, tier: str) -> tuple[int, int]:
-        """Return ``(cache_create_tokens, cache_read_tokens)`` for ``tier``."""
-        return (self._tier_create.get(tier, 0), self._tier_read.get(tier, 0))
 
     def timeout_count(self) -> int:
         """Number of LLMResponse instances flagged as timed out."""

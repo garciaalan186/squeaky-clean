@@ -6,10 +6,7 @@ import pytest
 
 from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
-from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
-from squeaky_clean.infrastructure.llm.claude_cli_gateway import ClaudeCLIGateway
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.testing.pytest_runner import PytestRunner
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
@@ -31,7 +28,7 @@ def test_build_wires_python_run_dependencies(
     monkeypatch.setenv("SQUEAKY_CACHE_DIR", str(tmp_path / "cache"))
     router = ModelRouter()
     rc = RunConfig(seed=7)
-    deps = DependencyBuilder().build(router, _problem(), rc)
+    deps = DependencyBuilder(router, rc).build(_problem())
     assert deps.run_config is rc
     assert deps.model_router is router
     assert isinstance(deps.test_runner, PytestRunner)
@@ -41,26 +38,10 @@ def test_build_wires_python_run_dependencies(
     assert deps.tech_spec_resolver is None
 
 
-def test_icp_router_promotes_java_icps_to_the_manager_model() -> None:
-    base = ModelRouter()
-    routed = DependencyBuilder._icp_router(base, TargetLanguage.JAVA)
-    assert routed.route(ModelTier.ICP) == base.route(ModelTier.MANAGER)
-    assert routed.route(ModelTier.ARCHITECT) == base.route(ModelTier.ARCHITECT)
-
-
-def test_icp_router_is_passthrough_for_non_java() -> None:
-    base = ModelRouter()
-    assert DependencyBuilder._icp_router(base, TargetLanguage.PYTHON) is base
-
-
-def test_inner_gateway_prefers_sdk_only_when_api_key_present(
-    monkeypatch: pytest.MonkeyPatch,
+def test_build_defaults_run_config_when_none(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    assert isinstance(
-        DependencyBuilder._select_inner_gateway(RunConfig()), ClaudeCLIGateway,
-    )
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    assert isinstance(
-        DependencyBuilder._select_inner_gateway(RunConfig()), AnthropicSDKGateway,
-    )
+    monkeypatch.setenv("SQUEAKY_CACHE_DIR", str(tmp_path / "cache"))
+    deps = DependencyBuilder(ModelRouter()).build(_problem())
+    assert deps.run_config == RunConfig()

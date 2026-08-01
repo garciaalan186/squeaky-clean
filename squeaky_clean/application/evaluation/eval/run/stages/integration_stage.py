@@ -35,14 +35,14 @@ class IntegrationStage:
             implementation=impl, test_architecture=ctx.test_arch,
             output_dir=ctx.output_dir,
             security_test_architecture=ctx.sec_arch))
-        ctx.emitter.integrated()
+        ctx.emitter.progress.integrated()
         cfg = self._deps.run_config
         if cfg.infrastructure_mode == "auto":
             fs = self._fs()
             if cfg.emit_wiring:
                 try:
-                    path = WiringGenerator(fs).generate(
-                        arch, ctx.tech_specs, ctx.output_dir)
+                    path = WiringGenerator(fs, ctx.tech_specs).generate(
+                        arch, ctx.output_dir)
                     self._logger.event("wiring_emitted", path=str(path))
                 except OSError as exc:
                     self._logger.event("wiring_emit_failed", error=str(exc))
@@ -50,9 +50,9 @@ class IntegrationStage:
         self._emit_invariant_tests(ctx)
         toolkit = self._deps.toolkit
         if toolkit is not None:
-            RewriteEntityConstruction().rewrite(arch, ctx.output_dir, toolkit)
-            RewriteJavaFieldAccess().rewrite(arch, ctx.output_dir, toolkit)
-            EmitJavaEntitySerialization().emit(arch, ctx.output_dir, toolkit)
+            RewriteEntityConstruction(toolkit).rewrite(arch, ctx.output_dir)
+            RewriteJavaFieldAccess(toolkit).rewrite(arch, ctx.output_dir)
+            EmitJavaEntitySerialization(toolkit).emit(arch, ctx.output_dir)
         return ctx
 
     def _fs(self) -> ProjectFileSystem:
@@ -70,6 +70,6 @@ class IntegrationStage:
         arch = ctx.arch
         assert arch is not None
         fs = self._fs()
-        emitted = EmitInvariantTests().emit(arch, ctx.problem, toolkit)
+        emitted = EmitInvariantTests(toolkit).emit(arch, ctx.problem)
         for rel, body in emitted.items():
             fs.write(ctx.output_dir / rel, body)

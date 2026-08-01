@@ -13,7 +13,6 @@ from squeaky_clean.application.generation.testgen.test_architecture import TestA
 from squeaky_clean.application.generation.testgen.test_skeleton import TestSkeleton
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.application.shared.language.snake_case_converter import SnakeCaseConverter
-from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 
@@ -25,26 +24,34 @@ _SLUG_NON_ALNUM = re.compile(r"[^a-z0-9]+")
 
 
 class SecurityTestAssembler:
-    """Assembles Security ICP responses into per-concern TestSkeletons."""
+    """Assembles Security ICP responses into per-concern TestSkeletons.
 
-    def __init__(self) -> None:
+    Constructed per dispatch: ``module`` scopes which target classes are
+    known (concerns for unknown classes are skipped, mirroring the
+    dispatcher's request filter) and, with ``toolkit``, the test-dir layout.
+    """
+
+    def __init__(
+        self, module: ModuleSpec | None = None,
+        toolkit: LanguageToolkit | None = None,
+    ) -> None:
+        self._module: ModuleSpec | None = module
+        self._toolkit: LanguageToolkit | None = toolkit
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
 
     def assemble(
         self,
         responses: tuple[LLMResponse, ...],
         concerns: tuple[SecurityConcern, ...],
-        class_map: dict[str, ClassSpec],
-        module: ModuleSpec | None = None,
-        toolkit: LanguageToolkit | None = None,
     ) -> TestArchitecture:
-        """Emit one TestSkeleton per (target_class, concern) pair."""
-        prefix = self._test_dir(module, toolkit)
+        """Emit one TestSkeleton per (known target_class, concern) pair."""
+        known = self._known_classes()
+        prefix = self._test_dir(self._module, self._toolkit)
         skeletons: list[TestSkeleton] = []
         slug_seen: dict[tuple[str, str], int] = {}
         idx = 0
         for concern in concerns:
-            if concern.target_class not in class_map:
+            if concern.target_class not in known:
                 continue
             extracted = self._extract_code(responses[idx].content)
             idx += 1
@@ -66,6 +73,11 @@ class SecurityTestAssembler:
         return TestArchitecture(
             gherkin_scenarios=(), test_skeletons=tuple(skeletons),
         )
+
+    def _known_classes(self) -> set[str]:
+        if self._module is None:
+            return set()
+        return {c.name for c in self._module.classes}
 
     def _test_dir(
         self,

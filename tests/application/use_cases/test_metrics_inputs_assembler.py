@@ -2,13 +2,13 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
-    TierCacheTokens,
-)
 from squeaky_clean.application.evaluation.eval.metrics.file_stats import FileStats
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs_assembler import (
     MetricsInputsAssembler,
+)
+from squeaky_clean.application.evaluation.eval.metrics.tier_cache_tokens import (
+    TierCacheTokens,
 )
 from squeaky_clean.application.evaluation.eval.run.pipeline_outputs import PipelineOutputs
 from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation

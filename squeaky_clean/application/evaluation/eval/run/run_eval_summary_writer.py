@@ -12,25 +12,21 @@ from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 class RunEvalSummaryWriter:
     """Writes a human-readable SUMMARY.md for one meta-eval run."""
 
-    def __init__(self) -> None:
+    def __init__(self, models: dict[str, str] | None = None) -> None:
+        """``models`` is the actual tier -> model mapping the run used (from
+        the router); its absence leaves the routing section empty rather than
+        risking a stale hardcoded list."""
+        self._models: dict[str, str] = models or {}
         self._cache_renderer: CacheSummaryRenderer = CacheSummaryRenderer()
 
-    def write(
-        self, path: Path, bundle: EvalReportBundle,
-        models: dict[str, str] | None = None,
-    ) -> None:
-        """Render ``bundle`` to a Markdown summary at ``path``.
-
-        ``models`` is the actual tier -> model mapping the run used (from the
-        router); its absence leaves the routing section empty rather than
-        risking a stale hardcoded list.
-        """
+    def write(self, path: Path, bundle: EvalReportBundle) -> None:
+        """Render ``bundle`` to a Markdown summary at ``path``."""
         m = bundle.metrics
         lines: list[str] = []
         lines.append(f"# Meta-Evaluation Summary — {path.parent.name}")
         lines.append("")
         lines.append("## Model Routing")
-        for tier, model in (models or {}).items():
+        for tier, model in self._models.items():
             lines.append(f"- {tier.upper():10} -> {model}")
         lines.append("")
         lines.append("## Per-Problem Results")

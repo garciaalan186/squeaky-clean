@@ -33,15 +33,15 @@ def test_each_stage_advances(tmp_path: Path) -> None:
     e.icps_done(impls)
     assert _read(tmp_path)["stage"] == "icps_done"
     assert (tmp_path / "_resume_module_impls.json").exists()
-    e.integrated()
+    e.progress.integrated()
     assert _read(tmp_path)["stage"] == "integrated"
-    e.tested()
+    e.progress.tested()
     assert _read(tmp_path)["stage"] == "tested"
-    e.fixed(2)
+    e.progress.fixed(2)
     after_fixed = _read(tmp_path)
     assert after_fixed["stage"] == "fixed"
     assert after_fixed["fixer_passes_completed"] == 2
-    e.complete(0.42)
+    e.progress.complete(0.42)
     final = _read(tmp_path)
     assert final["stage"] == "complete"
     assert final["cost_spent_usd"] == 0.42

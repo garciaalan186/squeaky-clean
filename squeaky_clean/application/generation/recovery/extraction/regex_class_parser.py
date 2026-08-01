@@ -3,6 +3,7 @@
 import re
 from collections.abc import Callable
 
+from squeaky_clean.application.generation.recovery.extraction.class_grammar import ClassGrammar
 from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
 from squeaky_clean.application.generation.recovery.extraction.regex_decorator_scanner import (
     RegexDecoratorScanner,
@@ -15,29 +16,25 @@ _KEYWORDS: frozenset[str] = frozenset({
 
 
 class RegexClassParser:
-    """Turns one file's source into ClassRecords using configured regexes.
+    """Turns one file's source into ClassRecords using a ClassGrammar.
 
-    Classes are located by ``class_re`` (named groups ``name``/``base``/
-    ``impl``); each class body runs from its declaration to the next
-    class's, and methods/fields are matched within it. Approximate by
-    design — regex, not a real parser — but enough to feed the
-    language-neutral downstream pipeline.
+    Constructed per file: the grammar is the language's declaration
+    regexes and ``imports`` is that file's import list, attached to every
+    record. Each class body runs from its declaration to the next
+    class's. Approximate by design — regex, not a real parser — but
+    enough to feed the language-neutral downstream pipeline.
     """
 
-    def __init__(
-        self, class_re: re.Pattern[str], method_re: re.Pattern[str],
-        field_re: re.Pattern[str],
-    ) -> None:
-        self._class = class_re
-        self._method = method_re
-        self._field = field_re
+    def __init__(self, grammar: ClassGrammar, imports: tuple[str, ...] = ()) -> None:
+        self._grammar: ClassGrammar = grammar
+        self._imports: tuple[str, ...] = imports
         self._decorators: RegexDecoratorScanner = RegexDecoratorScanner()
 
     def parse(
-        self, source: str, fqn_of: Callable[[str], str], imports: tuple[str, ...],
+        self, source: str, fqn_of: Callable[[str], str],
     ) -> tuple[ClassRecord, ...]:
         """Return the ClassRecords declared in ``source``."""
-        matches = list(self._class.finditer(source))
+        matches = list(self._grammar.class_re.finditer(source))
         out: list[ClassRecord] = []
         for index, match in enumerate(matches):
             end = matches[index + 1].start() if index + 1 < len(matches) else len(source)
@@ -45,8 +42,8 @@ class RegexClassParser:
             out.append(ClassRecord(
                 fqn=fqn_of(match.group("name")), bases=self._bases(match),
                 methods=self._methods(body), fields=self._fields(body),
-                imports=imports,
-                decorators=self._decorators.scan(source, match.start(), body),
+                imports=self._imports,
+                decorators=self._decorators.scan(source[:match.start()], body),
             ))
         return tuple(out)
 
@@ -62,12 +59,12 @@ class RegexClassParser:
     def _methods(self, body: str) -> tuple[str, ...]:
         return tuple(
             f"{m.group('name')}({m.group('args').strip()})"
-            for m in self._method.finditer(body)
+            for m in self._grammar.method_re.finditer(body)
             if m.group("name") not in _KEYWORDS
         )
 
     def _fields(self, body: str) -> tuple[str, ...]:
         return tuple(
             f"{m.group('name')}: {m.group('type').strip()}"
-            for m in self._field.finditer(body)
+            for m in self._grammar.field_re.finditer(body)
         )

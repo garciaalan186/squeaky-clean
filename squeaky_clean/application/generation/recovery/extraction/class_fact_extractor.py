@@ -19,19 +19,20 @@ class ClassFactExtractor:
     ClassFieldExtractor. Pure — no I/O, no LLM — reproducible by construction.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, imports: tuple[str, ...] = ()) -> None:
+        """``imports`` is the enclosing file's import list — per-extractor
+        state, attached verbatim to every record it produces."""
+        self._imports: tuple[str, ...] = imports
         self._fields: ClassFieldExtractor = ClassFieldExtractor()
 
-    def record(
-        self, node: ast.ClassDef, fqn: str, imports: tuple[str, ...],
-    ) -> ClassRecord:
-        """Return the ClassRecord for one class given its FQN and imports."""
+    def record(self, node: ast.ClassDef, fqn: str) -> ClassRecord:
+        """Return the ClassRecord for one class given its FQN."""
         return ClassRecord(
             fqn=fqn,
             bases=tuple(ast.unparse(b) for b in node.bases),
             methods=self._methods(node),
             fields=self._fields.extract(node),
-            imports=imports,
+            imports=self._imports,
             decorators=self._decorators(node),
         )
 

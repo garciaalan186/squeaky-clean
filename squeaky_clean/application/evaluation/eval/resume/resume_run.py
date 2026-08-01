@@ -23,14 +23,15 @@ from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 class ResumeRun:
     """Top-level resume entry point: read checkpoint, dispatch executor."""
 
-    def __init__(self, logger: RunLogger | None = None) -> None:
+    def __init__(
+        self, deps: RunEvalDependencies, *, logger: RunLogger | None = None,
+    ) -> None:
+        self._deps: RunEvalDependencies = deps
         self._logger: RunLogger = logger or NullRunLogger()
         self._reader: CheckpointReader = CheckpointReader(self._logger)
         self._checksum: CheckpointChecksum = CheckpointChecksum()
 
-    def resume(
-        self, run_dir: Path, problem: ProblemSpec, deps: RunEvalDependencies,
-    ) -> EvalReportBundle:
+    def resume(self, run_dir: Path, problem: ProblemSpec) -> EvalReportBundle:
         """Resume the pipeline at the checkpointed stage; restart on mismatch."""
         expected = self._checksum.compute(problem.id)
         cp = self._reader.read(run_dir, expected_checksum=expected)
@@ -39,17 +40,17 @@ class ResumeRun:
                 "resume_restart", run_dir=str(run_dir),
                 reason="missing_or_mismatched_checkpoint",
             )
-            return ResumeRunExecutor(deps).run_full(problem, run_dir)
+            return ResumeRunExecutor(self._deps).resume(problem, run_dir)
         if cp.stage == "complete":
             return self._short_circuit(cp, problem, run_dir)
         try:
-            return ResumeRunExecutor(deps).resume_from(cp, problem, run_dir)
+            return ResumeRunExecutor(self._deps, cp).resume(problem, run_dir)
         except (OSError, ValueError, KeyError, TypeError) as exc:
             self._logger.event(
                 "resume_deserialize_failed", run_dir=str(run_dir),
                 stage=cp.stage, error=str(exc),
             )
-            return ResumeRunExecutor(deps).run_full(problem, run_dir)
+            return ResumeRunExecutor(self._deps).resume(problem, run_dir)
 
     def _short_circuit(
         self, cp: RunCheckpoint, problem: ProblemSpec, run_dir: Path,

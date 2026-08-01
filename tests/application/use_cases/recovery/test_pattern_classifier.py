@@ -5,7 +5,10 @@ from squeaky_clean.application.generation.recovery.extraction.class_record impor
 from squeaky_clean.application.generation.recovery.scoring.pattern_classifier import (
     PatternClassifier,
 )
-from squeaky_clean.application.generation.recovery.scoring.pattern_tiebreak import PatternTiebreak
+from squeaky_clean.application.generation.recovery.scoring.tiebreak.pattern_tie import PatternTie
+from squeaky_clean.application.generation.recovery.scoring.tiebreak.pattern_tiebreak import (
+    PatternTiebreak,
+)
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.pattern_name import PatternName
 
@@ -16,12 +19,9 @@ class _FakeTiebreak(PatternTiebreak):
         self.calls: int = 0
         self.seen: tuple[PatternName, ...] = ()
 
-    def resolve(
-        self, record: ClassRecord, layer: LayerType,
-        candidates: tuple[PatternName, ...],
-    ) -> PatternName:
+    def resolve(self, tie: PatternTie) -> PatternName:
         self.calls += 1
-        self.seen = candidates
+        self.seen = tie.candidates
         return self._choice
 
 

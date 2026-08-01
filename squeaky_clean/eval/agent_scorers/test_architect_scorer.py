@@ -13,15 +13,19 @@ from squeaky_clean.eval.agent_scorers.agent_score import AgentScore
 
 
 class TestArchitectScorer:
-    """Score TestArchitect raw output for parse + spec-consistency."""
+    """Score TestArchitect raw output for parse + spec-consistency.
 
-    def __init__(self) -> None:
+    Constructed per oracle: ``module`` is the ModuleSpec every scored
+    fixture's skeleton classes must belong to.
+    """
+
+    def __init__(self, module: ModuleSpec) -> None:
+        self._module: ModuleSpec = module
         self._parser: ParseTestArchitecture = ParseTestArchitecture()
 
-    def score(
-        self, fixture_id: str, raw: str, module: ModuleSpec,
-    ) -> AgentScore:
+    def score(self, fixture_id: str, raw: str) -> AgentScore:
         """Return AgentScore checking sections + class-name coverage."""
+        module = self._module
         try:
             arch = self._parser.parse(raw)
         except TestArchitectureParseError as exc:
