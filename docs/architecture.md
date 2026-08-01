@@ -128,7 +128,7 @@ A separate document at [`infrastructure_layer_design.md`](infrastructure_layer_d
 
 Four languages — Python, JavaScript, TypeScript and Java — share the same architecture orchestration; per-language adapters cover:
 
-- Emitter specs (per-pattern) — the 11 DDD/Clean patterns ship as one complete spec per language under `squeaky_clean/interface/agent_specs/emitters/<lang>/...`, and the 23 creational, structural and behavioral patterns are authored once as cross-language templates under `emitters/_shared/` and composed with the language's profile; between them all 34 patterns are covered in each of the four languages, see [Emitter spec composition](#emitter-spec-composition)
+- Emitter specs (per-pattern) — all 34 catalog patterns are authored once as cross-language templates under `emitters/_shared/<category>/` and composed with the language's profile at emission time; only the security and Tier C infrastructure emitters still ship one complete spec per language under `squeaky_clean/interface/agent_specs/emitters/<lang>/...`, see [Emitter spec composition](#emitter-spec-composition)
 - OracleCompiler specs (per-language test-framework idioms)
 - Granularity rules (per-language source-size enforcement)
 - Test runner adapters (pytest / mvn / npm test)
@@ -155,7 +155,7 @@ The existing language-toolkit placeholders are substituted afterwards, so a comp
 
 A profile file is markdown in which every `## <block_name>` heading opens a named block whose body runs until the next heading. The shipped profiles carry `language_name`, `fence_tag`, `input_suffix`, `file_preamble`, `abstract_idiom`, `concrete_idiom`, `style_rule`, `arg_note`, `import_rule`, `language_rules`, `error_rule`, `shadowing_rule`, `fields_rule`, `sibling_fields_rule`, `collection_default_rule`, `floor_expr`, `extra_constraints` and `polymorphism_note`. A block may legitimately be empty.
 
-The creational, structural and behavioral families are authored as shared templates: 23 patterns in all — the 5 creational (Abstract Factory, Builder, Factory Method, Prototype, Singleton), the 7 structural (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy) and the 11 behavioral (Chain of Responsibility, Command, Interpreter, Iterator, Mediator, Memento, Observer, State, Strategy, Template Method, Visitor) — are one template plus the four language profiles, and `emitters/<language>/creational/`, `emitters/<language>/structural/` and `emitters/<language>/behavioral/` hold no pattern specs. The remaining 11 patterns — the DDD/Clean family — ship one complete spec file per language, 44 files in all.
+All 34 catalog patterns are authored as shared templates: the 5 creational (Abstract Factory, Builder, Factory Method, Prototype, Singleton), the 7 structural (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy), the 11 behavioral (Chain of Responsibility, Command, Interpreter, Iterator, Mediator, Memento, Observer, State, Strategy, Template Method, Visitor) and the 11 DDD/Clean (Entity, Value Object, Aggregate, Domain Event, Specification, Repository, Gateway, Presenter, Use Case, DTOMapper, SimpleClass) — each is one template plus the four language profiles, and `emitters/<language>/creational/`, `emitters/<language>/structural/`, `emitters/<language>/behavioral/` and `emitters/<language>/ddd_clean/` hold no pattern specs. Only the security and Tier C infrastructure emitters remain per-language.
 
 ## Architecture Recovery — the inverse pipeline
 

@@ -43,7 +43,7 @@ def test_not_cut_over_pattern_falls_back_to_language_file(
     language: TargetLanguage,
 ) -> None:
     toolkit = _toolkit(language)
-    name = f"{toolkit.icp_library}/ddd_clean/EntityEmitter"
+    name = f"{toolkit.icp_library}/security/BoundarySecurityEmitter"
     composed = ComposeEmitterSpec(LoadAgentSpec()).load(name, toolkit)
     assert composed == LoadAgentSpec().load(name)
 

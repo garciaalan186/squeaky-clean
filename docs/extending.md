@@ -123,8 +123,8 @@ A bundled pattern emitter is authored in one of two shapes, and both resolve thr
 
 | Shape | Where it lives |
 |---|---|
-| Per-language | One complete spec per language at `squeaky_clean/interface/agent_specs/emitters/<language>/<category>/<Pattern>Emitter.md`. The 11 DDD/Clean patterns ship this way — 44 files. |
-| Shared template | One cross-language template at `emitters/_shared/<category>/<Pattern>Emitter.md`, composed at emission time with the language profile at `emitters/_shared/profiles/<language>.md`. Profiles ship for `python`, `javascript`, `typescript` and `java`. All 23 creational, structural and behavioral patterns ship this way. |
+| Per-language | One complete spec per language at `squeaky_clean/interface/agent_specs/emitters/<language>/<category>/<Pattern>Emitter.md`. The security emitters and the Tier C infrastructure emitters ship this way. |
+| Shared template | One cross-language template at `emitters/_shared/<category>/<Pattern>Emitter.md`, composed at emission time with the language profile at `emitters/_shared/profiles/<language>.md`. Profiles ship for `python`, `javascript`, `typescript` and `java`. All 34 catalog patterns — creational, structural, behavioral and DDD/Clean — ship this way. |
 
 Resolution prefers the shared template and falls back to the per-language file, so a pattern not yet cut over behaves exactly as before; a shared template with no matching language profile raises rather than degrading silently.
 
@@ -142,7 +142,7 @@ A template pulls a named block in with `{{profile:<block_name>}}` and gates line
 The framework's `LanguageAdapterRegistry` is the single per-language dispatch table (Milestone K9): the adapter selector, the compiler factory and the test-runner factory are all thin views over it, so a language is added in one place. Adding a new language requires:
 
 1. Add a `TargetLanguage` enum value.
-2. Provide the emitter-spec library for the language — a spec file for each of the 11 DDD/Clean patterns authored per language, under `emitters/<language>/ddd_clean/`, plus one profile at `emitters/_shared/profiles/<language>.md` supplying the delta blocks for all 23 creational, structural and behavioral patterns, which are authored once as shared cross-language templates.
+2. Provide the emitter-spec library for the language — one profile at `emitters/_shared/profiles/<language>.md` supplying the delta blocks for all 34 catalog patterns, which are authored once as shared cross-language templates (a template may also carry `{{#lang:<language>}}` blocks for idioms a profile block can't express), plus per-language spec files for the security and Tier C infrastructure emitters.
 3. Provide a `ProblemSpecFormatter` extension if the language has unusual identifier conventions (e.g. PowerShell verb-noun).
 4. Add one `LanguageAdapterEntry` to `language_adapter_registry.py`'s `REGISTRY` dict, carrying the test-runner factory (it takes an exclude glob, `None` meaning run everything, plus the composition root's `RunLogger`, `None` meaning a silent null logger) plus the language's functional-test exclude pattern, the granularity rule, the integration bootstrap, the implemented-class parser, the dependency installer (it takes the same logger, so a failed install lands in the structured JSON run log), and — only if the language has a meaningful ahead-of-time compile/typecheck step — a compiler. TypeScript and Java declare one; Python, JavaScript, Go and Rust leave it `None`.
 5. Run `pytest tests/interface/cli/test_language_adapter_registry_coverage.py` — it asserts every enum value has a registered entry.
