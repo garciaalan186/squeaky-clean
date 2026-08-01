@@ -34,8 +34,8 @@ class ResumeDispatch:
         run_dir = Path(invocation.resume_run_dir or "")
         problem = self._resolve_problem(run_dir, invocation)
         rc = RunConfigFactory().build(invocation.settings, replicate_id=0)
-        deps = DependencyBuilder().build(router, problem, rc)
-        return ResumeRun().resume(run_dir, problem, deps)
+        deps = DependencyBuilder(router, rc).build(problem)
+        return ResumeRun(deps).resume(run_dir, problem)
 
     def _resolve_problem(
         self, run_dir: Path, invocation: MaintenanceInvocation,

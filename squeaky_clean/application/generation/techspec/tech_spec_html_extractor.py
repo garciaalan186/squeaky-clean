@@ -2,6 +2,11 @@
 
 import re
 
+from squeaky_clean.application.generation.techspec.tech_doc_format_unknown_error import (
+    TechDocFormatUnknownError,
+)
+from squeaky_clean.domain.value_objects.tech_spec_target import TechSpecTarget
+
 _AWS_ANCHOR = re.compile(r"<a\s+id=[\"']([A-Za-z_][A-Za-z0-9_]*)[\"']")
 _SPHINX_METHOD = re.compile(
     r"<dl\s+class=[\"']py method[\"'][^>]*>.*?id=[\"']"
@@ -13,23 +18,17 @@ _GHP_SECTION = re.compile(
 )
 
 
-class TechDocFormatUnknownError(RuntimeError):
-    """Raised when no extractor matches the HTML."""
-
-
 class TechSpecHTMLExtractor:
     """Detects doc-site format then runs the matching extractor."""
 
-    def extract(
-        self, html: str, category: str, technology: str, version_pin: str,
-    ) -> dict[str, object]:
+    def extract(self, html: str, target: TechSpecTarget) -> dict[str, object]:
         """Return a draft TechSpec dict or raise TechDocFormatUnknownError."""
         for detector in (
             self._extract_aws, self._extract_sphinx, self._extract_github_pages,
         ):
             method = detector(html)
             if method is not None:
-                return self._build(category, technology, version_pin, method)
+                return self._build(target, method)
         raise TechDocFormatUnknownError("no doc-site extractor matched")
 
     @staticmethod
@@ -54,17 +53,15 @@ class TechSpecHTMLExtractor:
         return m.group(1).replace("-", "_") if m else None
 
     @staticmethod
-    def _build(
-        category: str, technology: str, version_pin: str, method: str,
-    ) -> dict[str, object]:
+    def _build(target: TechSpecTarget, method: str) -> dict[str, object]:
         return {
-            "schema_version": "v1", "category": category,
-            "technology": technology, "version_pin": version_pin,
+            "schema_version": "v1", "category": target.category,
+            "technology": target.technology, "version_pin": target.version_pin,
             "language": "python",
-            "install": {"manager": "pip", "package": version_pin},
-            "imports": {"primary": f"import {technology}", "types": []},
+            "install": {"manager": "pip", "package": target.version_pin},
+            "imports": {"primary": f"import {target.technology}", "types": []},
             "client_construction": {
-                "code": f"self._client = {technology}.Client()",
+                "code": f"self._client = {target.technology}.Client()",
                 "is_async": False, "thread_safe": True, "dependencies": [],
             },
             "primary_operations": [{

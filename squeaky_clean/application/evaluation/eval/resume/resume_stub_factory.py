@@ -27,33 +27,43 @@ from squeaky_clean.application.generation.testgen.generate_test_architecture imp
 from squeaky_clean.application.generation.testgen.test_architecture import TestArchitecture
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 
+_EMPTY = TestArchitecture(gherkin_scenarios=(), test_skeletons=())
+
 
 class ResumeStubFactory:
-    """Construct a RunEvalDependencies override bundle for resumed runs."""
+    """Builder for one resumed run's RunEvalDependencies override bundle."""
 
-    def build(
-        self, deps: RunEvalDependencies, arch: ArchitectureSpec,
-        test_arch: TestArchitecture, sec_arch: TestArchitecture,
-        impls: tuple[ModuleImplementation, ...],
-        prior_cost_usd: float,
-    ) -> RunEvalDependencies:
-        """Return new deps where cached-stage components are replaced by stubs.
+    def __init__(self, deps: RunEvalDependencies, arch: ArchitectureSpec) -> None:
+        self._deps: RunEvalDependencies = deps
+        self._arch: ArchitectureSpec = arch
+        self._test_arch: TestArchitecture = _EMPTY
+        self._sec_arch: TestArchitecture = _EMPTY
+        self._impls: tuple[ModuleImplementation, ...] = ()
 
-        Seeds the CostGate with cost already spent before the checkpoint so the
-        resumed run's budget is not silently reset to $0 (which would let a run
-        resumed near its cap re-spend the entire budget and under-report cost).
-        """
-        if deps.cost_gate is not None:
-            deps.cost_gate.seed(prior_cost_usd)
-        impls_by_name = {i.module.name: i for i in impls}
+    def with_test_archs(
+        self, test_arch: TestArchitecture, sec_arch: TestArchitecture,
+    ) -> ResumeStubFactory:
+        self._test_arch, self._sec_arch = test_arch, sec_arch
+        return self
+
+    def with_impls(self, impls: tuple[ModuleImplementation, ...]) -> ResumeStubFactory:
+        self._impls = impls
+        return self
+
+    def build(self, prior_cost_usd: float) -> RunEvalDependencies:
+        """Return new deps with cached-stage stubs; seed the CostGate with the
+        pre-checkpoint spend so a resumed run's budget is not reset to $0 (R0.5)."""
+        if self._deps.cost_gate is not None:
+            self._deps.cost_gate.seed(prior_cost_usd)
+        impls_by_name = {i.module.name: i for i in self._impls}
         return replace(
-            deps,
+            self._deps,
             design_architecture=cast(
-                DesignArchitecture, CachedDesignArchitecture(arch),
+                DesignArchitecture, CachedDesignArchitecture(self._arch),
             ),
             generate_test_architecture=cast(
                 GenerateTestArchitecture,
-                CachedGenerateTestArchitecture(test_arch, arch),
+                CachedGenerateTestArchitecture(self._test_arch, self._arch),
             ),
             review_security=cast(
                 ReviewSecurity,
@@ -61,7 +71,7 @@ class ResumeStubFactory:
             ),
             generate_security_tests=cast(
                 GenerateSecurityTests,
-                CachedGenerateSecurityTests(sec_arch, arch),
+                CachedGenerateSecurityTests(self._sec_arch, self._arch),
             ),
             orchestrate_module=cast(
                 OrchestrateModule, CachedOrchestrateModule(impls_by_name),

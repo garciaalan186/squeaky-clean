@@ -3,8 +3,8 @@
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from squeaky_clean.domain.interfaces.tech_doc_fetcher import (
-    TechDocFetcher,
+from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetcher
+from squeaky_clean.domain.interfaces.techspec.tech_doc_fetch_error import (
     TechDocFetchError,
 )
 

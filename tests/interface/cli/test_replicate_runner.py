@@ -12,11 +12,11 @@ from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
 from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
-from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.interface.cli.invocations.infra_settings import InfraSettings
+from squeaky_clean.interface.cli.invocations.run_invocation import RunInvocation
 from squeaky_clean.interface.cli.invocations.run_settings import RunSettings
 from squeaky_clean.interface.cli.replicates.replicate_runner import ReplicateRunner
-from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
 
 
 def make_problem_spec() -> ProblemSpec:
@@ -30,7 +30,9 @@ def make_problem_spec() -> ProblemSpec:
 
 
 def _runner() -> ReplicateRunner:
-    return ReplicateRunner(DependencyBuilder(), RunConfigFactory())
+    return ReplicateRunner(
+        ModelRouter(), RunInvocation(problem_ids=("P0",), replicates=3),
+    )
 
 
 def _result(run_dir: Path, tests_pass: float, cost: float) -> EvalResult:

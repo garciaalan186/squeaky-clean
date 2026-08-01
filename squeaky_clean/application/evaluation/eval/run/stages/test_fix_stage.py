@@ -11,9 +11,9 @@ from squeaky_clean.application.generation.repair.compile_gate import (
     CompileGate,
     CompileGateRequest,
 )
+from squeaky_clean.application.generation.repair.failing_tests_request import FailingTestsRequest
 from squeaky_clean.application.generation.repair.fixer_stage import FixerStage
 from squeaky_clean.application.generation.repair.repair_failing_tests import (
-    FailingTestsRequest,
     RepairFailingTests,
 )
 from squeaky_clean.application.generation.repair.repair_obligation_gaps import (
@@ -38,7 +38,7 @@ class TestFixStage:
     def run(self, ctx: PipelineContext) -> PipelineContext:
         d = self._deps
         test_run = d.test_runner.run(ctx.output_dir)
-        ctx.emitter.tested()
+        ctx.emitter.progress.tested()
         test_run, agg = self._loop.run(ctx, test_run)
         fix_stats = ctx.fix_stats
         arch = ctx.arch
@@ -64,7 +64,7 @@ class TestFixStage:
             if crash.classes_fixed > 0:
                 test_run = d.test_runner.run(ctx.output_dir)
                 fix_stats = fix_stats.merge(crash)
-        ctx.emitter.fixed(fix_stats.passes)
+        ctx.emitter.progress.fixed(fix_stats.passes)
         ctx.lifecycle.record_fields("tests_complete", {
             "all_passed": test_run.failed == 0 and test_run.errors == 0,
             "passed": test_run.passed,

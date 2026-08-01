@@ -33,8 +33,8 @@ def _msg_queue_candidates() -> tuple[MCDARegistryEntry, ...]:
 
 
 def test_worked_example_reproduces_design_section_3_2() -> None:
-    table = MCDAScorer().score(
-        "message_queue_consumer", _msg_queue_candidates(), _WEIGHTS, (),
+    table = MCDAScorer(_WEIGHTS).score(
+        "message_queue_consumer", _msg_queue_candidates(),
     )
     by_tech = {r.technology: r.weighted_score for r in table.candidates}
     assert by_tech["sqs"] == pytest.approx(4.05)
@@ -46,8 +46,8 @@ def test_worked_example_reproduces_design_section_3_2() -> None:
 
 
 def test_tie_breaker_alphabetical_when_no_prefs_or_stability_diff() -> None:
-    table = MCDAScorer().score(
-        "message_queue_consumer", _msg_queue_candidates(), _WEIGHTS, (),
+    table = MCDAScorer(_WEIGHTS).score(
+        "message_queue_consumer", _msg_queue_candidates(),
     )
     runners_up = [r.technology for r in table.candidates
                   if r.weighted_score == pytest.approx(3.75)]
@@ -56,9 +56,8 @@ def test_tie_breaker_alphabetical_when_no_prefs_or_stability_diff() -> None:
 
 
 def test_problem_overrides_take_precedence_on_ties() -> None:
-    table = MCDAScorer().score(
-        "message_queue_consumer", _msg_queue_candidates(), _WEIGHTS,
-        ("kinesis", "kafka"),
+    table = MCDAScorer(_WEIGHTS, ("kinesis", "kafka")).score(
+        "message_queue_consumer", _msg_queue_candidates(),
     )
     runners_up = [r.technology for r in table.candidates
                   if r.weighted_score == pytest.approx(3.75)]
@@ -67,8 +66,8 @@ def test_problem_overrides_take_precedence_on_ties() -> None:
 
 
 def test_scorer_is_deterministic() -> None:
-    s = MCDAScorer()
-    a = s.score("c", _msg_queue_candidates(), _WEIGHTS, ())
-    b = s.score("c", _msg_queue_candidates(), _WEIGHTS, ())
+    s = MCDAScorer(_WEIGHTS)
+    a = s.score("c", _msg_queue_candidates())
+    b = s.score("c", _msg_queue_candidates())
     assert a.candidates == b.candidates
     assert a.weights == b.weights

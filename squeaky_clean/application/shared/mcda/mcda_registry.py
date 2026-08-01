@@ -3,23 +3,17 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-
-class MCDARegistryEntryMissingError(KeyError):
-    """Raised when a category has no registered candidates on disk."""
-
-
-@dataclass(frozen=True)
-class MCDARegistryEntry:
-    """One candidate entry loaded from a registry JSON file."""
-
-    technology: str
-    version_pin: str
-    stability: str
-    scores: dict[str, int]
+# Re-export: mcda_scorer (owned by a parallel batch) still imports the entry
+# type from this module; the class now lives in its own file.
+from squeaky_clean.application.shared.mcda.mcda_registry_entry import (
+    MCDARegistryEntry as MCDARegistryEntry,
+)
+from squeaky_clean.application.shared.mcda.mcda_registry_entry_missing_error import (
+    MCDARegistryEntryMissingError,
+)
 
 
 class MCDARegistry:

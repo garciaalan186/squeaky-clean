@@ -3,6 +3,21 @@
 import argparse
 
 from squeaky_clean.interface.cli.cli_args import CLIArgs
+from squeaky_clean.interface.cli.flags.cli_args_assembler import CLIArgsAssembler
+from squeaky_clean.interface.cli.flags.infra_flag_registrar import InfraFlagRegistrar
+from squeaky_clean.interface.cli.flags.maintenance_flag_registrar import (
+    MaintenanceFlagRegistrar,
+)
+from squeaky_clean.interface.cli.flags.recovery_flag_registrar import (
+    RecoveryFlagRegistrar,
+)
+from squeaky_clean.interface.cli.flags.run_flag_registrar import RunFlagRegistrar
+from squeaky_clean.interface.cli.flags.sampling_flag_registrar import (
+    SamplingFlagRegistrar,
+)
+from squeaky_clean.interface.cli.flags.security_cache_flag_registrar import (
+    SecurityCacheFlagRegistrar,
+)
 
 _ALL_PROBLEMS: tuple[str, ...] = (
     "P0", "P0JS", "P0TS", "P0JAVA", "P0GO", "P0RUST",
@@ -21,285 +36,36 @@ class CLIArgsParser:
         parser = self._build()
         ns = parser.parse_args(argv)
         ids = self._resolve_ids(ns)
-        if (not ids and not ns.problem_file and not ns.rebuild_dashboard
-                and not ns.micro_evals
-                and ns.resume_run_dir is None and ns.squib_file is None
-                and ns.recover_from is None and ns.triage is None
-                and ns.refactor is None):
+        if self._no_input_mode(ns, ids):
             parser.error(
                 "one of --problem, --problems, --sweep, --problem-file, "
                 "--recover-from, --triage, --refactor, --squib-file, "
                 "--rebuild-dashboard, --micro-evals, or --resume required"
             )
-        return CLIArgs(
-            problem_ids=ids,
-            model_override=(
-                str(ns.model_override) if ns.model_override is not None else None
-            ),
-            max_parallel=int(ns.max_parallel),
-            replicates=int(ns.replicates),
-            problem_file=(
-                str(ns.problem_file) if ns.problem_file is not None else None
-            ),
-            seed=int(ns.seed),
-            temperature_architect=(
-                float(ns.temperature_architect)
-                if ns.temperature_architect is not None else None
-            ),
-            temperature_icp=(
-                float(ns.temperature_icp)
-                if ns.temperature_icp is not None else None
-            ),
-            deterministic=bool(ns.deterministic),
-            max_icp_retries=int(ns.max_icp_retries),
-            max_fixer_passes=int(ns.max_fixer_passes),
-            retry_backoff_base=float(ns.retry_backoff_base),
-            max_cost_usd=(
-                float(ns.max_cost_usd) if ns.max_cost_usd is not None else None
-            ),
-            warn_cost_pct=float(ns.warn_cost_pct),
-            enable_sast=bool(ns.enable_sast),
-            enable_security_tests=bool(ns.enable_security_tests),
-            prompt_cache=bool(ns.prompt_cache),
-            prompt_cache_tiers=tuple(
-                t.strip() for t in str(ns.prompt_cache_tiers).split(",") if t.strip()
-            ),
-            rebuild_dashboard=bool(ns.rebuild_dashboard),
-            micro_evals=bool(ns.micro_evals),
-            micro_patterns=tuple(
-                pat.strip() for pat in str(ns.micro_patterns).split(",")
-                if pat.strip()
-            ),
-            micro_languages=tuple(
-                lang.strip() for lang in str(ns.micro_languages).split(",")
-                if lang.strip()
-            ),
-            replay_only=bool(ns.replay_only),
-            architect_mode=str(ns.architect_mode),
-            resume_run_dir=(
-                str(ns.resume_run_dir) if ns.resume_run_dir is not None else None
-            ),
-            infrastructure_mode=str(ns.infra),
-            infer_infrastructure=bool(ns.infer_infrastructure),
-            techspec_cache_ttl_days=int(ns.techspec_cache_ttl_days),
-            emit_wiring=bool(ns.emit_wiring),
-            squib_file=(str(ns.squib_file) if ns.squib_file is not None else None),
-            legacy_tests=(
-                str(ns.legacy_tests) if ns.legacy_tests is not None else None
-            ),
-            recover_from=(
-                str(ns.recover_from) if ns.recover_from is not None else None
-            ),
-            recover_out=(
-                str(ns.recover_out) if ns.recover_out is not None else None
-            ),
-            recover_language=str(ns.recover_language),
-            criteria=tuple(
-                c.strip() for c in str(ns.criteria).split(",") if c.strip()
-            ) if ns.criteria is not None else (),
-            triage=(str(ns.triage) if ns.triage is not None else None),
-            refactor=(str(ns.refactor) if ns.refactor is not None else None),
-            plan=(str(ns.plan) if ns.plan is not None else None),
-            refactor_out=(
-                str(ns.refactor_out) if ns.refactor_out is not None else None
-            ),
-        )
+        return CLIArgsAssembler().assemble(ns, ids)
 
     def _build(self) -> argparse.ArgumentParser:
+        # Registrar order is the --help display order: keep it stable
+        # (R6.5 decision: the flag surface is a compatibility contract).
         parser = argparse.ArgumentParser(
             prog="squeaky",
             description="Squeaky Clean meta-recursive pipeline CLI",
         )
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument("--problem", dest="problem_id", default=None,
-                           help="Single problem id (e.g. P0)")
-        group.add_argument("--problems", dest="problems_csv", default=None,
-                           help="CSV list of problem ids (e.g. P0,P1JS)")
-        group.add_argument("--sweep", dest="sweep", action="store_true",
-                           help="Run all 16 problems in parallel")
-        parser.add_argument("--model-override", dest="model_override",
-                            default=None,
-                            help="Force all tiers to one model identifier")
-        parser.add_argument("--max-parallel", dest="max_parallel", type=int,
-                            default=4,
-                            help="Concurrent problems in sweep mode (default 4)")
-        parser.add_argument("--replicates", dest="replicates", type=int,
-                            default=1,
-                            help="Number of replicate runs per problem (default 1)")
-        parser.add_argument("--problem-file", dest="problem_file", default=None,
-                            help="Path to a JSON ProblemSpec file")
-        parser.add_argument("--seed", dest="seed", type=int, default=0,
-                            help="Per-run seed for sampled (ICP) calls (default 0)")
-        parser.add_argument("--temperature-architect",
-                            dest="temperature_architect",
-                            type=float, default=None,
-                            help="Override temperature for architect/manager tiers")
-        parser.add_argument("--temperature-icp", dest="temperature_icp",
-                            type=float, default=None,
-                            help="Override temperature for ICP tier (default 0.2)")
-        parser.add_argument("--deterministic", dest="deterministic",
-                            action="store_true",
-                            help="Pin all tiers to temperature=0, seed=0")
-        parser.add_argument("--max-icp-retries", dest="max_icp_retries",
-                            type=int, default=1,
-                            help="Max ICP retry attempts on parse failure")
-        parser.add_argument("--max-fixer-passes", dest="max_fixer_passes",
-                            type=int, default=1,
-                            help="Max fixer-stage passes after a failing test run")
-        parser.add_argument("--retry-backoff-base", dest="retry_backoff_base",
-                            type=float, default=1.0,
-                            help="Base seconds for exponential retry backoff")
-        parser.add_argument("--max-cost-usd", dest="max_cost_usd",
-                            type=float, default=None,
-                            help="Hard USD cap; pipeline aborts gracefully if hit")
-        parser.add_argument("--warn-cost-pct", dest="warn_cost_pct",
-                            type=float, default=0.8,
-                            help="Warn at this fraction of the cost cap (0,1]")
-        parser.add_argument("--enable-sast", dest="enable_sast",
-                            action="store_true",
-                            help="Run bandit SAST over generated code (opt-in)")
-        parser.add_argument("--security-tests", dest="enable_security_tests",
-                            action="store_true",
-                            help="Generate the (spec-grounded) security test "
-                                 "layer; off by default so the suite is the "
-                                 "acceptance contract")
-        cache_group = parser.add_mutually_exclusive_group()
-        cache_group.add_argument(
-            "--prompt-cache", dest="prompt_cache", action="store_true",
-            default=True,
-            help="Attach Anthropic ephemeral cache_control (default on)",
-        )
-        cache_group.add_argument(
-            "--no-prompt-cache", dest="prompt_cache", action="store_false",
-            help="Disable Anthropic ephemeral cache_control globally",
-        )
-        parser.add_argument(
-            "--prompt-cache-tiers", dest="prompt_cache_tiers",
-            default="architect,manager,icp,fixer",
-            help="CSV subset of tiers to cache (default: all four)",
-        )
-        parser.add_argument(
-            "--architect-mode", dest="architect_mode", default="patterned",
-            choices=("patterned", "free"),
-            help="R6.9 ablation: free = every class SimpleClass",
-        )
-        parser.add_argument(
-            "--replay-only", dest="replay_only", action="store_true",
-            help="R5.7: serve all LLM calls from cache; any miss fails loudly",
-        )
-        parser.add_argument(
-            "--micro-evals", dest="micro_evals", action="store_true",
-            help="R5.4: emit+compile every squib fixture per language; exit",
-        )
-        parser.add_argument(
-            "--micro-patterns", dest="micro_patterns", default="",
-            help="R6.1a: only run micro-eval fixtures whose stem starts "
-                 "with one of these comma-separated prefixes",
-        )
-        parser.add_argument(
-            "--micro-languages", dest="micro_languages", default="",
-            help="R6.1d: only run micro-eval columns for these comma-"
-                 "separated language names (e.g. go,rust); default all",
-        )
-        parser.add_argument(
-            "--rebuild-dashboard", dest="rebuild_dashboard",
-            action="store_true",
-            help="Rebuild meta-evaluation-results/dashboard.html and exit",
-        )
-        parser.add_argument(
-            "--resume", dest="resume_run_dir", default=None,
-            help="Resume a partially-completed run from this run dir",
-        )
-        parser.add_argument(
-            "--infra", dest="infra",
-            choices=["manual", "auto"], default="manual",
-            help=(
-                "Infrastructure adapter generation mode (H1 default: manual). "
-                "auto engages the Tier C path for Infrastructure-layer "
-                "Repository/Gateway/Adapter assignments."
-            ),
-        )
-        parser.add_argument(
-            "--infer-infrastructure", dest="infer_infrastructure",
-            action="store_true", default=False,
-            help=(
-                "H3: enable MCDA-based InfrastructureChoiceArchitect to derive "
-                "infrastructure choices not declared on the ProblemSpec. "
-                "Default off; requires --infra=auto."
-            ),
-        )
-        parser.add_argument(
-            "--techspec-cache-ttl-days", dest="techspec_cache_ttl_days",
-            type=int, default=30,
-            help=(
-                "H4: TTL in days for cached TechSpec entries (default 30). "
-                "Stale-tolerant grace allows reuse for 1.5x TTL on outage."
-            ),
-        )
-        wiring_group = parser.add_mutually_exclusive_group()
-        wiring_group.add_argument(
-            "--emit-wiring", dest="emit_wiring", action="store_true",
-            default=True,
-            help=(
-                "Emit src/main.py composition root (default true when "
-                "--infra=auto; ignored when --infra=manual)."
-            ),
-        )
-        wiring_group.add_argument(
-            "--no-emit-wiring", dest="emit_wiring", action="store_false",
-            help="Disable WiringGenerator output for this run.",
-        )
-        parser.add_argument(
-            "--squib-file", dest="squib_file", default=None,
-            help="Regenerate from a signed-off recovery Squib, bypassing "
-                 "the architect (Agentic Architecture Recovery, Stage 6).",
-        )
-        parser.add_argument(
-            "--legacy-tests", dest="legacy_tests", default=None,
-            help="Directory of the brownfield project's tests; acceptance "
-                 "criteria are derived from its test_* functions.",
-        )
-        parser.add_argument(
-            "--recover-from", dest="recover_from", default=None,
-            help="Ingest a Python project and emit a reviewable Squib + "
-                 "refactor sidecar (Architecture Recovery onboarding).",
-        )
-        parser.add_argument(
-            "--recover-out", dest="recover_out", default=None,
-            help="Where to write the recovered Squib (default: "
-                 "recovered.squib in the cwd).",
-        )
-        parser.add_argument(
-            "--language", dest="recover_language", default="python",
-            choices=("python", "javascript", "typescript", "java"),
-            help="Source language of the project to recover (default python).",
-        )
-        parser.add_argument(
-            "--criteria", dest="criteria", default=None,
-            help="Comma-separated architectural criteria, most-important "
-                 "first, driving the preserve-vs-split MCDA verdict.",
-        )
-        parser.add_argument(
-            "--triage", dest="triage", default=None,
-            help="Interactively review a violations.json (opt-out per "
-                 "category) and write refactor_plan.json.",
-        )
-        parser.add_argument(
-            "--refactor", dest="refactor", default=None,
-            help="Apply a --plan refactor_plan.json to a recovered Squib and "
-                 "emit the refactored Squib (--refactor-out).",
-        )
-        parser.add_argument(
-            "--plan", dest="plan", default=None,
-            help="The refactor_plan.json produced by --triage (required "
-                 "with --refactor).",
-        )
-        parser.add_argument(
-            "--refactor-out", dest="refactor_out", default=None,
-            help="Where to write the refactored Squib (default: "
-                 "refactored.squib).",
-        )
+        RunFlagRegistrar().register(parser)
+        SamplingFlagRegistrar().register(parser)
+        SecurityCacheFlagRegistrar().register(parser)
+        MaintenanceFlagRegistrar().register(parser)
+        InfraFlagRegistrar().register(parser)
+        RecoveryFlagRegistrar().register(parser)
         return parser
+
+    @staticmethod
+    def _no_input_mode(ns: argparse.Namespace, ids: tuple[str, ...]) -> bool:
+        return (not ids and not ns.problem_file and not ns.rebuild_dashboard
+                and not ns.micro_evals
+                and ns.resume_run_dir is None and ns.squib_file is None
+                and ns.recover_from is None and ns.triage is None
+                and ns.refactor is None)
 
     def _resolve_ids(self, ns: argparse.Namespace) -> tuple[str, ...]:
         if ns.sweep:

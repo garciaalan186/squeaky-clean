@@ -12,15 +12,19 @@ from squeaky_clean.eval.agent_scorers.agent_score import AgentScore
 
 
 class ICPScorer:
-    """Score one ICP raw response for code-fence parse + class declaration."""
+    """Score ICP raw responses for code-fence parse + class declaration.
 
-    def __init__(self) -> None:
+    Constructed per oracle: ``expected_class`` is the class every scored
+    fixture is expected to declare.
+    """
+
+    def __init__(self, expected_class: str) -> None:
+        self._expected: str = expected_class
         self._parser: ParseImplementedClass = ParseImplementedClass()
 
-    def score(
-        self, fixture_id: str, raw: str, expected_class: str,
-    ) -> AgentScore:
+    def score(self, fixture_id: str, raw: str) -> AgentScore:
         """Return AgentScore checking fenced-code parse + class presence."""
+        expected_class = self._expected
         try:
             code = self._parser.parse(raw, expected_class)
         except ImplementedClassParseError as exc:

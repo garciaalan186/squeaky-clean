@@ -2,8 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
-from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.application.generation.recovery.scoring.tiebreak.pattern_tie import PatternTie
 from squeaky_clean.domain.value_objects.pattern_name import PatternName
 
 
@@ -17,10 +16,5 @@ class PatternTiebreak(ABC):
     """
 
     @abstractmethod
-    def resolve(
-        self,
-        record: ClassRecord,
-        layer: LayerType,
-        candidates: tuple[PatternName, ...],
-    ) -> PatternName:
-        """Return one pattern from ``candidates`` (or SimpleClass fallback)."""
+    def resolve(self, tie: PatternTie) -> PatternName:
+        """Return one pattern from ``tie.candidates`` (or SimpleClass)."""

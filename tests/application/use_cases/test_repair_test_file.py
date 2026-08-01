@@ -4,6 +4,8 @@ from pathlib import Path
 
 from squeaky_clean.application.generation.repair.repair_test_file import (
     RepairTestFile,
+)
+from squeaky_clean.application.generation.repair.test_repair_request import (
     TestRepairRequest,
 )
 from squeaky_clean.application.shared.language.language_toolkit_factory import (

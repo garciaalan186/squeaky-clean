@@ -2,6 +2,7 @@
 
 import re
 
+from squeaky_clean.application.generation.recovery.extraction.class_grammar import ClassGrammar
 from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
 from squeaky_clean.application.generation.recovery.extraction.regex_catalog_extractor import (
     RegexCatalogExtractor,
@@ -26,6 +27,7 @@ _FIELD: re.Pattern[str] = re.compile(
     re.MULTILINE,
 )
 _IMPORT: re.Pattern[str] = re.compile(r"""import\s+(?:[^'"]*from\s+)?['"](?P<mod>[^'"]+)['"]""")
+_GRAMMAR = ClassGrammar(class_re=_CLASS, method_re=_METHOD, field_re=_FIELD)
 
 
 class EcmaScriptCatalogExtractor(RegexCatalogExtractor):
@@ -38,10 +40,8 @@ class EcmaScriptCatalogExtractor(RegexCatalogExtractor):
     is sparser than Python's — a documented regex-fidelity trade-off).
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._parser: RegexClassParser = RegexClassParser(_CLASS, _METHOD, _FIELD)
-
     def _records(self, source: str, prefix: str) -> tuple[ClassRecord, ...]:
         imports = tuple(m.group("mod") for m in _IMPORT.finditer(source))
-        return self._parser.parse(source, lambda name: f"{prefix}.{name}", imports)
+        return RegexClassParser(_GRAMMAR, imports).parse(
+            source, lambda name: f"{prefix}.{name}",
+        )

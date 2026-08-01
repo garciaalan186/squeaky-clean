@@ -1,14 +1,20 @@
 """RepairTestFile: regenerate a test file to compile against the real source."""
 
 import re
-from dataclasses import dataclass
-from pathlib import Path
 
 from squeaky_clean.application.generation.emission.dispatch.icp_execution_deps import (
     IcpExecutionDeps,
 )
+from squeaky_clean.application.generation.repair.repair_prompt_sources import (
+    RepairPromptSources,
+)
+
+# Re-export: repair_obligation_gaps (owned by a parallel batch) still imports
+# TestRepairRequest from this module; the class now lives in its own file.
+from squeaky_clean.application.generation.repair.test_repair_request import (
+    TestRepairRequest as TestRepairRequest,
+)
 from squeaky_clean.application.shared.config.run_config import RunConfig
-from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
@@ -34,16 +40,6 @@ _SYSTEM: str = (
     "with the wrong signature. Emit ONLY the corrected full test file in one "
     "fenced code block, no prose."
 )
-
-
-@dataclass(frozen=True)
-class TestRepairRequest:
-    """One test file to repair, with the diagnostics needed to fix it."""
-
-    project_dir: Path
-    rel_path: str
-    error_excerpt: str
-    toolkit: LanguageToolkit
 
 
 class RepairTestFile:
@@ -84,11 +80,12 @@ class RepairTestFile:
         )
 
     def _prompt(self, req: TestRepairRequest, current: str) -> str:
+        reader = RepairPromptSources()
         parts = [
             "SOURCE (authoritative — match these signatures):",
-            self._sources(req.project_dir, req.toolkit),
+            reader.sources(req.project_dir, req.toolkit),
         ]
-        exemplar = self._exemplar(req.project_dir, req.rel_path)
+        exemplar = reader.exemplar(req.project_dir, req.rel_path)
         if exemplar:
             parts += ["", "TEST STYLE (match this test framework + import "
                       "style EXACTLY — same runner, same assertion library):",
@@ -101,38 +98,3 @@ class RepairTestFile:
             f"```\n{current}\n```",
         ]
         return "\n".join(parts)
-
-    @staticmethod
-    def _exemplar(project_dir: Path, exclude_rel: str) -> str:
-        """An existing test file to copy the framework/import style from."""
-        for p in sorted(project_dir.rglob("*")):
-            name = p.name
-            is_test = (name.startswith("test_") and name.endswith(".py")) \
-                or name.endswith((".test.ts", ".test.js")) \
-                or name.endswith("Test.java")
-            if not is_test or "node_modules" in p.parts or "target" in p.parts:
-                continue
-            if str(p.relative_to(project_dir)) == exclude_rel:
-                continue
-            try:
-                return p.read_text()[:2000]
-            except OSError:
-                continue
-        return ""
-
-    @staticmethod
-    def _sources(project_dir: Path, toolkit: LanguageToolkit) -> str:
-        """Concatenate the production source files (excluding tests)."""
-        ext = toolkit.file_extension
-        out: list[str] = []
-        for p in sorted(project_dir.rglob(f"*{ext}")):
-            parts = p.parts
-            if "test" in parts or "tests" in parts or p.name.endswith(f".test{ext}"):
-                continue
-            if "node_modules" in parts or "dist" in parts or "target" in parts:
-                continue
-            try:
-                out.append(f"// {p.name}\n{p.read_text()}")
-            except OSError:
-                continue
-        return "\n\n".join(out)[:12000]

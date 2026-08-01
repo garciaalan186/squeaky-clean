@@ -12,23 +12,26 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from squeaky_clean.application.shared.language.bracket_scanner import (
+    match_brace,
+    split_top,
+    top_index,
+)
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 
-_OPEN = "([{<"
-_CLOSE = ")]}>"
 _CONSTRUCTABLE = frozenset({"Entity", "ValueObject", "Aggregate"})
 
 
 class RewriteEntityConstruction:
     """Rewrites object-literal entity construction into constructor calls."""
 
-    def rewrite(
-        self, arch: ArchitectureSpec, output_dir: Path,
-        toolkit: LanguageToolkit,
-    ) -> int:
+    def __init__(self, toolkit: LanguageToolkit) -> None:
+        self._toolkit: LanguageToolkit = toolkit
+
+    def rewrite(self, arch: ArchitectureSpec, output_dir: Path) -> int:
         """Rewrite object-literal returns in TS/JS src; return rewrite count."""
-        lang = toolkit.language.value
+        lang = self._toolkit.language.value
         if lang not in ("typescript", "javascript"):
             return 0
         ext = ".ts" if lang == "typescript" else ".js"
@@ -71,7 +74,7 @@ class RewriteEntityConstruction:
                 out.append(text[i:])
                 break
             brace = idx + len("return ")
-            end = self._match_brace(text, brace)
+            end = match_brace(text, brace)
             ctor = (self._to_ctor(text[brace + 1:end], fields)
                     if end != -1 else None)
             if ctor is not None:
@@ -100,52 +103,13 @@ class RewriteEntityConstruction:
 
     def _pairs(self, body: str) -> list[tuple[str, str]]:
         pairs: list[tuple[str, str]] = []
-        for item in self._split(body, ","):
+        for item in split_top(body, ","):
             item = item.strip()
             if not item:
                 continue
-            colon = self._top_index(item, ":")
+            colon = top_index(item, ":")
             if colon == -1:
                 pairs.append((item, item))
             else:
                 pairs.append((item[:colon].strip(), item[colon + 1:].strip()))
         return pairs
-
-    @staticmethod
-    def _match_brace(text: str, pos: int) -> int:
-        depth = 0
-        for i in range(pos, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
-                if depth == 0:
-                    return i
-        return -1
-
-    def _split(self, s: str, sep: str) -> list[str]:
-        parts: list[str] = []
-        depth = 0
-        last = 0
-        for i, ch in enumerate(s):
-            if ch in _OPEN:
-                depth += 1
-            elif ch in _CLOSE:
-                depth = max(0, depth - 1)
-            elif ch == sep and depth == 0:
-                parts.append(s[last:i])
-                last = i + 1
-        parts.append(s[last:])
-        return parts
-
-    @staticmethod
-    def _top_index(s: str, target: str) -> int:
-        depth = 0
-        for i, ch in enumerate(s):
-            if ch in _OPEN:
-                depth += 1
-            elif ch in _CLOSE:
-                depth = max(0, depth - 1)
-            elif ch == target and depth == 0:
-                return i
-        return -1

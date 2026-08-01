@@ -9,14 +9,14 @@ _FIX = Path(__file__).parent / "fixtures" / "icp"
 
 def test_good_calculator_simple_class_scores_full() -> None:
     raw = (_FIX / "calculator_simple_class.txt").read_text()
-    score = ICPScorer().score("calc_good", raw, "Calculator")
+    score = ICPScorer("Calculator").score("calc_good", raw)
     assert score.parsed is True
     assert score.structural_pass == 1.0
 
 
 def test_missing_class_marker_flagged() -> None:
     raw = "```python\ndef foo() -> None:\n    pass\n```\n"
-    score = ICPScorer().score("missing_class", raw, "Calculator")
+    score = ICPScorer("Calculator").score("missing_class", raw)
     assert score.structural_pass == 0.0
 
 
@@ -25,5 +25,5 @@ def test_todo_placeholder_flagged() -> None:
         "```python\nclass Calculator:\n    def add(self) -> int:\n"
         "        return 0  # TODO\n```\n"
     )
-    score = ICPScorer().score("with_todo", raw, "Calculator")
+    score = ICPScorer("Calculator").score("with_todo", raw)
     assert any("TODO" in i for i in score.issues)

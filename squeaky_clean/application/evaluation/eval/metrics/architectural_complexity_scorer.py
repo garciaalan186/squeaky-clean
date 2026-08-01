@@ -17,15 +17,21 @@ _BASELINE = 2.5                            # P0 Calculator ACS (calibrated 2026-
 
 
 class ArchitecturalComplexityScorer:
-    """Compute the composite ACS for a (problem, arch, source_dir) triple."""
+    """Compute the composite ACS for a (problem, arch, source_dir) triple.
+
+    ``source_dir`` — the generated source tree the codegen dimension reads —
+    is per-scorer state; omit it to score architecture/constraints only.
+    """
+
+    def __init__(self, source_dir: Path | None = None) -> None:
+        self._source_dir: Path | None = source_dir
 
     def score(
         self, problem: ProblemSpec, arch: ArchitectureSpec,
-        source_dir: Path | None = None,
     ) -> ComplexityScore:
         """Return per-dimension scores plus the composite ACS."""
         m, c, d, x, i = self._structural_components(arch)
-        h, n, v, e = self._codegen_components(source_dir)
+        h, n, v, e = self._codegen_components(self._source_dir)
         a, cc, dc, ic = self._constraint_components(problem)
         s = (_ALPHA[0]*m + _ALPHA[1]*c + _ALPHA[2]*d
              + _ALPHA[3]*x + _ALPHA[4]*i)

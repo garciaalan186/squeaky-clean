@@ -5,11 +5,13 @@ from pathlib import Path
 from squeaky_clean.application.generation.emission.assign_patterns_paths import AssignPatternsPaths
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
-    CATEGORY_TO_ICP,
     MapPatternToEmitter,
 )
 from squeaky_clean.application.generation.emission.polymorphic_role_normalizer import (
     PolymorphicRoleNormalizer,
+)
+from squeaky_clean.application.generation.emission.routing.tier_c_icp_table import (
+    CATEGORY_TO_ICP,
 )
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.application.shared.problem.custom_pattern_registry import (
@@ -19,10 +21,6 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
-
-
-def _method_names(c: ClassSpec) -> tuple[str, ...]:
-    return tuple(m.split("(", 1)[0].strip() for m in c.methods if m.strip())
 
 
 class AssignPatterns:
@@ -35,11 +33,12 @@ class AssignPatterns:
     ) -> None:
         self._toolkit = toolkit
         self._paths = AssignPatternsPaths(toolkit, output_root)
-        self._mapper = MapPatternToEmitter()
+        self._mapper = MapPatternToEmitter(
+            toolkit, infrastructure_mode=infrastructure_mode,
+        )
         self._roles = PolymorphicRoleNormalizer()
         self._custom = custom_patterns or CustomPatternRegistry()
         self._architecture: ArchitectureSpec | None = None
-        self._infra_mode = infrastructure_mode
         self._tech_specs: dict[str, TechSpec] = {}
 
     def with_architecture(
@@ -50,6 +49,7 @@ class AssignPatterns:
 
     def register_tech_spec(self, spec: TechSpec) -> "AssignPatterns":
         self._tech_specs[spec.category] = spec
+        self._mapper.register_category(spec.category)
         return self
 
     def assign_all(self, module: ModuleSpec) -> tuple[ClassAssignment, ...]:
@@ -77,11 +77,7 @@ class AssignPatterns:
         custom = self._custom.lookup(c.pattern)
         if custom is not None:
             return custom.emitter_spec_name
-        return self._mapper.map_with_layer(
-            c.pattern, self._toolkit, module.layer,
-            _method_names(c), infrastructure_mode=self._infra_mode,
-            declared_categories=tuple(self._tech_specs.keys()),
-        )
+        return self._mapper.map_for(c, module)
 
     def _tech_for(self, icp_name: str) -> TechSpec | None:
         # Find the TechSpec whose category matches the routed Tier C ICP

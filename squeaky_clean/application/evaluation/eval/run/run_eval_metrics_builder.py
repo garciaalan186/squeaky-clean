@@ -12,9 +12,11 @@ from squeaky_clean.application.evaluation.eval.metrics.model.reliability_stats i
     ReliabilityStats,
 )
 from squeaky_clean.application.evaluation.eval.metrics.model.structure_stats import StructureStats
-from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
 from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
 from squeaky_clean.application.evaluation.eval.metrics.model.velocity_stats import VelocityStats
+from squeaky_clean.application.evaluation.eval.run.run_eval_test_outcome import (
+    RunEvalTestOutcome,
+)
 from squeaky_clean.application.evaluation.eval.run.run_eval_token_mapper import RunEvalTokenMapper
 from squeaky_clean.application.evaluation.eval.run.run_eval_velocity import RunEvalVelocity
 
@@ -29,7 +31,7 @@ class RunEvalMetricsBuilder:
         impl = inputs.implementation
         cache_by_tier, cache_savings = self._cache_breakdown(inputs)
         m = EvalMetrics(
-            test_outcome=self._test_outcome(inputs),
+            test_outcome=RunEvalTestOutcome().build(inputs),
             cost=RunEvalTokenMapper().map(inputs),
             velocity=VelocityStats(
                 artifact_token_estimate=inputs.file_stats.artifact_char_count // 4,
@@ -74,53 +76,6 @@ class RunEvalMetricsBuilder:
             )
             savings += tier_savings
         return by_tier, savings
-
-    def _test_outcome(self, inputs: MetricsInputs) -> TestOutcome:
-        pr = inputs.test_run_result
-        total = pr.passed + pr.failed + pr.errors
-        tests_pass = (pr.passed / total) if total > 0 else 0.0
-        fr = inputs.functional_test_run_result
-        if fr is None:
-            return TestOutcome(
-                tests_pass=tests_pass,
-                test_status=self._test_status(pr.passed, pr.failed, pr.errors),
-                tests_collected=total,
-                functional_tests_pass=tests_pass,
-                functional_test_count=total,
-                security_test_count=inputs.security_test_count,
-            )
-        func_total = fr.passed + fr.failed + fr.errors
-        func_pass = (fr.passed / func_total) if func_total > 0 else 0.0
-        sec_total = total - func_total
-        sec_pass = (
-            ((pr.passed - fr.passed) / sec_total) if sec_total > 0 else 0.0
-        )
-        # Headline reflects functional acceptance (the documented meaning
-        # of tests_pass), not the security-diluted blend; the numerous
-        # auto-generated security tests are reported via security_tests_pass.
-        return TestOutcome(
-            tests_pass=func_pass,
-            test_status=self._test_status(fr.passed, fr.failed, fr.errors),
-            tests_collected=func_total,
-            functional_tests_pass=func_pass,
-            functional_test_count=func_total,
-            security_test_count=inputs.security_test_count,
-            security_tests_pass=sec_pass,
-        )
-
-    @staticmethod
-    def _test_status(passed: int, failed: int, errors: int) -> str:
-        """Classify a test run so a real 0% is not confused with "no run".
-
-        ``not_measured`` = nothing collected (toolchain absent);
-        ``build_failed`` = only errors, no test executed to pass/fail
-        (compile/collection failure); ``ok`` = tests actually ran.
-        """
-        if passed + failed + errors == 0:
-            return "not_measured"
-        if passed == 0 and failed == 0 and errors > 0:
-            return "build_failed"
-        return "ok"
 
     def _structure(self, i: MetricsInputs) -> StructureStats:
         s = i.file_stats

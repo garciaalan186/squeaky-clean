@@ -88,13 +88,25 @@ def test_retry_handler_treats_timeout_as_retryable() -> None:
     from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
         ParseImplementedClass,
     )
-    gw = _SequencedGateway([_GOOD])  # the retry call returns valid code
-    handler = ICPRetryHandler(gw, RetryPolicy(max_icp_retries=1), ParseImplementedClass())
-    timed = LLMResponse(
-        content="", input_tokens=0, output_tokens=0, cost_usd=0.0,
-        duration_ms=1, timed_out=True,
+    class _TimeoutThenGood(LLMGateway):
+        def __init__(self) -> None:
+            self.calls: int = 0
+
+        def complete(self, request: LLMRequest) -> LLMResponse:
+            self.calls += 1
+            if self.calls == 1:
+                return LLMResponse(content="", input_tokens=0, output_tokens=0,
+                                   cost_usd=0.0, duration_ms=1, timed_out=True)
+            return LLMResponse(content=_GOOD, input_tokens=10, output_tokens=10,
+                               cost_usd=0.001, duration_ms=10)
+
+    gw = _TimeoutThenGood()  # first call times out; the retry returns valid code
+    handler = ICPRetryHandler(
+        gw,
+        RetryPolicy(max_icp_retries=1, backoff_base_seconds=0.0),
+        ParseImplementedClass(),
     )
     req = LLMRequest(model="m", system_prompt="s", user_prompt="u", tier="icp")
-    response, retries = handler.run(req, "Operand", timed)
+    response, retries = handler.run(req, "Operand")
     assert retries == 1
     assert "class Operand" in response.content

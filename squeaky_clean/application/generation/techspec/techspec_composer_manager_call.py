@@ -5,12 +5,11 @@ from __future__ import annotations
 import json
 import logging
 
-from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
+from squeaky_clean.application.generation.techspec.composition_failure import CompositionFailure
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 _LOG = logging.getLogger(__name__)
 _SYSTEM_PROMPT = "You repair TechSpec JSON or flag un_implementable."
@@ -24,29 +23,24 @@ class TechSpecComposerManagerCall:
         self._routing: ModelRoutingPolicy = routing
 
     def request_correction(
-        self, assignment: ClassAssignment, tech_spec: TechSpec,
-        errors: tuple[str, ...],
+        self, failure: CompositionFailure,
     ) -> dict[str, object] | None:
         """Return parsed correction dict, or None on un_implementable / parse fail."""
-        prompt = self._build_prompt(assignment, tech_spec, errors)
         request = LLMRequest(
             model=self._routing.route(ModelTier.MANAGER),
             system_prompt=_SYSTEM_PROMPT,
-            user_prompt=prompt, tier="manager",
+            user_prompt=self._build_prompt(failure), tier="manager",
         )
         return self._parse(self._gateway.complete(request).content)
 
-    def _build_prompt(
-        self, assignment: ClassAssignment, tech_spec: TechSpec,
-        errors: tuple[str, ...],
-    ) -> str:
-        cls = assignment.class_spec
+    def _build_prompt(self, failure: CompositionFailure) -> str:
+        cls = failure.assignment.class_spec
         return (
-            "Validation errors:\n  - " + "\n  - ".join(errors) +
+            "Validation errors:\n  - " + "\n  - ".join(failure.errors) +
             f"\nClassSpec: name={cls.name} methods={list(cls.methods)}"
             f" depends={list(cls.depends)}"
             f"\nTechSpec.primary_operations="
-            f"{[op.name for op in tech_spec.primary_operations]}"
+            f"{[op.name for op in failure.tech_spec.primary_operations]}"
             "\nReturn JSON: either {\"tech_spec\": <full TechSpec dict>}"
             " or {\"un_implementable\": true}."
         )

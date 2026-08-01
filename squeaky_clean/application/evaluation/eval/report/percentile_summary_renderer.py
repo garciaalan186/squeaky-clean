@@ -15,7 +15,8 @@ class PercentileSummaryRenderer:
         rows: list[str] = []
         any_data = False
         for tier in _TIERS:
-            durations, costs = recorder.tier_samples(tier)
+            usage = recorder.tier_stats(tier)
+            durations, costs = usage.durations_ms, usage.costs_usd
             if not durations:
                 rows.append(
                     f"| {tier.title():9s} | n/a | n/a | n/a | n/a | 0 |"

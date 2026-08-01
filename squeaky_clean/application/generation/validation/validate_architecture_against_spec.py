@@ -7,10 +7,6 @@ from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 
 
-class SpecConformanceError(ValueError):
-    """Raised when an architecture violates the ProblemSpec semantic contract."""
-
-
 class ValidateArchitectureAgainstSpec:
     """Cross-checks an ArchitectureSpec against ProblemSpec semantic fields."""
 

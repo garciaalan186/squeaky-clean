@@ -3,6 +3,7 @@
 import re
 from collections.abc import Callable
 
+from squeaky_clean.application.generation.recovery.extraction.class_grammar import ClassGrammar
 from squeaky_clean.application.generation.recovery.extraction.class_record import ClassRecord
 from squeaky_clean.application.generation.recovery.extraction.regex_catalog_extractor import (
     RegexCatalogExtractor,
@@ -30,6 +31,7 @@ _FIELD: re.Pattern[str] = re.compile(
     r"(?P<type>[\w<>\[\].]+)\s+(?P<name>\w+)\s*[;=]",
     re.MULTILINE,
 )
+_GRAMMAR = ClassGrammar(class_re=_CLASS, method_re=_METHOD, field_re=_FIELD)
 
 
 class JavaClassCatalogExtractor(RegexCatalogExtractor):
@@ -43,10 +45,6 @@ class JavaClassCatalogExtractor(RegexCatalogExtractor):
 
     _GLOB = "*.java"
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._parser: RegexClassParser = RegexClassParser(_CLASS, _METHOD, _FIELD)
-
     def _records(self, source: str, prefix: str) -> tuple[ClassRecord, ...]:
         package = _PACKAGE.search(source)
         pkg = package.group("pkg") if package is not None else ""
@@ -54,4 +52,4 @@ class JavaClassCatalogExtractor(RegexCatalogExtractor):
         fqn_of: Callable[[str], str] = (
             (lambda name: f"{pkg}.{name}") if pkg else (lambda name: name)
         )
-        return self._parser.parse(source, fqn_of, imports)
+        return RegexClassParser(_GRAMMAR, imports).parse(source, fqn_of)

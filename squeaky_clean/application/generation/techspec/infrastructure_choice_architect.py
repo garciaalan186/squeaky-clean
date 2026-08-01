@@ -5,8 +5,12 @@ from __future__ import annotations
 from squeaky_clean.application.generation.techspec.derived_infrastructure_choice import (
     DerivedInfrastructureChoice,
 )
+from squeaky_clean.application.generation.techspec.no_candidates_available_error import (
+    NoCandidatesAvailableError,
+)
 from squeaky_clean.application.shared.mcda.mcda_registry import MCDARegistry
-from squeaky_clean.application.shared.mcda.mcda_score_table import MCDAScoreRow, MCDAScoreTable
+from squeaky_clean.application.shared.mcda.mcda_score_row import MCDAScoreRow
+from squeaky_clean.application.shared.mcda.mcda_score_table import MCDAScoreTable
 from squeaky_clean.application.shared.mcda.mcda_scorer import MCDAScorer
 from squeaky_clean.application.shared.mcda.mcda_weights import MCDAWeights
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
@@ -18,20 +22,15 @@ from squeaky_clean.domain.value_objects.model_tier import ModelTier
 _RATIONALE_WORD_LIMIT: int = 50
 
 
-class NoCandidatesAvailableError(LookupError):
-    """Raised when the MCDA registry returns zero candidates."""
-
-
 class InfrastructureChoiceArchitect:
     """Manager-tier agent: MCDA + ≤50-word rationale per category."""
 
     def __init__(
-        self, gateway: LLMGateway, registry: MCDARegistry, scorer: MCDAScorer,
+        self, gateway: LLMGateway, registry: MCDARegistry,
         routing: ModelRoutingPolicy,
     ) -> None:
         self._gateway: LLMGateway = gateway
         self._registry: MCDARegistry = registry
-        self._scorer: MCDAScorer = scorer
         self._routing: ModelRoutingPolicy = routing
 
     def decide(
@@ -45,7 +44,7 @@ class InfrastructureChoiceArchitect:
             MCDAWeights.from_mapping(problem.mcda_weights).as_dict()
             if problem.mcda_weights else MCDAWeights().as_dict()
         )
-        table = self._scorer.score(category, candidates, weights, ())
+        table = MCDAScorer(weights).score(category, candidates)
         winner = table.winner()
         rationale = self._rationale(table, winner)
         return DerivedInfrastructureChoice(

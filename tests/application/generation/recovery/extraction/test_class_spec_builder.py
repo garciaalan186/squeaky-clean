@@ -32,8 +32,8 @@ def test_untyped_fields_gain_object_annotation_typed_pass_through() -> None:
 
 
 def test_depends_and_explicit_pattern_are_carried_verbatim() -> None:
-    spec = ClassSpecBuilder().build(
-        _record(), depends=("LineItem",), pattern="Entity",
+    spec = ClassSpecBuilder({"proj.domain.order.Order": "Entity"}).build(
+        _record(), depends=("LineItem",),
     )
     assert spec.depends == ("LineItem",)
     assert spec.pattern == "Entity"

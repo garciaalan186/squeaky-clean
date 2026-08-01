@@ -17,24 +17,23 @@ class DottedPathResolver:
     snake stem so non-Python languages keep their flat layout.
     """
 
-    def __init__(self, toolkit: LanguageToolkit) -> None:
+    def __init__(
+        self, toolkit: LanguageToolkit,
+        architecture: ArchitectureSpec | None = None,
+    ) -> None:
         self._toolkit: LanguageToolkit = toolkit
+        self._arch: ArchitectureSpec | None = architecture
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
         self._camel: PascalToCamelConverter = PascalToCamelConverter()
 
-    def resolve(
-        self,
-        class_name: str,
-        module: ModuleSpec,
-        architecture: ArchitectureSpec | None = None,
-    ) -> str:
+    def resolve(self, class_name: str, module: ModuleSpec) -> str:
         """Return the dotted module path for ``class_name``.
 
         First searches the focal ``module`` for the class, then any
-        ``architecture`` sibling module. Falls back to the focal module
-        if not found anywhere.
+        sibling module of the held architecture. Falls back to the focal
+        module if not found anywhere.
         """
-        owner = self._find_owner(class_name, module, architecture)
+        owner = self._find_owner(class_name, module, self._arch)
         # camelCase languages (TS/JS/Go) name files camelCase in
         # AssignPatternsPaths._stem; the import stem handed to ICPs must
         # match, or generated `import ... from './<stem>.js'` won't resolve.

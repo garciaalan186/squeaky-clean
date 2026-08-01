@@ -4,6 +4,8 @@ import pytest
 
 from squeaky_clean.application.generation.notation.convention_to_invariant import (
     ConventionToInvariant,
+)
+from squeaky_clean.application.generation.notation.unknown_convention_error import (
     UnknownConventionError,
 )
 

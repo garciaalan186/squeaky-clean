@@ -2,11 +2,11 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
-    TierCacheTokens,
-)
 from squeaky_clean.application.evaluation.eval.metrics.file_stats_scanner import FileStatsScanner
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
+from squeaky_clean.application.evaluation.eval.metrics.tier_cache_tokens import (
+    TierCacheTokens,
+)
 from squeaky_clean.application.evaluation.eval.run.pipeline_outputs import PipelineOutputs
 from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
@@ -72,9 +72,8 @@ class MetricsInputsAssembler:
         """Fold per-label recorder cache totals into routing-tier buckets."""
         out: dict[str, TierCacheTokens] = {}
         for tier in ModelTier:
-            create, read = self._recorder.tier_cache_stats(tier.value)
+            usage = self._recorder.tier_stats(tier.value)
             out[tier.value] = TierCacheTokens(
-                create_tokens=create, read_tokens=read,
-                model=self._router.route(tier),
-            )
+                create_tokens=usage.cache_create_tokens,
+                read_tokens=usage.cache_read_tokens, model=self._router.route(tier))
         return out

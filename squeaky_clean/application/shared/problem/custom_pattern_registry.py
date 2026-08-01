@@ -3,20 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
 
-
-@dataclass(frozen=True)
-class CustomPattern:
-    """One externally-supplied pattern: name + ICP spec stem.
-
-    ``name`` is deliberately `str`, not PatternName: a custom pattern's
-    identity is precisely a name OUTSIDE the 34-member catalog Literal
-    (e.g. EventSourcedAggregate).
-    """
-
-    name: str
-    emitter_spec_name: str
+from squeaky_clean.application.shared.problem.custom_pattern import CustomPattern
 
 
 class CustomPatternRegistry:

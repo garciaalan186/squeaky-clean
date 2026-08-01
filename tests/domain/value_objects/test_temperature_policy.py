@@ -1,7 +1,9 @@
 """Tests for TemperaturePolicy."""
 
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.domain.value_objects.temperature_policy import TemperaturePolicy
+from squeaky_clean.domain.value_objects.sampling.temperature_policy import (
+    TemperaturePolicy,
+)
 
 
 def test_default_policy_architect_is_zero_seeded() -> None:

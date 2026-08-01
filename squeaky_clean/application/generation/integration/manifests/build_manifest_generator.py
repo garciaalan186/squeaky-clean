@@ -18,23 +18,19 @@ from squeaky_clean.application.generation.integration.manifests.build_manifest_t
     SPRING_BUILD,
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class BuildManifestGenerator:
-    """Writes ``pom.xml`` for Java projects via the ProjectFileSystem port."""
+    """Writes ``pom.xml`` for one problem's Java project via the fs port."""
 
-    def __init__(self, fs: ProjectFileSystem) -> None:
+    def __init__(self, fs: ProjectFileSystem, problem: ProblemSpec) -> None:
         self._fs: ProjectFileSystem = fs
+        self._problem: ProblemSpec = problem
 
     def generate(
-        self,
-        architecture: ArchitectureSpec,
-        tech_specs: dict[str, TechSpec],
-        output_dir: Path,
-        problem: ProblemSpec,
+        self, tech_specs: dict[str, TechSpec], output_dir: Path,
     ) -> Path | None:
         """Emit ``<output_dir>/pom.xml``; None ONLY when not applicable (no Java).
 
@@ -65,7 +61,7 @@ class BuildManifestGenerator:
             deps.append(render_managed_dependency(
                 "com.fasterxml.jackson.core", "jackson-databind"))
         deps.append(render_test_dependency())
-        body = self._render(problem.slug, spring, deps)
+        body = self._render(self._problem.slug, spring, deps)
         path = output_dir / "pom.xml"
         self._fs.write(path, body)
         return path

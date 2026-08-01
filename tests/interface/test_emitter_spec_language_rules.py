@@ -42,7 +42,7 @@ def _composed(pattern: str, lang: str) -> str:
     """Compose a cut-over pattern's spec the way production does (R6.1a)."""
     language = TargetLanguage(lang)
     toolkit = LanguageToolkitFactory().for_language(language)
-    spec_name = MapPatternToEmitter().map(pattern, toolkit)
+    spec_name = MapPatternToEmitter(toolkit).map(pattern)
     return ComposeEmitterSpec(LoadAgentSpec()).load(spec_name, toolkit)
 
 

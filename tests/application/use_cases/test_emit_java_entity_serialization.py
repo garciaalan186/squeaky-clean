@@ -39,7 +39,7 @@ def test_injects_tojson_when_called(tmp_path: Path) -> None:
     (tmp_path / "src" / "uc.java").write_text(
         "class Uc { void f(ConsumedEvent event) { event.toJson(); } }")
     tk = LanguageToolkitFactory().for_language(TargetLanguage.JAVA)
-    n = EmitJavaEntitySerialization().emit(_arch(), tmp_path, tk)
+    n = EmitJavaEntitySerialization(tk).emit(_arch(), tmp_path)
     body = entity.read_text()
     assert n == 1
     assert "public String toJson()" in body
@@ -50,4 +50,4 @@ def test_injects_tojson_when_called(tmp_path: Path) -> None:
 def test_skipped_when_never_called(tmp_path: Path) -> None:
     _entity_file(tmp_path)
     tk = LanguageToolkitFactory().for_language(TargetLanguage.JAVA)
-    assert EmitJavaEntitySerialization().emit(_arch(), tmp_path, tk) == 0
+    assert EmitJavaEntitySerialization(tk).emit(_arch(), tmp_path) == 0

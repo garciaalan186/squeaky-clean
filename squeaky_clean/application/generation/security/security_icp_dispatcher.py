@@ -39,7 +39,6 @@ class SecurityICPDispatcher:
         self._run_config: RunConfig = run_config or RunConfig()
         self._loader: LoadAgentSpec = loader
         self._mapper: MapConcernToSecurityEmitter = MapConcernToSecurityEmitter()
-        self._asm: SecurityTestAssembler = SecurityTestAssembler()
 
     def dispatch(self, ctx: SecurityDispatchContext) -> TestArchitecture:
         """Run all Security ICP calls in parallel, return assembled tests."""
@@ -52,10 +51,9 @@ class SecurityICPDispatcher:
         )
         requests = self._build_requests(ctx, class_map)
         responses = self._run_parallel(requests)
-        return self._asm.assemble(
-            responses, ctx.review.concerns, class_map,
+        return SecurityTestAssembler(
             module=ctx.module, toolkit=ctx.toolkit,
-        )
+        ).assemble(responses, ctx.review.concerns)
 
     def _build_requests(
         self, ctx: SecurityDispatchContext, class_map: dict[str, ClassSpec],

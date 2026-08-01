@@ -99,3 +99,18 @@ def test_architect_request_carries_thinking_headroom() -> None:
         _MAX_OUTPUT_TOKENS,
     )
     assert _MAX_OUTPUT_TOKENS >= 8192
+
+
+def test_scoped_mode_loads_the_scoped_architect_spec() -> None:
+    """R6.9 recorded decision: scoped = DDD mandated, GoF advisory."""
+    from squeaky_clean.application.shared.config.run_config import RunConfig
+
+    gateway = _StubGateway(_CALC_NOTATION)
+    deps = LLMCallDeps(
+        gateway=gateway, router=ModelRouter(), recorder=LLMUsageRecorder(),
+        run_config=RunConfig(architect_mode="scoped"),
+    )
+    DesignArchitecture(deps, LoadAgentSpec()).execute(P0)
+    system = gateway.last_request.system_prompt or ""  # type: ignore[union-attr]
+    assert "scoped-mandate variant" in system
+    assert "ADVISORY" in system

@@ -6,10 +6,13 @@ from pathlib import Path
 import pytest
 
 from squeaky_clean.domain.interfaces.run_logger import RunLogger
-from squeaky_clean.domain.interfaces.tech_spec_resolver import (
+from squeaky_clean.domain.interfaces.techspec.tech_spec_resolution_error import (
     TechSpecResolutionError,
+)
+from squeaky_clean.domain.interfaces.techspec.tech_spec_unresolvable_error import (
     TechSpecUnresolvableError,
 )
+from squeaky_clean.domain.value_objects.tech_spec_target import TechSpecTarget
 from squeaky_clean.infrastructure.techspec.filesystem_techspec_resolver import (
     FilesystemTechSpecResolver,
 )
@@ -29,9 +32,7 @@ def _resolver_at(root: Path) -> FilesystemTechSpecResolver:
 
 
 def test_resolver_returns_local_disk_stdlib_techspec() -> None:
-    spec = _resolver_at(_TECH_ROOT).resolve(
-        "blob_storage", "local_disk", "stdlib",
-    )
+    spec = _resolver_at(_TECH_ROOT).resolve(TechSpecTarget("blob_storage", "local_disk", "stdlib"))
     assert spec.category == "blob_storage"
     assert spec.technology == "local_disk"
     assert spec.version_pin == "stdlib"
@@ -43,9 +44,7 @@ def test_resolver_returns_local_disk_stdlib_techspec() -> None:
 
 def test_resolver_raises_unresolvable_for_unknown_triple() -> None:
     with pytest.raises(TechSpecUnresolvableError):
-        _resolver_at(_TECH_ROOT).resolve(
-            "blob_storage", "fictional_tech", "v1",
-        )
+        _resolver_at(_TECH_ROOT).resolve(TechSpecTarget("blob_storage", "fictional_tech", "v1"))
 
 
 def test_resolver_falls_back_to_cache_when_bundled_missing(
@@ -57,9 +56,7 @@ def test_resolver_falls_back_to_cache_when_bundled_missing(
     cache_dir = tmp_path / ".cache" / "blob_storage" / "local_disk"
     cache_dir.mkdir(parents=True)
     (cache_dir / "stdlib.json").write_text(json.dumps(bundled))
-    spec = _resolver_at(tmp_path).resolve(
-        "blob_storage", "local_disk", "stdlib",
-    )
+    spec = _resolver_at(tmp_path).resolve(TechSpecTarget("blob_storage", "local_disk", "stdlib"))
     assert spec.technology == "local_disk"
 
 
@@ -72,7 +69,7 @@ def test_resolver_treats_schema_invalid_bundled_file_as_miss(
         json.dumps({"schema_version": "v1", "category": "blob_storage"})
     )
     with pytest.raises(TechSpecUnresolvableError):
-        _resolver_at(tmp_path).resolve("blob_storage", "broken", "v1")
+        _resolver_at(tmp_path).resolve(TechSpecTarget("blob_storage", "broken", "v1"))
 
 
 def test_resolver_rejects_mismatched_schema_version(tmp_path: Path) -> None:
@@ -84,9 +81,7 @@ def test_resolver_rejects_mismatched_schema_version(tmp_path: Path) -> None:
     target_dir.mkdir(parents=True)
     (target_dir / "stdlib.json").write_text(json.dumps(bundled))
     with pytest.raises(TechSpecUnresolvableError):
-        _resolver_at(tmp_path).resolve(
-            "blob_storage", "local_disk", "stdlib",
-        )
+        _resolver_at(tmp_path).resolve(TechSpecTarget("blob_storage", "local_disk", "stdlib"))
 
 
 class _FakeRunLogger(RunLogger):
@@ -107,7 +102,7 @@ def test_rejected_snapshot_logs_event_and_reason_travels(tmp_path: Path) -> None
         tmp_path, JSONSchemaTechSpecValidator(_SCHEMA), run_logger=log,
     )
     with pytest.raises(TechSpecResolutionError) as exc:
-        resolver.resolve("blob_storage", "broken", "v1")
+        resolver.resolve(TechSpecTarget("blob_storage", "broken", "v1"))
     assert any("unreadable" in r for r in exc.value.reasons)
     kinds = [k for k, _ in log.events]
     assert kinds == ["techspec_snapshot_rejected"]

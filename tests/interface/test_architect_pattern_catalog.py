@@ -40,3 +40,13 @@ def test_architect_catalog_matches_pattern_name_exactly() -> None:
 def test_architect_catalog_has_no_bare_factory() -> None:
     # 'Factory' is not a PatternName; it silently routes to SimpleClass.
     assert "Factory" not in _catalog_in_spec()
+
+
+def test_scoped_variant_names_every_catalog_pattern() -> None:
+    """R6.9: the scoped spec must keep the full catalog reachable — DDD names
+    mandated, every GoF name still selectable when forces demand it."""
+    scoped = (_SPEC.parent / "RequirementCompilerScoped.md").read_text()
+    for name in ALL_PATTERNS:
+        assert name in scoped, f"scoped architect spec lost {name}"
+    assert "ADVISORY" in scoped
+    assert "MANDATED" in scoped

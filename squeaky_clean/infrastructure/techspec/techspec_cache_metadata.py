@@ -21,27 +21,31 @@ class TechSpecCacheMetadata:
     ``techspec_cache_rejected`` event with the reason (R6.8).
     """
 
-    def __init__(
-        self, ttl_days: int = 30, *, run_logger: RunLogger | None = None,
-    ) -> None:
+    def __init__(self, ttl_days: int = 30, *, run_logger: RunLogger | None = None) -> None:
         self.ttl_days: int = int(ttl_days)
         self._log: RunLogger = run_logger or NullRunLogger()
 
-    def write(
-        self, path: Path, spec: dict[str, object],
-        source_urls: tuple[str, ...], now: datetime,
-    ) -> None:
-        """Write a cache entry, including TTL window + content-hash."""
-        path.parent.mkdir(parents=True, exist_ok=True)
+    def entry_for(
+        self, spec: dict[str, object], source_urls: tuple[str, ...] = (),
+    ) -> CacheEntry:
+        """Build a fresh CacheEntry for ``spec``, stamped with the TTL window."""
+        now = self.now_utc()
         body = json.dumps(spec, sort_keys=True).encode("utf-8")
-        payload = {
-            "fetched_at": now.isoformat(),
-            "expires_at": (now + timedelta(days=self.ttl_days)).isoformat(),
-            "source_urls": list(source_urls),
-            "content_hash": "sha256:" + hashlib.sha256(body).hexdigest(),
-            "spec": spec,
-        }
-        path.write_text(json.dumps(payload, indent=2, sort_keys=True))
+        return CacheEntry(
+            spec=spec, fetched_at=now, expires_at=now + timedelta(days=self.ttl_days),
+            content_hash="sha256:" + hashlib.sha256(body).hexdigest(),
+            source_urls=source_urls)
+
+    def write(self, path: Path, entry: CacheEntry) -> None:
+        """Write one cache entry with its TTL window + content-hash."""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "fetched_at": entry.fetched_at.isoformat(),
+            "expires_at": entry.expires_at.isoformat(),
+            "source_urls": list(entry.source_urls),
+            "content_hash": entry.content_hash,
+            "spec": entry.spec,
+        }, indent=2, sort_keys=True))
 
     def read(self, path: Path) -> CacheEntry | None:
         """Return parsed CacheEntry, or None on miss (rejections are logged)."""
@@ -50,9 +54,7 @@ class TechSpecCacheMetadata:
         data = self._load(path)
         if data is None:
             return None
-        return parse_cache_entry(
-            data, lambda reason: self._reject(path, reason),
-        )
+        return parse_cache_entry(data, lambda reason: self._reject(path, reason))
 
     def _load(self, path: Path) -> dict[str, object] | None:
         reason: str | None = None
@@ -70,9 +72,7 @@ class TechSpecCacheMetadata:
 
     def _reject(self, path: Path, reason: str) -> None:
         """Log one invalid-entry event; the entry is then treated as a miss."""
-        self._log.event(
-            "techspec_cache_rejected", path=str(path), reason=reason,
-        )
+        self._log.event("techspec_cache_rejected", path=str(path), reason=reason)
 
     @staticmethod
     def now_utc() -> datetime:

@@ -15,13 +15,11 @@ from squeaky_clean.application.generation.integration.wiring_construction import
     emit_outbound,
     emit_use_case,
 )
+from squeaky_clean.application.generation.integration.wiring_language_emitters import (
+    WiringLanguageEmitters,
+)
 from squeaky_clean.application.generation.integration.wiring_templates import (
-    render_express_main,
-    render_fastify_main,
-    render_go_main,
     render_runtime,
-    render_rust_main,
-    render_spring_boot_main,
 )
 from squeaky_clean.application.generation.integration.wiring_walker import (
     adapters,
@@ -40,96 +38,30 @@ from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 class WiringGenerator:
     """Walks an ArchitectureSpec and emits a composition root file."""
 
-    def __init__(self, fs: ProjectFileSystem) -> None:
+    def __init__(self, fs: ProjectFileSystem, tech_specs: dict[str, TechSpec]) -> None:
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
         self._fs: ProjectFileSystem = fs
+        self._specs: dict[str, TechSpec] = tech_specs
+        self._languages: WiringLanguageEmitters = WiringLanguageEmitters(fs)
 
-    def generate(
-        self, arch: ArchitectureSpec,
-        tech_specs: dict[str, TechSpec],
-        output_dir: Path,
-    ) -> Path:
+    def generate(self, arch: ArchitectureSpec, output_dir: Path) -> Path:
         """Write the composition root and return its path.
 
-        Dispatches on TechSpec language: when ANY TechSpec declares
-        ``language == "java"``, emit the Spring Boot ``App.java``;
+        Dispatches on the held TechSpecs' language: when ANY TechSpec
+        declares ``language == "java"``, emit the Spring Boot ``App.java``;
         otherwise fall back to the Python ``src/main.py`` template.
         Python-specific assumptions (dotted import paths, snake_case
         var names) ONLY apply on the Python path.
         """
-        if self._is_java(tech_specs):
-            return self._emit_java(output_dir)
-        if self._is_go(tech_specs):
-            return self._emit_go(tech_specs, output_dir)
-        if self._is_rust(tech_specs):
-            return self._emit_rust(tech_specs, output_dir)
-        if self._is_typescript(tech_specs):
-            return self._emit_typescript(tech_specs, output_dir)
-        if self._is_javascript(tech_specs):
-            return self._emit_javascript(tech_specs, output_dir)
+        tech_specs = self._specs
+        emitted = self._languages.emit(tech_specs, output_dir)
+        if emitted is not None:
+            return emitted
         adps = adapters(arch)
         ucs = use_cases(arch)
         body = self._render(adps, ucs, tech_specs)
         path = output_dir / "src" / "main.py"
         self._fs.write(path, body)
-        return path
-
-    @staticmethod
-    def _is_java(tech_specs: dict[str, TechSpec]) -> bool:
-        return any(s.language == "java" for s in tech_specs.values())
-
-    def _emit_java(self, output_dir: Path) -> Path:
-        path = output_dir / "src" / "main" / "java" / "com" / "example" / "App.java"
-        self._fs.write(path, render_spring_boot_main())
-        return path
-
-    @staticmethod
-    def _is_go(tech_specs: dict[str, TechSpec]) -> bool:
-        return any(s.language == "go" for s in tech_specs.values())
-
-    def _emit_go(self, tech_specs: dict[str, TechSpec], output_dir: Path) -> Path:
-        path = output_dir / "main.go"
-        cats: dict[str, object] = {s.category: True for s in tech_specs.values()
-                                   if s.language == "go"}
-        self._fs.write(path, render_go_main(cats))
-        return path
-
-    @staticmethod
-    def _is_rust(tech_specs: dict[str, TechSpec]) -> bool:
-        return any(s.language == "rust" for s in tech_specs.values())
-
-    def _emit_rust(self, tech_specs: dict[str, TechSpec], output_dir: Path) -> Path:
-        path = output_dir / "src" / "main.rs"
-        cats: dict[str, object] = {s.category: True for s in tech_specs.values()
-                                   if s.language == "rust"}
-        self._fs.write(path, render_rust_main(cats))
-        return path
-
-    @staticmethod
-    def _is_javascript(tech_specs: dict[str, TechSpec]) -> bool:
-        return any(s.language == "javascript" for s in tech_specs.values())
-
-    def _emit_javascript(self, tech_specs: dict[str, TechSpec],
-                         output_dir: Path) -> Path:
-        path = output_dir / "index.js"
-        cats: dict[str, object] = {s.category: True for s in tech_specs.values()
-                                   if s.language == "javascript"}
-        self._fs.write(path, render_express_main(cats))
-        return path
-
-    @staticmethod
-    def _is_typescript(tech_specs: dict[str, TechSpec]) -> bool:
-        return any(s.language == "typescript" for s in tech_specs.values())
-
-    def _emit_typescript(self, tech_specs: dict[str, TechSpec],
-                         output_dir: Path) -> Path:
-        path = output_dir / "src" / "index.ts"
-        # Carry the technology (not a bare True) so the renderer can match
-        # the wiring's HTTP framework to the resolved handler (e.g. express).
-        cats: dict[str, object] = {s.category: s.technology
-                                   for s in tech_specs.values()
-                                   if s.language == "typescript"}
-        self._fs.write(path, render_fastify_main(cats))
         return path
 
     def _render(

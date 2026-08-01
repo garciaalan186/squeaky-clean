@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from squeaky_clean.application.generation.repair.repair_obligation_gaps import (
+from squeaky_clean.application.generation.repair.obligations.obligation_repair_request import (
     ObligationRepairRequest,
+)
+from squeaky_clean.application.generation.repair.repair_obligation_gaps import (
     RepairObligationGaps,
 )
 from squeaky_clean.application.generation.repair.repair_test_file import RepairTestFile

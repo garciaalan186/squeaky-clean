@@ -3,14 +3,6 @@
 from abc import ABC, abstractmethod
 
 
-class TechDocFetchError(RuntimeError):
-    """Raised on any network failure, non-200 response, or oversize body."""
-
-
-class MCPNotConfiguredError(TechDocFetchError):
-    """Raised when an MCP fetcher is invoked without MCP configuration."""
-
-
 class TechDocFetcher(ABC):
     """Abstract port: returns the raw text body for a URL or raises."""
 

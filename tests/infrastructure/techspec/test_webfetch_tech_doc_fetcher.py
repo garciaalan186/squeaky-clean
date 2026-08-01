@@ -6,7 +6,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
 
-from squeaky_clean.domain.interfaces.tech_doc_fetcher import TechDocFetchError
+from squeaky_clean.domain.interfaces.techspec.tech_doc_fetch_error import (
+    TechDocFetchError,
+)
 from squeaky_clean.infrastructure.techspec.webfetch_tech_doc_fetcher import (
     WebFetchTechDocFetcher,
 )

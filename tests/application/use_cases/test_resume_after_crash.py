@@ -27,7 +27,7 @@ def test_crash_after_icps_then_resume(tmp_path: Path) -> None:
     assert cp_data["stage"] == "icps_done"
     assert (ps_dir / "_resume_module_impls.json").exists()
     fresh = build_stub_deps()
-    ResumeRun().resume(ps_dir, P0, fresh)
+    ResumeRun(fresh).resume(ps_dir, P0)
     assert fresh.design_architecture.execute.call_count == 0  # type: ignore[attr-defined]
     assert fresh.orchestrate_module.execute.call_count == 0  # type: ignore[attr-defined]
     assert fresh.integrate_module.execute.call_count == 1  # type: ignore[attr-defined]

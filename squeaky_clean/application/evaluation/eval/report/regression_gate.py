@@ -34,7 +34,6 @@ class RegressionGate:
     """
 
     def __init__(self) -> None:
-        self._detector: RegressionDetector = RegressionDetector()
         self._aggregator: ReplicateAggregator = ReplicateAggregator()
 
     def assess(
@@ -42,10 +41,11 @@ class RegressionGate:
     ) -> RegressionAssessment:
         """Return verdicts + regression records for every bundle in ``result``."""
         stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        detector = RegressionDetector(stamp)
         verdicts: list[str] = []
         records: list[RegressionRecord] = []
         for bundle in result.bundles:
-            verdict, recs = self._one(bundle, models, stamp)
+            verdict, recs = self._one(bundle, models, detector)
             verdicts.append(verdict)
             records.extend(recs)
         return RegressionAssessment(
@@ -53,7 +53,8 @@ class RegressionGate:
         )
 
     def _one(
-        self, bundle: EvalReportBundle, models: dict[str, str], stamp: str,
+        self, bundle: EvalReportBundle, models: dict[str, str],
+        detector: RegressionDetector,
     ) -> tuple[str, tuple[RegressionRecord, ...]]:
         pid = bundle.problem.id
         golden = bundle.problem.golden_metrics
@@ -63,7 +64,7 @@ class RegressionGate:
             return f"{pid}: not comparable (routing changed since calibration)", ()
         current = self._aggregator.aggregate(pid, [bundle.metrics])
         baseline = to_replicate_summary(pid, golden)
-        recs = tuple(self._detector.detect(baseline, current, stamp))
+        recs = tuple(detector.detect(baseline, current))
         if not recs:
             return (f"{pid}: OK (tests {bundle.metrics.tests_pass:.2f} vs golden "
                     f"{golden.tests_pass_mean:.2f}±{golden.tests_pass_stddev:.2f})"), ()

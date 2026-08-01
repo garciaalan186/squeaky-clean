@@ -41,9 +41,7 @@ class RunSweep:
         return {t.value: self._deps.router.route(t) for t in ModelTier}
 
     def _run_one(self, problem: ProblemSpec, run_dir: Path) -> EvalReportBundle:
-        deps = self._deps.dependency_builder.build(
-            self._deps.router, problem, self._deps.run_config,
-        )
+        deps = self._deps.dependency_builder.build(problem)
         return RunEval(deps, run_root=self._deps.run_root).execute_in(
             problem, run_dir,
         )

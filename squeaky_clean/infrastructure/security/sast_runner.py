@@ -4,18 +4,9 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 
-
-@dataclass(frozen=True)
-class SASTResult:
-    """One SAST run summary."""
-
-    tool: str
-    available: bool
-    issues: int
-    raw_output: str
+from squeaky_clean.infrastructure.security.sast_result import SASTResult
 
 
 class SASTRunner:

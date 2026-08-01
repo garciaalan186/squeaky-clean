@@ -1,69 +1,30 @@
-"""SqueakyCleanCLI: top-level CLI wiring that invokes RunEval or RunSweep."""
+"""SqueakyCleanCLI: top-level CLI routing that invokes the command flows."""
 
 import logging
 import sys
-from dataclasses import replace
 from pathlib import Path
 
-from squeaky_clean.application.evaluation.eval.metrics.metrics_history_aggregator import (
-    MetricsHistoryAggregator,
-)
-from squeaky_clean.application.evaluation.eval.report.html_dashboard_writer import (
-    HtmlDashboardWriter,
-)
-from squeaky_clean.application.evaluation.eval.run.run_eval import RunEval
-from squeaky_clean.application.evaluation.eval.sweep.sweep_request import SweepRequest
-from squeaky_clean.application.generation.recovery.decomposition.interactive_triage import (
-    InteractiveTriage,
-)
-from squeaky_clean.application.generation.recovery.decomposition.problem_spec_synthesizer import (
-    ProblemSpecSynthesizer,
-)
-from squeaky_clean.application.generation.recovery.decomposition.supplied_architecture_designer import (  # noqa: E501
-    SuppliedArchitectureDesigner,
-)
-from squeaky_clean.application.generation.recovery.refactor.architectural_criterion import (
-    ALL_ARCHITECTURAL_CRITERIA,
-)
-from squeaky_clean.application.generation.recovery.refactor.recovery_emitter import RecoveryEmitter
-from squeaky_clean.application.generation.recovery.refactor.refactor_emitter import RefactorEmitter
-from squeaky_clean.application.generation.recovery.refactor.refactor_plan_serializer import (
-    RefactorPlanSerializer,
-)
-from squeaky_clean.application.generation.recovery.scoring.violation_report_deserializer import (
-    ViolationReportDeserializer,
-)
-from squeaky_clean.application.generation.recovery.squib.squib_emitter import SquibEmitter
-from squeaky_clean.application.generation.recovery.squib.squib_review_gate import (
-    SquibReviewGate,
-)
 from squeaky_clean.application.shared.problem.load_problem_spec_from_file import (
     LoadProblemSpecFromFile,
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.value_objects.target_language import TargetLanguage
-from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
-from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.commands.maintenance_commands import MaintenanceCommands
+from squeaky_clean.interface.cli.commands.recover_commands import RecoverCommands
+from squeaky_clean.interface.cli.commands.refactor_commands import RefactorCommands
+from squeaky_clean.interface.cli.commands.run_commands import RunCommands
 from squeaky_clean.interface.cli.invocations.cli_request import CLIRequest
 from squeaky_clean.interface.cli.invocations.maintenance_invocation import MaintenanceInvocation
 from squeaky_clean.interface.cli.invocations.recovery_invocation import RecoveryInvocation
 from squeaky_clean.interface.cli.invocations.run_invocation import RunInvocation
 from squeaky_clean.interface.cli.micro_eval_command import MicroEvalCommand
-from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
-from squeaky_clean.interface.cli.replicates.replicate_runner import ReplicateRunner
-from squeaky_clean.interface.cli.resume_dispatch import ResumeDispatch
 from squeaky_clean.interface.cli.router_factory import RouterFactory
-from squeaky_clean.interface.cli.run_config_factory import RunConfigFactory
-from squeaky_clean.interface.cli.run_sweep import RunSweep
-from squeaky_clean.interface.cli.run_sweep_deps import RunSweepDeps
 
 _LOG = logging.getLogger(__name__)
 
 
 class SqueakyCleanCLI:
-    """Top-level CLI entry point — single-problem RunEval or parallel RunSweep."""
+    """Top-level CLI entry point — routes a CLIRequest to its command flow."""
 
     def run(self, request: CLIRequest) -> int:
         """Execute the pipeline for ``request`` and return a process exit code.
@@ -110,135 +71,36 @@ class SqueakyCleanCLI:
             return 1
 
     def _single(self, router: ModelRouter, problem_id: str, run: RunInvocation) -> int:
-        return self._dispatch(
-            router, ProblemResolver().resolve(problem_id), run,
-        )
+        return RunCommands(router).single(problem_id, run)
 
     def _replicated(self, router: ModelRouter, run: RunInvocation) -> int:
-        """Run every requested problem through the N-replicate path."""
-        codes = [
-            self._dispatch(router, ProblemResolver().resolve(pid), run)
-            for pid in run.problem_ids
-        ]
-        return max(codes)
+        return RunCommands(router).replicated(run)
 
     def _dispatch(
         self, router: ModelRouter, problem: ProblemSpec, run: RunInvocation,
     ) -> int:
-        if run.replicates > 1:
-            return self._replicates(router, problem, run)
-        return self._single_spec(router, problem, run)
-
-    def _single_spec(
-        self, router: ModelRouter, problem: ProblemSpec, run: RunInvocation,
-    ) -> int:
-        rc = RunConfigFactory().build(run.settings, replicate_id=0)
-        deps = DependencyBuilder().build(router, problem, rc)
-        result = RunEval(deps).execute(problem)
-        print(f"[squeaky] run complete: report at {result.report_path}")
-        print(f"[squeaky] tests_pass={result.metrics.tests_pass:.2f} "
-              f"cost=${result.metrics.estimated_cost_usd:.4f}")
-        return 0
-
-    def _recover(self, router: ModelRouter, rec: RecoveryInvocation) -> int:
-        spec = SquibReviewGate(LocalFileSystem()).load(Path(str(rec.squib_file)))
-        tests_dir = Path(rec.legacy_tests) if rec.legacy_tests else None
-        problem = ProblemSpecSynthesizer().synthesize(spec, tests_dir)
-        designer = SuppliedArchitectureDesigner(spec, SquibEmitter().emit(spec))
-        rc = RunConfigFactory().build(rec.settings, replicate_id=0)
-        deps = DependencyBuilder().build(router, problem, rc)
-        result = RunEval(replace(deps, design_architecture=designer)).execute(problem)
-        print(f"[squeaky] recovery regenerated: report at {result.report_path}")
-        return 0
-
-    def _recover_emit(self, rec: RecoveryInvocation) -> int:
-        out = Path(rec.recover_out) if rec.recover_out else Path("recovered.squib")
-        ranking = rec.criteria or ALL_ARCHITECTURAL_CRITERIA
-        language = TargetLanguage(rec.recover_language)
-        summary = RecoveryEmitter(LocalFileSystem()).emit(
-            Path(rec.recover_from), out, ranking, language,  # type: ignore[arg-type]
-        )
-        close = " (close call — review)" if summary.recommendation_close else ""
-        print(f"[squeaky] recovered {summary.classes} classes into "
-              f"{summary.modules} modules -> {summary.squib_path}")
-        print(f"[squeaky] {summary.violations} architecture violation(s) "
-              f"({summary.coupling_violations} framework-coupling) -> "
-              f"{summary.violations_path}")
-        print(f"[squeaky] coupled-class recommendation: "
-              f"{summary.recommendation}{close}")
-        return 0
-
-    def _triage(self, rec: RecoveryInvocation) -> int:
-        path = Path(str(rec.triage))
-        report = ViolationReportDeserializer().deserialize(path.read_text())
-        plan = InteractiveTriage().run(report, self._console_ask)
-        out = path.with_name("refactor_plan.json")
-        out.write_text(RefactorPlanSerializer().serialize(plan))
-        print(f"[squeaky] triage complete: {len(plan.fix)} to fix, "
-              f"{len(plan.ignore)} ignored -> {out}")
-        return 0
-
-    def _refactor_emit(self, rec: RecoveryInvocation) -> int:
-        if rec.plan is None:
-            print("[squeaky] --refactor requires --plan", file=sys.stderr)
-            return 1
-        out = Path(rec.refactor_out) if rec.refactor_out else Path("refactored.squib")
-        summary = RefactorEmitter(LocalFileSystem()).emit(
-            Path(str(rec.refactor)), Path(rec.plan), out,
-        )
-        print(f"[squeaky] refactored {summary.classes_before} -> "
-              f"{summary.classes_after} classes across {summary.modules} "
-              f"modules -> {summary.out_path}")
-        return 0
-
-    def _console_ask(self, category: str, count: int) -> bool:
-        prompt = f"[squeaky] address all {count} {category} violation(s)? [Y/n] "
-        try:
-            answer = input(prompt).strip().lower()
-        except EOFError:
-            return True
-        return answer not in ("n", "no")
-
-    def _replicates(
-        self, router: ModelRouter, problem: ProblemSpec, run: RunInvocation,
-    ) -> int:
-        runner = ReplicateRunner(DependencyBuilder(), RunConfigFactory())
-        summary = runner.run(router, problem, run)
-        print(f"[squeaky] replicates complete: {summary.summary_path}")
-        return 0
+        return RunCommands(router).dispatch(problem, run)
 
     def _sweep(self, router: ModelRouter, run: RunInvocation) -> int:
-        resolver = ProblemResolver()
-        problems = tuple(resolver.resolve(pid) for pid in run.problem_ids)
-        deps = RunSweepDeps(
-            dependency_builder=DependencyBuilder(),
-            router=router,
-            run_config=RunConfigFactory().build(run.settings, replicate_id=0),
-        )
-        result = RunSweep(deps, JSONLogger()).execute(SweepRequest(
-            problems=problems, max_parallel=run.max_parallel,
-        ))
-        print(f"[squeaky] sweep complete: {result.run_dir}")
-        print(f"[squeaky] {len(result.bundles)} problems, "
-              f"${result.total_cost_usd:.4f}, {result.total_duration_ms}ms")
-        return 0
+        return RunCommands(router).sweep(run)
+
+    def _recover(self, router: ModelRouter, rec: RecoveryInvocation) -> int:
+        return RecoverCommands().regenerate(router, rec)
+
+    def _recover_emit(self, rec: RecoveryInvocation) -> int:
+        return RecoverCommands().emit(rec)
+
+    def _triage(self, rec: RecoveryInvocation) -> int:
+        return RefactorCommands().triage(rec)
+
+    def _refactor_emit(self, rec: RecoveryInvocation) -> int:
+        return RefactorCommands().refactor_emit(rec)
 
     def _resume(self, router: ModelRouter, maint: MaintenanceInvocation) -> int:
-        bundle = ResumeDispatch().resume(router, maint)
-        print(f"[squeaky] resume complete: cost="
-              f"${bundle.metrics.estimated_cost_usd:.4f}")
-        return 0
+        return MaintenanceCommands().resume(router, maint)
 
     def _rebuild_dashboard(self) -> int:
-        framework_root = Path(__file__).resolve().parents[3]
-        root = framework_root.parent / "meta-evaluation-results"
-        snapshots = MetricsHistoryAggregator().aggregate(root)
-        target = root / "dashboard.html"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        HtmlDashboardWriter().write(snapshots, target)
-        print(f"[squeaky] dashboard rebuilt: {target} "
-              f"({len(snapshots)} runs)")
-        return 0
+        return MaintenanceCommands().rebuild_dashboard()
 
     def _print_banner(self, run: RunInvocation) -> None:
         print(f"[squeaky] problems={list(run.problem_ids)} "

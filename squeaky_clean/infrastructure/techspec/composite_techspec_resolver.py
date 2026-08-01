@@ -15,13 +15,9 @@ from squeaky_clean.domain.interfaces.tech_spec_resolver import (
 )
 from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidator
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
-from squeaky_clean.domain.value_objects.tech_spec_fetch_failed import TechSpecFetchFailed
-from squeaky_clean.domain.value_objects.tech_spec_poisoned import TechSpecPoisoned
 from squeaky_clean.domain.value_objects.tech_spec_resolution import TechSpecResolution
-from squeaky_clean.infrastructure.techspec.composite_techspec_resolver_fetch import (
-    fetch_one,
-    try_cache,
-)
+from squeaky_clean.domain.value_objects.tech_spec_target import TechSpecTarget
+from squeaky_clean.infrastructure.techspec.composite_techspec_resolver_fetch import try_cache
 from squeaky_clean.infrastructure.techspec.composite_techspec_resolver_helpers import (
     AllowlistRegistry,
     FetchAttempt,
@@ -29,6 +25,7 @@ from squeaky_clean.infrastructure.techspec.composite_techspec_resolver_helpers i
 from squeaky_clean.infrastructure.techspec.filesystem_techspec_resolver import (
     FilesystemTechSpecResolver,
 )
+from squeaky_clean.infrastructure.techspec.remote_techspec_sources import RemoteTechSpecSources
 from squeaky_clean.infrastructure.techspec.techspec_cache_metadata import TechSpecCacheMetadata
 
 
@@ -49,30 +46,31 @@ class CompositeTechSpecResolver(TechSpecResolver):
         extractor: TechSpecHTMLExtractor | None = None,
         run_logger: RunLogger | None = None,
     ) -> None:
-        self._fs, self._validator, self._cache_root = fs_resolver, validator, cache_root
+        self._fs, self._cache_root = fs_resolver, cache_root
         self._log: RunLogger = run_logger or NullRunLogger()
         self._cache = TechSpecCacheMetadata(ttl_days, run_logger=self._log)
-        self._mcp, self._web = mcp_fetcher, web_fetcher
-        self._allowlists: AllowlistRegistry = allowlist_registry or {}
-        self._extractor = extractor or TechSpecHTMLExtractor()
+        self._sources = RemoteTechSpecSources(
+            mcp_fetcher, web_fetcher, extractor or TechSpecHTMLExtractor(),
+            validator, self._cache, allowlist_registry or {},
+        )
 
-    def resolve(self, category: str, technology: str, version: str) -> TechSpec:
+    def resolve(self, target: TechSpecTarget) -> TechSpec:
         """Try fs → fresh-cache → MCP → web → stale-cache; fail loudly."""
         reasons: list[str] = []
         try:
-            return self._fs.resolve(category, technology, version)
+            return self._fs.resolve(target)
         except TechSpecUnresolvableError as exc:
             self._log.event("techspec_fs_miss", reason=str(exc))
             fs_reasons = (
                 exc.reasons if isinstance(exc, TechSpecResolutionError) else ()
             )
             reasons.extend(fs_reasons or (f"bundled: {exc}",))
-        a = FetchAttempt(category, technology, version)
+        a = FetchAttempt(target.category, target.technology, target.version_pin)
         path = self._cache_path(a)
         sources: tuple[tuple[str, Callable[[], TechSpecResolution | None]], ...] = (
             ("fresh-cache", lambda: try_cache(self._cache, path, stale=False)),
-            ("mcp", lambda: self._fetch_mcp(a, path)),
-            ("web", lambda: self._fetch_web(a, path)),
+            ("mcp", lambda: self._sources.fetch_mcp(a, path)),
+            ("web", lambda: self._sources.fetch_web(a, path)),
         )
         for name, source in sources:
             outcome = source()
@@ -111,34 +109,6 @@ class CompositeTechSpecResolver(TechSpecResolver):
             f"{a.category}/{a.technology}/{a.version}.json",
             tuple(reasons),
         )
-
-    def _fetch_mcp(self, a: FetchAttempt, path: Path) -> TechSpecResolution | None:
-        if self._mcp is None:
-            return None
-        url = f"{a.category}/{a.technology}/{a.version}.json"
-        return fetch_one(self._mcp, url, a, is_html=False,
-                         extractor=self._extractor, validator=self._validator,
-                         cache=self._cache, cache_path=path)
-
-    def _fetch_web(self, a: FetchAttempt, path: Path) -> TechSpecResolution | None:
-        web = self._web
-        if web is None:
-            return None
-        last: TechSpecFetchFailed | TechSpecPoisoned | None = None
-        failures: list[str] = []
-        for url in self._allowlists.get((a.category, a.technology), ()):
-            outcome = fetch_one(web, url, a, is_html=True,
-                                extractor=self._extractor, validator=self._validator,
-                                cache=self._cache, cache_path=path)
-            if isinstance(outcome, TechSpec):
-                return outcome
-            last = outcome
-            failures.append(outcome.reason)
-        if last is None:
-            return None  # no allowlisted URLs — source not applicable
-        if len(failures) == 1:
-            return last
-        return TechSpecFetchFailed("; ".join(failures))
 
     def _cache_path(self, a: FetchAttempt) -> Path:
         return self._cache_root / a.category / a.technology / f"{a.version}.json"

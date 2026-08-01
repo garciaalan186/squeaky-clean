@@ -27,7 +27,8 @@ class SecurityConcernFormatter:
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
         self._camel: PascalToCamelConverter = PascalToCamelConverter()
         self._resolver: DottedPathResolver | None = (
-            DottedPathResolver(toolkit) if toolkit is not None else None
+            DottedPathResolver(toolkit, architecture)
+            if toolkit is not None else None
         )
 
     def format(self, concern: SecurityConcern, cls: ClassSpec) -> str:
@@ -52,9 +53,7 @@ class SecurityConcernFormatter:
     def _dotted_or_stem(self, class_name: str) -> str:
         """Return dotted path when module+toolkit known, else bare stem."""
         if self._resolver is not None and self._module is not None:
-            return self._resolver.resolve(
-                class_name, self._module, self._architecture,
-            )
+            return self._resolver.resolve(class_name, self._module)
         return self._stem(class_name)
 
     def _stem(self, class_name: str) -> str:

@@ -55,5 +55,5 @@ class FixCandidateBuilder:
              if any(c.name == name for c in m.classes)), None)
         if module is None:
             return ""
-        return SiblingInterfaceFormatter(self._toolkit).format(
-            module, name, (), arch)
+        focal = next(c for c in module.classes if c.name == name)
+        return SiblingInterfaceFormatter(self._toolkit, arch).format(module, focal)

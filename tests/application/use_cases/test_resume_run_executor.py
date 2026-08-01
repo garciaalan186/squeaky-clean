@@ -7,11 +7,13 @@ import pytest
 
 import squeaky_clean.application.evaluation.eval.resume.resume_run_executor as executor_mod
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.evaluation.eval.resume.resume_run_executor import ResumeRunExecutor
-from squeaky_clean.application.evaluation.eval.resume.resume_stubs import (
+from squeaky_clean.application.evaluation.eval.resume.cached_design_architecture import (
     CachedDesignArchitecture,
+)
+from squeaky_clean.application.evaluation.eval.resume.cached_orchestrate_module import (
     CachedOrchestrateModule,
 )
+from squeaky_clean.application.evaluation.eval.resume.resume_run_executor import ResumeRunExecutor
 from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
 from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
@@ -70,7 +72,7 @@ def test_non_resumable_stage_falls_back_to_full_run(tmp_path: Path) -> None:
     """architect_done is before the resumable window → full restart, deps as-is."""
     deps = build_stub_deps()
     cp = RunCheckpoint(stage="architect_done")
-    bundle = ResumeRunExecutor(deps).resume_from(cp, P0, tmp_path)
+    bundle = ResumeRunExecutor(deps, cp).resume(P0, tmp_path)
     assert bundle is _SENTINEL
     assert _FakePipeline.captured == [deps]
 
@@ -83,7 +85,7 @@ def test_icps_done_resumes_with_cached_stages_and_seeded_cost(tmp_path: Path) ->
         module_implementations_path=str(_impls_file(tmp_path)),
         cost_spent_usd=0.4,
     )
-    bundle = ResumeRunExecutor(deps).resume_from(cp, P0, tmp_path)
+    bundle = ResumeRunExecutor(deps, cp).resume(P0, tmp_path)
     assert bundle is _SENTINEL
     stubbed = _FakePipeline.captured[0]
     assert stubbed is not deps
@@ -98,5 +100,5 @@ def test_resumable_stage_without_notation_raises(tmp_path: Path) -> None:
     cp = RunCheckpoint(stage="tested", architecture_notation="",
                        module_implementations_path="ignored")
     with pytest.raises(ValueError, match="architecture_notation"):
-        ResumeRunExecutor(deps).resume_from(cp, P0, tmp_path)
+        ResumeRunExecutor(deps, cp).resume(P0, tmp_path)
     assert _FakePipeline.captured == []

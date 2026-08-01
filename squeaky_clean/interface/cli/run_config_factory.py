@@ -2,10 +2,10 @@
 
 from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-from squeaky_clean.domain.value_objects.temperature_policy import (
+from squeaky_clean.domain.value_objects.sampling.temperature_policy import (
     TemperaturePolicy,
-    TierSampling,
 )
+from squeaky_clean.domain.value_objects.sampling.tier_sampling import TierSampling
 from squeaky_clean.interface.cli.invocations.run_settings import RunSettings
 
 

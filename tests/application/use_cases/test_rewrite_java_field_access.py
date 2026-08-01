@@ -30,7 +30,7 @@ def _run(tmp_path: Path, src: str) -> str:
     f = tmp_path / "src" / "Adapter.java"
     f.write_text(src)
     tk = LanguageToolkitFactory().for_language(TargetLanguage.JAVA)
-    RewriteJavaFieldAccess().rewrite(_arch(), tmp_path, tk)
+    RewriteJavaFieldAccess(tk).rewrite(_arch(), tmp_path)
     return f.read_text()
 
 

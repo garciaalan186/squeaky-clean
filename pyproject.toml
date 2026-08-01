@@ -131,6 +131,9 @@ select = ["E", "F", "I", "W", "B", "UP"]
 "squeaky_clean/application/generation/techspec/techspec_composer.py" = ["E501"]
 "squeaky_clean/infrastructure/testing/maven_test_runner.py" = ["E501"]
 "squeaky_clean/interface/cli/language_adapter_registry.py" = ["E501"]
+# Same long-dotted-import exemption for the split-out registry entry tables.
+"squeaky_clean/interface/cli/language_adapters/scripted_language_entries.py" = ["E501"]
+"squeaky_clean/interface/cli/language_adapters/compiled_language_entries.py" = ["E501"]
 # Test code: relax style rules that mask test intent.
 "tests/**" = ["E501", "E702", "B017"]
 # Eval/research scripts: long Gherkin acceptance-criteria strings.

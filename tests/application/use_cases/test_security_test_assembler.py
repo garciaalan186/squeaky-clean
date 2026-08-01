@@ -5,7 +5,9 @@ from squeaky_clean.application.generation.security.security_test_assembler impor
     SecurityTestAssembler,
 )
 from squeaky_clean.domain.entities.class_spec import ClassSpec
+from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.value_objects.layer_type import LayerType
 
 
 def _concern() -> SecurityConcern:
@@ -15,11 +17,13 @@ def _concern() -> SecurityConcern:
     )
 
 
-def _class_map() -> dict[str, ClassSpec]:
-    return {"Payment": ClassSpec(
+def _module() -> ModuleSpec:
+    payment = ClassSpec(
         name="Payment", pattern="Entity", implements=None,
         methods=(), depends=(), concretes=(),
-    )}
+    )
+    return ModuleSpec(name="Payments", layer=LayerType.DOMAIN, exports=(),
+                      depends=(), classes=(payment,), invariants=())
 
 
 def _resp(content: str) -> LLMResponse:
@@ -31,8 +35,8 @@ def _resp(content: str) -> LLMResponse:
 
 def test_fenced_response_yields_one_skeleton() -> None:
     resp = _resp("```python\ndef test_x():\n    assert True\n```")
-    arch = SecurityTestAssembler().assemble(
-        (resp,), (_concern(),), _class_map(),
+    arch = SecurityTestAssembler(module=_module()).assemble(
+        (resp,), (_concern(),),
     )
     assert len(arch.test_skeletons) == 1
     assert "def test_x" in arch.test_skeletons[0].code
@@ -41,7 +45,7 @@ def test_fenced_response_yields_one_skeleton() -> None:
 def test_prose_only_response_is_skipped_not_written_as_code() -> None:
     # R3.1: no fence → prose, must NOT become a .py file that breaks collection.
     resp = _resp("I could not find a concrete vulnerability to test here.")
-    arch = SecurityTestAssembler().assemble(
-        (resp,), (_concern(),), _class_map(),
+    arch = SecurityTestAssembler(module=_module()).assemble(
+        (resp,), (_concern(),),
     )
     assert arch.test_skeletons == ()

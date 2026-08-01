@@ -10,6 +10,8 @@ from squeaky_clean.application.generation.repair.fixer_stage import (
 )
 from squeaky_clean.application.generation.repair.repair_test_file import (
     RepairTestFile,
+)
+from squeaky_clean.application.generation.repair.test_repair_request import (
     TestRepairRequest,
 )
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler

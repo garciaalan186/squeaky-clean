@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-
-class CostExceededError(RuntimeError):
-    """Raised when cumulative cost passes the configured cap."""
+from squeaky_clean.application.shared.gateways.cost_exceeded_error import (
+    CostExceededError,
+)
 
 
 class CostGuardrail:

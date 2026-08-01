@@ -1,5 +1,9 @@
 """ConventionToInvariant: maps known convention tags to INVARIANT strings."""
 
+from squeaky_clean.application.generation.notation.unknown_convention_error import (
+    UnknownConventionError,
+)
+
 _CONVENTIONS: dict[str, str] = {
     "timeline_includes_self":
         "a user's timeline must include the user's own posts",
@@ -20,10 +24,6 @@ _CONVENTIONS: dict[str, str] = {
     "redirect_uri_strict_match":
         "redirect_uri must match the value registered with the client byte-for-byte",
 }
-
-
-class UnknownConventionError(ValueError):
-    """Raised when a convention tag has no registered expansion."""
 
 
 class ConventionToInvariant:

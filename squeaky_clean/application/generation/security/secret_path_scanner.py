@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
+from squeaky_clean.application.generation.security.secret_hit import SecretHit
 from squeaky_clean.application.generation.security.secret_scanner import SecretScanner
 
 _BINARY_SUFFIXES: frozenset[str] = frozenset({
@@ -18,15 +18,6 @@ _EXCLUDED_DIRS: frozenset[str] = frozenset({
 })
 _ALLOW_MARKER: str = "secret-scan: allow"
 _MAX_BYTES: int = 100 * 1024
-
-
-@dataclass(frozen=True)
-class SecretHit:
-    """One detected secret leak with file + line context."""
-
-    path: Path
-    line: int
-    label: str
 
 
 class SecretPathScanner:

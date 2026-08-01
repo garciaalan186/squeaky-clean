@@ -22,17 +22,16 @@ class RefactorEmitter:
     Recover -> Analyze -> Triage -> Refactor loop on disk.
     """
 
-    def __init__(self, fs: ProjectFileSystem) -> None:
+    def __init__(self, fs: ProjectFileSystem, plan_path: Path) -> None:
         self._gate: SquibReviewGate = SquibReviewGate(fs)
+        self._plan_path: Path = plan_path
         self._plans: RefactorPlanDeserializer = RefactorPlanDeserializer()
         self._phase: RefactorPhase = RefactorPhase()
 
-    def emit(
-        self, squib_path: Path, plan_path: Path, out_path: Path,
-    ) -> RefactorRunSummary:
+    def emit(self, squib_path: Path, out_path: Path) -> RefactorRunSummary:
         """Apply the plan to the Squib and write the refactored Squib."""
         spec = self._gate.load(squib_path)
-        plan = self._plans.deserialize(plan_path.read_text())
+        plan = self._plans.deserialize(self._plan_path.read_text())
         before = sum(len(m.classes) for m in spec.modules)
         refactored = self._phase.apply(spec, plan)
         self._gate.emit(refactored, out_path)

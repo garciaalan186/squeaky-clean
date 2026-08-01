@@ -36,7 +36,7 @@ def _run(tmp: Path) -> object:
     squib.write_text(SquibEmitter().emit(_SPEC))
     plan = tmp / "refactor_plan.json"
     plan.write_text('{"fix": ["framework-coupling:app.page.Page"], "ignore": []}')
-    return RefactorEmitter(LocalFileSystem()).emit(squib, plan, tmp / "refactored.squib")
+    return RefactorEmitter(LocalFileSystem(), plan).emit(squib, tmp / "refactored.squib")
 
 
 def test_emits_refactored_squib_with_the_split(tmp_path: Path) -> None:

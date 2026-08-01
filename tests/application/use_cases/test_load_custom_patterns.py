@@ -7,11 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.application.shared.problem.custom_pattern_manifest import (
+from squeaky_clean.application.shared.problem.custom_pattern_manifest_entry import (
     CustomPatternManifestEntry,
 )
-from squeaky_clean.application.shared.problem.load_custom_patterns import (
+from squeaky_clean.application.shared.problem.custom_pattern_manifest_error import (
     CustomPatternManifestError,
+)
+from squeaky_clean.application.shared.problem.load_custom_patterns import (
     LoadCustomPatterns,
 )
 

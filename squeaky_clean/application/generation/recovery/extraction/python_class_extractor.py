@@ -18,17 +18,14 @@ class PythonClassExtractor:
     ``module.body`` ClassDefs are catalogued.
     """
 
-    def __init__(self) -> None:
-        self._facts: ClassFactExtractor = ClassFactExtractor()
-
     def extract(self, module: ast.Module, prefix: str) -> tuple[ClassRecord, ...]:
         """Return ClassRecords for every top-level class in the module."""
-        imports = self._imports(module)
+        facts = ClassFactExtractor(self._imports(module))
         out: list[ClassRecord] = []
         for stmt in module.body:
             if isinstance(stmt, ast.ClassDef):
                 fqn = f"{prefix}.{stmt.name}"
-                out.append(self._facts.record(stmt, fqn, imports))
+                out.append(facts.record(stmt, fqn))
         return tuple(out)
 
     def _imports(self, module: ast.Module) -> tuple[str, ...]:

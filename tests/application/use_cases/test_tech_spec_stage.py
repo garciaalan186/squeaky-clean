@@ -23,6 +23,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecResolver
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.domain.value_objects.tech_spec_target import TechSpecTarget
 from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
     LifecycleTimestampLog,
 )
@@ -43,7 +44,7 @@ def _redis_spec() -> TechSpec:
 class _StubResolver(TechSpecResolver):
     """Returns the canned redis TechSpec for any triple."""
 
-    def resolve(self, category: str, technology: str, version: str) -> TechSpec:
+    def resolve(self, target: TechSpecTarget) -> TechSpec:
         return _redis_spec()
 
 

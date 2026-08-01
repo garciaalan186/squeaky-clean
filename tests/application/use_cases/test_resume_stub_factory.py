@@ -5,11 +5,13 @@ from dataclasses import replace
 import pytest
 
 from eval.problems.p0_calculator import P0
-from squeaky_clean.application.evaluation.eval.resume.resume_stub_factory import ResumeStubFactory
-from squeaky_clean.application.evaluation.eval.resume.resume_stubs import (
+from squeaky_clean.application.evaluation.eval.resume.cached_design_architecture import (
     CachedDesignArchitecture,
+)
+from squeaky_clean.application.evaluation.eval.resume.cached_orchestrate_module import (
     CachedOrchestrateModule,
 )
+from squeaky_clean.application.evaluation.eval.resume.resume_stub_factory import ResumeStubFactory
 from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
 from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
@@ -41,8 +43,12 @@ def _impl() -> ModuleImplementation:
 def _build(deps: RunEvalDependencies, impl: ModuleImplementation) -> RunEvalDependencies:
     arch = ArchitectureSpec(modules=(impl.module,), graph=ArchitectureGraph(edges={}))
     empty = TestArchitecture(gherkin_scenarios=(), test_skeletons=())
-    return ResumeStubFactory().build(deps, arch, empty, empty, (impl,),
-                                     prior_cost_usd=1.25)
+    return (
+        ResumeStubFactory(deps, arch)
+        .with_test_archs(empty, empty)
+        .with_impls((impl,))
+        .build(1.25)
+    )
 
 
 def test_prior_cost_usd_seeds_cost_gate() -> None:

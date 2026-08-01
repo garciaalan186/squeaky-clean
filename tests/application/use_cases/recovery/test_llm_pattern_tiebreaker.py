@@ -6,6 +6,7 @@ from squeaky_clean.application.generation.recovery.extraction.class_record impor
 from squeaky_clean.application.generation.recovery.scoring.llm_pattern_tiebreaker import (
     LlmPatternTiebreaker,
 )
+from squeaky_clean.application.generation.recovery.scoring.tiebreak.pattern_tie import PatternTie
 from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
 from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
@@ -24,6 +25,7 @@ _RECORD = ClassRecord(
     fqn="app.OrderPlacedEvent", bases=(), methods=("at()",),
     fields=("id: str",), imports=(), decorators=(),
 )
+_TIE = PatternTie(record=_RECORD, layer=LayerType.DOMAIN, candidates=_CANDIDATES)
 
 
 class _StubGateway(LLMGateway):
@@ -49,20 +51,16 @@ def _deps(gateway: LLMGateway) -> LLMCallDeps:
 def test_resolves_to_named_candidate(tmp_path: Path) -> None:
     gateway = _StubGateway("Entity")
     tb = LlmPatternTiebreaker(_deps(gateway), ContentAddressedCache(tmp_path))
-    assert tb.resolve(_RECORD, LayerType.DOMAIN, _CANDIDATES) == "Entity"
+    assert tb.resolve(_TIE) == "Entity"
     assert gateway.calls == 1
 
 
 def test_second_call_replays_from_cache(tmp_path: Path) -> None:
     cache = ContentAddressedCache(tmp_path)
-    LlmPatternTiebreaker(_deps(_StubGateway("Entity")), cache).resolve(
-        _RECORD, LayerType.DOMAIN, _CANDIDATES,
-    )
+    LlmPatternTiebreaker(_deps(_StubGateway("Entity")), cache).resolve(_TIE)
     # Fresh gateway that would answer differently; cache must win and not call it.
     second = _StubGateway("DomainEvent")
-    result = LlmPatternTiebreaker(_deps(second), cache).resolve(
-        _RECORD, LayerType.DOMAIN, _CANDIDATES,
-    )
+    result = LlmPatternTiebreaker(_deps(second), cache).resolve(_TIE)
     assert result == "Entity"
     assert second.calls == 0
 
@@ -70,4 +68,4 @@ def test_second_call_replays_from_cache(tmp_path: Path) -> None:
 def test_out_of_set_answer_falls_back_to_simple_class(tmp_path: Path) -> None:
     gateway = _StubGateway("Visitor")
     tb = LlmPatternTiebreaker(_deps(gateway), ContentAddressedCache(tmp_path))
-    assert tb.resolve(_RECORD, LayerType.DOMAIN, _CANDIDATES) == "SimpleClass"
+    assert tb.resolve(_TIE) == "SimpleClass"

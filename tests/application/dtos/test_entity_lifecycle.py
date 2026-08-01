@@ -4,8 +4,8 @@ import pytest
 
 from squeaky_clean.application.shared.mcda.entity_lifecycle import (
     EntityLifecycle,
-    StateTransition,
 )
+from squeaky_clean.application.shared.mcda.state_transition import StateTransition
 
 
 def test_entity_lifecycle_round_trip() -> None:

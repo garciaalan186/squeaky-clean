@@ -3,15 +3,7 @@
 from dataclasses import dataclass
 
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-
-
-@dataclass(frozen=True)
-class TierSampling:
-    """Sampling settings for one tier: temperature + optional seed."""
-
-    temperature: float
-    seed: int | None
-
+from squeaky_clean.domain.value_objects.sampling.tier_sampling import TierSampling
 
 _DEFAULT: dict[ModelTier, TierSampling] = {
     ModelTier.ARCHITECT: TierSampling(temperature=0.0, seed=0),

@@ -27,26 +27,24 @@ from squeaky_clean.domain.entities.module_spec import ModuleSpec
 class EmitInvariantTests:
     """Writes one deterministic invariants test file per validation class."""
 
-    def __init__(self) -> None:
+    def __init__(self, toolkit: LanguageToolkit) -> None:
+        self._toolkit: LanguageToolkit = toolkit
         self._projector: ProjectTestObligations = ProjectTestObligations()
 
-    def emit(
-        self, arch: ArchitectureSpec, problem: ProblemSpec,
-        toolkit: LanguageToolkit,
-    ) -> dict[str, str]:
+    def emit(self, arch: ArchitectureSpec, problem: ProblemSpec) -> dict[str, str]:
         """Return {relative_path: file_contents} for each validation class."""
         wanted: dict[str, list[str]] = {}
         for ob in self._projector.project(arch, problem):
             if ob.method == "<init>":
                 wanted.setdefault(ob.target_class, []).append(ob.detail)
-        renderer = InvariantTestRenderer(toolkit)
         out: dict[str, str] = {}
         for name, invariants in wanted.items():
             found = self._find(arch, name)
             if found is None:
                 continue
             cls, module = found
-            rel, body = renderer.render(cls, module, tuple(invariants))
+            renderer = InvariantTestRenderer(self._toolkit, module)
+            rel, body = renderer.render(cls, tuple(invariants))
             out[rel] = body
         return out
 
