@@ -16,6 +16,9 @@ _ERROR_LINE: re.Pattern[str] = re.compile(r"^error(\[E\d+\])?:", re.MULTILINE)
 _FILE_LINE: re.Pattern[str] = re.compile(
     r"^\s+--> (?P<path>[^\s:]+\.rs):\d+:\d+", re.MULTILINE,
 )
+# CI cargo colorizes even through a pipe (CARGO_TERM_COLOR); strip escapes
+# defensively on top of --color=never so the anchors above always match.
+_ANSI: re.Pattern[str] = re.compile(r"\x1b\[[0-9;]*m")
 
 
 class CargoCheckCompiler(ProjectCompiler):
@@ -33,11 +36,11 @@ class CargoCheckCompiler(ProjectCompiler):
             raise RuntimeError("cargo toolchain not installed (R6.1d gate)")
         self._write_lib_rs(project_dir / "src")
         completed = subprocess.run(
-            ["cargo", "check", "--quiet"], cwd=str(project_dir),
-            capture_output=True, text=True,
+            ["cargo", "check", "--quiet", "--color=never"],
+            cwd=str(project_dir), capture_output=True, text=True,
             timeout=_TIMEOUT_SECONDS, check=False,
         )
-        output = completed.stdout + completed.stderr
+        output = _ANSI.sub("", completed.stdout + completed.stderr)
         errors = _ERROR_LINE.findall(output)
         stems = {
             Path(p).stem for p in _FILE_LINE.findall(output)
