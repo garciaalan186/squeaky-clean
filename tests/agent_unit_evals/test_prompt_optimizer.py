@@ -1,13 +1,13 @@
 """Unit tests for PromptOptimizer (offline; no live LLM)."""
 
-from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
-from squeaky_clean.domain.interfaces.llm_request import LLMRequest
-from squeaky_clean.domain.interfaces.llm_response import LLMResponse
-from squeaky_clean.eval.agent_scorers.prompt_candidate import PromptCandidate
-from squeaky_clean.eval.agent_scorers.prompt_optimizer import (
+from eval.agent_scorers.prompt_candidate import PromptCandidate
+from eval.agent_scorers.prompt_optimizer import (
     PromptOptimizer,
     make_fixture,
 )
+from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
+from squeaky_clean.domain.interfaces.llm_request import LLMRequest
+from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 
 
 class _GoodGateway(LLMGateway):

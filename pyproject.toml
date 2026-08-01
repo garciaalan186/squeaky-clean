@@ -57,9 +57,6 @@ dev = [
   "build>=1.2",
   "twine>=5.0",
 ]
-dspy = [
-  "dspy-ai>=2.5",
-]
 sast = [
   "bandit>=1.7",
 ]
@@ -105,18 +102,8 @@ warn_return_any = true
 no_implicit_reexport = true
 
 [[tool.mypy.overrides]]
-module = ["dspy", "dspy.*"]
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
 module = ["jsonschema", "jsonschema.*"]
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["squeaky_clean.infrastructure.dspy.*"]
-disallow_subclassing_any = false
-disallow_any_explicit = false
-warn_unused_ignores = false
 
 # Serializer modules round-trip arbitrary JSON; Any is intrinsic at the
 # JSON boundary. Keeps the strict policy elsewhere.

@@ -3,6 +3,9 @@
 Wraps Anthropic's tool-use API as a way to coerce the model into emitting
 a JSON object matching a declared schema. Returns the parsed dict on
 success, or None if the model emitted text instead of a tool_use block.
+
+RESERVED: adopted by R6.1b (structured output); tracked in
+ARCHITECTURE_RELIABILITY_ROADMAP.md — delete if R6.1b is descoped.
 """
 
 from __future__ import annotations

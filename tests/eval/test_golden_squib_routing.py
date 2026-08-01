@@ -16,6 +16,9 @@ import pytest
 
 import squeaky_clean
 from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
+from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
+    ACTIVE_EMITTER_LANGUAGES,
+)
 from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
@@ -31,10 +34,13 @@ _ICPS_ROOT = (
 _MANIFEST: dict[str, dict[str, str]] = json.loads(
     (_FIXTURES / "manifest.json").read_text()
 )
+# R6.10: parametrize over ACTIVE_EMITTER_LANGUAGES, not the full enum —
+# Go/Rust fleets are archived under agent_specs/_attic/emitters/ until a
+# real problem funds them.
 _CASES = [
     (pattern, info, language)
     for pattern, info in sorted(_MANIFEST.items())
-    for language in TargetLanguage
+    for language in ACTIVE_EMITTER_LANGUAGES
 ]
 
 
