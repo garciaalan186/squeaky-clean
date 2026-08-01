@@ -106,7 +106,9 @@ class RunEvalPipeline:
     ) -> EvalReportBundle:
         ctx = PipelineContext(
             problem=problem, output_dir=output_dir,
-            emitter=CheckpointEmitter(problem.id, output_dir),
+            emitter=CheckpointEmitter(
+                problem.id, output_dir, logger=self._deps.run_logger,
+            ),
             lifecycle=LifecycleTimestampLog(output_dir),
         )
         for stage in self._stages:

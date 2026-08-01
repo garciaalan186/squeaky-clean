@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from squeaky_clean.domain.interfaces.tech_spec_resolver import TechSpecUnresolvableError
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
+from squeaky_clean.domain.interfaces.tech_spec_resolver import (
+    TechSpecResolutionError,
+    TechSpecUnresolvableError,
+)
 from squeaky_clean.infrastructure.techspec.filesystem_techspec_resolver import (
     FilesystemTechSpecResolver,
 )
@@ -83,3 +87,28 @@ def test_resolver_rejects_mismatched_schema_version(tmp_path: Path) -> None:
         _resolver_at(tmp_path).resolve(
             "blob_storage", "local_disk", "stdlib",
         )
+
+
+class _FakeRunLogger(RunLogger):
+    def __init__(self) -> None:
+        self.events: list[tuple[str, dict[str, object]]] = []
+
+    def event(self, kind: str, **fields: object) -> None:
+        self.events.append((kind, dict(fields)))
+
+
+def test_rejected_snapshot_logs_event_and_reason_travels(tmp_path: Path) -> None:
+    """R6.8: a corrupt snapshot is logged and its reason reaches the error."""
+    bad_dir = tmp_path / "blob_storage" / "broken"
+    bad_dir.mkdir(parents=True)
+    (bad_dir / "v1.json").write_text("{not json")
+    log = _FakeRunLogger()
+    resolver = FilesystemTechSpecResolver(
+        tmp_path, JSONSchemaTechSpecValidator(_SCHEMA), run_logger=log,
+    )
+    with pytest.raises(TechSpecResolutionError) as exc:
+        resolver.resolve("blob_storage", "broken", "v1")
+    assert any("unreadable" in r for r in exc.value.reasons)
+    kinds = [k for k, _ in log.events]
+    assert kinds == ["techspec_snapshot_rejected"]
+    assert "unreadable" in str(log.events[0][1]["reason"])

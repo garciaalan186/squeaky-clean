@@ -45,8 +45,11 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
-from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
+from squeaky_clean.interface.cli.invocations.cli_request import CLIRequest
+from squeaky_clean.interface.cli.invocations.maintenance_invocation import MaintenanceInvocation
+from squeaky_clean.interface.cli.invocations.recovery_invocation import RecoveryInvocation
+from squeaky_clean.interface.cli.invocations.run_invocation import RunInvocation
 from squeaky_clean.interface.cli.micro_eval_command import MicroEvalCommand
 from squeaky_clean.interface.cli.problem_resolver import ProblemResolver
 from squeaky_clean.interface.cli.replicates.replicate_runner import ReplicateRunner
@@ -62,41 +65,42 @@ _LOG = logging.getLogger(__name__)
 class SqueakyCleanCLI:
     """Top-level CLI entry point — single-problem RunEval or parallel RunSweep."""
 
-    def run(self, args: CLIArgs) -> int:
-        """Execute the pipeline for ``args`` and return a process exit code.
+    def run(self, request: CLIRequest) -> int:
+        """Execute the pipeline for ``request`` and return a process exit code.
 
         Returns 0 on clean completion, 1 on unexpected exception. The
         exit code does NOT reflect pytest pass/fail of the generated
         project — that is recorded in the eval reports.
         """
-        self._print_banner(args)
+        run, recovery = request.run, request.recovery
+        self._print_banner(run)
         try:
-            if args.rebuild_dashboard:
+            if request.maintenance.rebuild_dashboard:
                 return self._rebuild_dashboard()
-            if args.micro_evals:
-                return MicroEvalCommand().run(args)
-            if args.triage is not None:
-                return self._triage(args)
-            if args.refactor is not None:
-                return self._refactor_emit(args)
-            router = RouterFactory().build(args.model_override)
-            if args.resume_run_dir is not None:
-                return self._resume(router, args)
-            if args.recover_from is not None:
-                return self._recover_emit(args)
-            if args.squib_file is not None:
-                return self._recover(router, args)
-            if args.problem_file is not None:
-                problem = LoadProblemSpecFromFile().load(Path(args.problem_file))
-                return self._dispatch(router, problem, args)
-            if args.replicates > 1 and args.problem_ids:
+            if request.micro_eval.enabled:
+                return MicroEvalCommand().run(request.micro_eval)
+            if recovery.triage is not None:
+                return self._triage(recovery)
+            if recovery.refactor is not None:
+                return self._refactor_emit(recovery)
+            router = RouterFactory().build(run.model_override)
+            if request.maintenance.resume_run_dir is not None:
+                return self._resume(router, request.maintenance)
+            if recovery.recover_from is not None:
+                return self._recover_emit(recovery)
+            if recovery.squib_file is not None:
+                return self._recover(router, recovery)
+            if run.problem_file is not None:
+                problem = LoadProblemSpecFromFile().load(Path(run.problem_file))
+                return self._dispatch(router, problem, run)
+            if run.replicates > 1 and run.problem_ids:
                 # Replicates route explicitly: the old routing required
                 # --max-parallel 1 as well, silently sending --replicates
                 # runs through the N=1 sweep path (R5.1).
-                return self._replicated(router, args)
-            if len(args.problem_ids) == 1 and args.max_parallel <= 1:
-                return self._single(router, args.problem_ids[0], args)
-            return self._sweep(router, args)
+                return self._replicated(router, run)
+            if len(run.problem_ids) == 1 and run.max_parallel <= 1:
+                return self._single(router, run.problem_ids[0], run)
+            return self._sweep(router, run)
         except Exception as exc:  # noqa: BLE001
             # Keep the 1-line stderr UX, but preserve the full traceback in the
             # log so failures are diagnosable instead of silently discarded.
@@ -105,30 +109,30 @@ class SqueakyCleanCLI:
                   file=sys.stderr)
             return 1
 
-    def _single(self, router: ModelRouter, problem_id: str, args: CLIArgs) -> int:
+    def _single(self, router: ModelRouter, problem_id: str, run: RunInvocation) -> int:
         return self._dispatch(
-            router, ProblemResolver().resolve(problem_id), args,
+            router, ProblemResolver().resolve(problem_id), run,
         )
 
-    def _replicated(self, router: ModelRouter, args: CLIArgs) -> int:
+    def _replicated(self, router: ModelRouter, run: RunInvocation) -> int:
         """Run every requested problem through the N-replicate path."""
         codes = [
-            self._dispatch(router, ProblemResolver().resolve(pid), args)
-            for pid in args.problem_ids
+            self._dispatch(router, ProblemResolver().resolve(pid), run)
+            for pid in run.problem_ids
         ]
         return max(codes)
 
     def _dispatch(
-        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, run: RunInvocation,
     ) -> int:
-        if args.replicates > 1:
-            return self._replicates(router, problem, args)
-        return self._single_spec(router, problem, args)
+        if run.replicates > 1:
+            return self._replicates(router, problem, run)
+        return self._single_spec(router, problem, run)
 
     def _single_spec(
-        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, run: RunInvocation,
     ) -> int:
-        rc = RunConfigFactory().build(args, replicate_id=0)
+        rc = RunConfigFactory().build(run.settings, replicate_id=0)
         deps = DependencyBuilder().build(router, problem, rc)
         result = RunEval(deps).execute(problem)
         print(f"[squeaky] run complete: report at {result.report_path}")
@@ -136,23 +140,23 @@ class SqueakyCleanCLI:
               f"cost=${result.metrics.estimated_cost_usd:.4f}")
         return 0
 
-    def _recover(self, router: ModelRouter, args: CLIArgs) -> int:
-        spec = SquibReviewGate(LocalFileSystem()).load(Path(str(args.squib_file)))
-        tests_dir = Path(args.legacy_tests) if args.legacy_tests else None
+    def _recover(self, router: ModelRouter, rec: RecoveryInvocation) -> int:
+        spec = SquibReviewGate(LocalFileSystem()).load(Path(str(rec.squib_file)))
+        tests_dir = Path(rec.legacy_tests) if rec.legacy_tests else None
         problem = ProblemSpecSynthesizer().synthesize(spec, tests_dir)
         designer = SuppliedArchitectureDesigner(spec, SquibEmitter().emit(spec))
-        rc = RunConfigFactory().build(args, replicate_id=0)
+        rc = RunConfigFactory().build(rec.settings, replicate_id=0)
         deps = DependencyBuilder().build(router, problem, rc)
         result = RunEval(replace(deps, design_architecture=designer)).execute(problem)
         print(f"[squeaky] recovery regenerated: report at {result.report_path}")
         return 0
 
-    def _recover_emit(self, args: CLIArgs) -> int:
-        out = Path(args.recover_out) if args.recover_out else Path("recovered.squib")
-        ranking = args.criteria or ALL_ARCHITECTURAL_CRITERIA
-        language = TargetLanguage(args.recover_language)
+    def _recover_emit(self, rec: RecoveryInvocation) -> int:
+        out = Path(rec.recover_out) if rec.recover_out else Path("recovered.squib")
+        ranking = rec.criteria or ALL_ARCHITECTURAL_CRITERIA
+        language = TargetLanguage(rec.recover_language)
         summary = RecoveryEmitter(LocalFileSystem()).emit(
-            Path(args.recover_from), out, ranking, language,  # type: ignore[arg-type]
+            Path(rec.recover_from), out, ranking, language,  # type: ignore[arg-type]
         )
         close = " (close call — review)" if summary.recommendation_close else ""
         print(f"[squeaky] recovered {summary.classes} classes into "
@@ -164,8 +168,8 @@ class SqueakyCleanCLI:
               f"{summary.recommendation}{close}")
         return 0
 
-    def _triage(self, args: CLIArgs) -> int:
-        path = Path(str(args.triage))
+    def _triage(self, rec: RecoveryInvocation) -> int:
+        path = Path(str(rec.triage))
         report = ViolationReportDeserializer().deserialize(path.read_text())
         plan = InteractiveTriage().run(report, self._console_ask)
         out = path.with_name("refactor_plan.json")
@@ -174,13 +178,13 @@ class SqueakyCleanCLI:
               f"{len(plan.ignore)} ignored -> {out}")
         return 0
 
-    def _refactor_emit(self, args: CLIArgs) -> int:
-        if args.plan is None:
+    def _refactor_emit(self, rec: RecoveryInvocation) -> int:
+        if rec.plan is None:
             print("[squeaky] --refactor requires --plan", file=sys.stderr)
             return 1
-        out = Path(args.refactor_out) if args.refactor_out else Path("refactored.squib")
+        out = Path(rec.refactor_out) if rec.refactor_out else Path("refactored.squib")
         summary = RefactorEmitter(LocalFileSystem()).emit(
-            Path(str(args.refactor)), Path(args.plan), out,
+            Path(str(rec.refactor)), Path(rec.plan), out,
         )
         print(f"[squeaky] refactored {summary.classes_before} -> "
               f"{summary.classes_after} classes across {summary.modules} "
@@ -196,31 +200,31 @@ class SqueakyCleanCLI:
         return answer not in ("n", "no")
 
     def _replicates(
-        self, router: ModelRouter, problem: ProblemSpec, args: CLIArgs,
+        self, router: ModelRouter, problem: ProblemSpec, run: RunInvocation,
     ) -> int:
         runner = ReplicateRunner(DependencyBuilder(), RunConfigFactory())
-        summary = runner.run(router, problem, args)
+        summary = runner.run(router, problem, run)
         print(f"[squeaky] replicates complete: {summary.summary_path}")
         return 0
 
-    def _sweep(self, router: ModelRouter, args: CLIArgs) -> int:
+    def _sweep(self, router: ModelRouter, run: RunInvocation) -> int:
         resolver = ProblemResolver()
-        problems = tuple(resolver.resolve(pid) for pid in args.problem_ids)
+        problems = tuple(resolver.resolve(pid) for pid in run.problem_ids)
         deps = RunSweepDeps(
             dependency_builder=DependencyBuilder(),
             router=router,
-            run_config=RunConfigFactory().build(args, replicate_id=0),
+            run_config=RunConfigFactory().build(run.settings, replicate_id=0),
         )
         result = RunSweep(deps, JSONLogger()).execute(SweepRequest(
-            problems=problems, max_parallel=args.max_parallel,
+            problems=problems, max_parallel=run.max_parallel,
         ))
         print(f"[squeaky] sweep complete: {result.run_dir}")
         print(f"[squeaky] {len(result.bundles)} problems, "
               f"${result.total_cost_usd:.4f}, {result.total_duration_ms}ms")
         return 0
 
-    def _resume(self, router: ModelRouter, args: CLIArgs) -> int:
-        bundle = ResumeDispatch().resume(router, args)
+    def _resume(self, router: ModelRouter, maint: MaintenanceInvocation) -> int:
+        bundle = ResumeDispatch().resume(router, maint)
         print(f"[squeaky] resume complete: cost="
               f"${bundle.metrics.estimated_cost_usd:.4f}")
         return 0
@@ -236,10 +240,10 @@ class SqueakyCleanCLI:
               f"({len(snapshots)} runs)")
         return 0
 
-    def _print_banner(self, args: CLIArgs) -> None:
-        print(f"[squeaky] problems={list(args.problem_ids)} "
-              f"max_parallel={args.max_parallel}")
-        if args.deterministic:
+    def _print_banner(self, run: RunInvocation) -> None:
+        print(f"[squeaky] problems={list(run.problem_ids)} "
+              f"max_parallel={run.max_parallel}")
+        if run.settings.deterministic:
             print("[squeaky] mode=deterministic (all tiers temp=0, seed=0)")
-        if args.model_override is not None:
-            print(f"[squeaky] model_override={args.model_override}")
+        if run.model_override is not None:
+            print(f"[squeaky] model_override={run.model_override}")

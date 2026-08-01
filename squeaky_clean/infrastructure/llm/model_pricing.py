@@ -43,7 +43,8 @@ def _load_cached() -> dict[str, object] | None:
         return None
     try:
         loaded = json.loads(_CACHE.read_text())
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as exc:
+        _LOG.warning("pricing cache unreadable at %s: %s", _CACHE, exc)
         return None
     return loaded if isinstance(loaded, dict) else None
 

@@ -73,3 +73,18 @@ def test_python_pip_spec_emits_requirements_event_on_success(tmp_path: Path) -> 
     assert not (ctx.output_dir / "go.mod").exists()
     assert not (ctx.output_dir / "Cargo.toml").exists()
     assert not (ctx.output_dir / "package.json").exists()
+
+
+class _FailingFs(LocalFileSystem):
+    def write(self, path: Path, content: str) -> None:
+        raise OSError("disk full")
+
+
+def test_manifest_write_error_is_caught_and_logged(tmp_path: Path) -> None:
+    """R6.8: a generator's ManifestWriteError becomes a logged failure event."""
+    logger = _FakeRunLogger()
+    ctx = _ctx(tmp_path, {"kv_cache": _pip_spec()})
+    ManifestEmitter(logger, _FailingFs()).emit(ctx)
+    kinds = [kind for kind, _ in logger.events]
+    assert kinds == ["manifest_emit_failed"]
+    assert "disk full" in str(logger.events[0][1]["error"])

@@ -1,7 +1,5 @@
 """CheckpointEmitter: persists per-stage checkpoints during pipeline runs (G3)."""
 
-from __future__ import annotations
-
 from dataclasses import replace
 from pathlib import Path
 
@@ -17,20 +15,22 @@ from squeaky_clean.application.generation.testgen.test_architecture_serializer i
     TestArchitectureSerializer,
 )
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 
 class CheckpointEmitter:
     """Write per-stage checkpoint snapshots inside ``run_dir``."""
 
-    def __init__(self, problem_id: str, run_dir: Path) -> None:
-        self._run_dir: Path = run_dir
+    def __init__(
+        self, problem_id: str, run_dir: Path, *, logger: RunLogger | None = None,
+    ) -> None:
+        self._run_dir, self._log = run_dir, logger or NullRunLogger()
         self._writer: CheckpointWriter = CheckpointWriter()
         self._impls_ser = ModuleImplementationSerializer()
-        self._test_ser = TestArchitectureSerializer()
-        checksum = CheckpointChecksum().compute(problem_id)
+        self._test_ser: TestArchitectureSerializer = TestArchitectureSerializer()
         self._state: RunCheckpoint = RunCheckpoint(
-            run_dir=str(run_dir), problem_id=problem_id,
-            stage="started", checksum=checksum,
+            run_dir=str(run_dir), problem_id=problem_id, stage="started",
+            checksum=CheckpointChecksum().compute(problem_id),
         )
         self._emit()
 
@@ -74,5 +74,6 @@ class CheckpointEmitter:
     def _safe_write(self, path: Path, payload: str) -> None:
         try:
             atomic_write_text(path, payload)
-        except OSError:
-            pass
+        except OSError as exc:  # best-effort resume artifact: log, never die
+            self._log.event("checkpoint_artifact_write_failed",
+                            path=str(path), error=str(exc))

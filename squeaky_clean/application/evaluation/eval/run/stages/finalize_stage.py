@@ -27,6 +27,7 @@ class FinalizeStage:
         self._contracts = contracts
         self._security = SecurityScanStage(
             deps.secret_path_scanner, deps.sast_runner,
+            logger=deps.run_logger,
         )
 
     def finalize(

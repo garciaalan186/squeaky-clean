@@ -32,7 +32,8 @@ class DesignStage:
         self._verify_layers(arch)
         arch, di_violations, retries = self._refine_di(arch, ctx.problem)
         notation = self._deps.design_architecture.last_raw_notation
-        novelty = NotationNoveltyReporter().persist(ctx.output_dir, notation)
+        novelty = NotationNoveltyReporter(logger=self._logger).persist(
+            ctx.output_dir, notation)
         ctx.emitter.architect_done(notation)
         return replace(ctx, arch=arch, counters=replace(ctx.counters,
             di_violations=di_violations,

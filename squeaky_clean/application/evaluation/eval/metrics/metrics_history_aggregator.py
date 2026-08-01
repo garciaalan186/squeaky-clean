@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from pathlib import Path
 
 from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
 
 _DIR_RE = re.compile(r"^meta-evaluation_(\d+)_(.+)$")
+_LOG = logging.getLogger(__name__)
 
 
 class MetricsHistoryAggregator:
@@ -37,7 +39,8 @@ class MetricsHistoryAggregator:
             return None
         try:
             raw = json.loads(metrics_path.read_text())
-        except (OSError, json.JSONDecodeError):
+        except (OSError, json.JSONDecodeError) as exc:
+            _LOG.warning("skipping unreadable %s: %s", metrics_path, exc)
             return None
         if not isinstance(raw, dict):
             return None

@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from squeaky_clean.application.generation.integration.manifests.manifest_write_error import (
+    ManifestWriteError,
+)
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
@@ -38,8 +41,8 @@ def generate(
     """Emit ``<output_dir>/requirements.txt`` from Python ``pip`` TechSpecs.
 
     Skips ``manager == "stdlib"`` entries (already on the interpreter
-    path). Returns the written path, or None if no Python TechSpecs
-    declare a pip dependency. Best-effort on OSError.
+    path). None means ONLY "not applicable" (no Python TechSpec declares a
+    pip dependency); write failures raise ``ManifestWriteError`` (R6.8).
     """
     del architecture  # currently unused; kept for interface symmetry
     del problem
@@ -59,6 +62,8 @@ def generate(
     path = output_dir / "requirements.txt"
     try:
         fs.write(path, "\n".join(lines) + "\n")
-    except OSError:
-        return None
+    except OSError as exc:
+        raise ManifestWriteError(
+            f"requirements.txt write failed: {exc}",
+        ) from exc
     return path

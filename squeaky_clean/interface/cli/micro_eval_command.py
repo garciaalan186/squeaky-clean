@@ -12,7 +12,7 @@ from squeaky_clean.application.evaluation.microeval.micro_eval_report_writer imp
 from squeaky_clean.application.evaluation.microeval.micro_eval_runner import (
     MicroEvalRunner,
 )
-from squeaky_clean.interface.cli.cli_args import CLIArgs
+from squeaky_clean.interface.cli.invocations.micro_eval_invocation import MicroEvalInvocation
 from squeaky_clean.interface.cli.micro_eval_implementers import build_implementers
 from squeaky_clean.interface.cli.micro_eval_scaffold import (
     EXTRA_FILES,
@@ -29,10 +29,10 @@ _DEFAULT_RUN_ROOT = _FRAMEWORK_ROOT.parent / "meta-evaluation-results"
 class MicroEvalCommand:
     """Composition root for `squeaky --micro-evals` (R5.4 middle tier)."""
 
-    def run(self, args: CLIArgs) -> int:
+    def run(self, invocation: MicroEvalInvocation) -> int:
         """Emit + compile every squib fixture in every language; report."""
-        rc = RunConfigFactory().build(args, replicate_id=0)
-        router = RouterFactory().build(args.model_override)
+        rc = RunConfigFactory().build(invocation.settings, replicate_id=0)
+        router = RouterFactory().build(invocation.model_override)
         run_dir = MetaEvalPaths(_DEFAULT_RUN_ROOT).allocate()
         runner = MicroEvalRunner(MicroEvalDeps(
             implementers=build_implementers(router, rc),

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from squeaky_clean.infrastructure.config.env_loader import EnvLoader
 from squeaky_clean.interface.cli.cli_args_parser import CLIArgsParser
+from squeaky_clean.interface.cli.invocations.cli_invocation_mapper import CLIInvocationMapper
 from squeaky_clean.interface.cli.squeaky_clean_cli import SqueakyCleanCLI
 
 
@@ -15,8 +16,8 @@ def main() -> int:
         if candidate.is_file():
             EnvLoader(candidate).load()
             break
-    args = CLIArgsParser().parse(sys.argv[1:])
-    return SqueakyCleanCLI().run(args)
+    request = CLIInvocationMapper().map(CLIArgsParser().parse(sys.argv[1:]))
+    return SqueakyCleanCLI().run(request)
 
 
 if __name__ == "__main__":
