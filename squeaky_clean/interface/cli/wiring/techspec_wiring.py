@@ -51,7 +51,7 @@ class TechSpecWiring:
             fs_resolver, validator,
             cache_root=eval_root / ".cache",
             ttl_days=rc.techspec_cache_ttl_days,
-            mcp_fetcher=MCPTechDocFetcher(),
+            mcp_fetcher=MCPTechDocFetcher(WebFetchTechDocFetcher()),
             web_fetcher=WebFetchTechDocFetcher(),
             allowlist_registry=load_allowlist_registry(eval_root),
             run_logger=logger,

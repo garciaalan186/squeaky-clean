@@ -34,10 +34,10 @@ class ImplementClass:
         parser: ParseImplementedClass | None = None,
         *, loader: LoadAgentSpec,
     ) -> None:
-        rc = run_config or RunConfig()
+        rc = run_config or RunConfig()  # pure default (frozen config VO)
         self._deps = IcpExecutionDeps(gateway=gateway, router=router, run_config=rc)
         self._specs = ComposeEmitterSpec(loader)
-        self._parser = parser or ParseImplementedClass()
+        self._parser = parser or ParseImplementedClass()  # pure default (parser)
         self._retry = ICPRetryHandler(gateway, rc.retry_policy, self._parser)
         self.composer = self._composer = composer
 

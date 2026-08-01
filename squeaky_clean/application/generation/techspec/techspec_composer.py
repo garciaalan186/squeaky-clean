@@ -22,6 +22,7 @@ from squeaky_clean.application.generation.techspec.techspec_composer_validator i
 )
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
@@ -32,11 +33,11 @@ class TechSpecComposer:
 
     def __init__(
         self, gateway: LLMGateway, routing: ModelRoutingPolicy,
-        *, loader: LoadAgentSpec,
+        *, loader: LoadAgentSpec, logger: RunLogger | None = None,
     ) -> None:
         self._loader = loader
         self._builder = TechSpecBuilder()
-        self._manager = TechSpecComposerManagerCall(gateway, routing)
+        self._manager = TechSpecComposerManagerCall(gateway, routing, logger=logger)
         self.stats: ComposerStats = ComposerStats()
 
     def compose(

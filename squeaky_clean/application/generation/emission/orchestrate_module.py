@@ -14,6 +14,7 @@ from squeaky_clean.application.generation.emission.port_method_decomposer import
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
@@ -25,10 +26,12 @@ class OrchestrateModule:
         self,
         implement_class: ImplementClass,
         assigner: AssignPatterns,
+        *,
+        logger: RunLogger | None = None,
     ) -> None:
         self._assigner: AssignPatterns = assigner
         self._dispatcher: ParallelICPDispatcher = ParallelICPDispatcher(
-            implement_class
+            implement_class, logger=logger,
         )
 
     def stamp_architecture(

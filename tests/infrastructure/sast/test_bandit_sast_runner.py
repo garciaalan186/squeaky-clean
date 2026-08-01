@@ -3,25 +3,29 @@
 from __future__ import annotations
 
 import json
-import logging
 import shutil
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.sast_report import SastReport
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
 
 
-def test_returns_empty_when_bandit_missing(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture,
-) -> None:
-    caplog.set_level(logging.WARNING)
+class _RecordingLogger(RunLogger):
+    def __init__(self) -> None:
+        self.events: list[tuple[str, dict[str, object]]] = []
+
+    def event(self, kind: str, **fields: object) -> None:
+        self.events.append((kind, fields))
+
+
+def test_returns_empty_when_bandit_missing(tmp_path: Path) -> None:
+    log = _RecordingLogger()
     with patch.object(shutil, "which", return_value=None):
-        report = BanditSastRunner().scan(tmp_path)
+        report = BanditSastRunner(log).scan(tmp_path)
     assert report == SastReport.empty()
-    assert any("bandit not installed" in r.message for r in caplog.records)
+    assert any(kind == "sast_skipped" for kind, _ in log.events)
 
 
 def test_returns_empty_when_source_dir_missing(tmp_path: Path) -> None:
@@ -58,9 +62,11 @@ def test_parses_bandit_json_output(tmp_path: Path) -> None:
 
 
 def test_parses_unparseable_json_returns_empty() -> None:
-    runner = BanditSastRunner()
+    log = _RecordingLogger()
+    runner = BanditSastRunner(log)
     report = runner._parse("not json")
     assert report == SastReport.empty()
+    assert any(kind == "sast_output_unparseable" for kind, _ in log.events)
 
 
 def test_drops_findings_with_invalid_severity() -> None:

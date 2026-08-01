@@ -37,7 +37,7 @@ class AssignPatterns:
             toolkit, infrastructure_mode=infrastructure_mode,
         )
         self._roles = PolymorphicRoleNormalizer()
-        self._custom = custom_patterns or CustomPatternRegistry()
+        self._custom = custom_patterns or CustomPatternRegistry()  # pure default (in-memory)
         self._architecture: ArchitectureSpec | None = None
         self._tech_specs: dict[str, TechSpec] = {}
 

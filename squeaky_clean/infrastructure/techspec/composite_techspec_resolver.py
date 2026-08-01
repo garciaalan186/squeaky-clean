@@ -50,7 +50,8 @@ class CompositeTechSpecResolver(TechSpecResolver):
         self._log: RunLogger = run_logger or NullRunLogger()
         self._cache = TechSpecCacheMetadata(ttl_days, run_logger=self._log)
         self._sources = RemoteTechSpecSources(
-            mcp_fetcher, web_fetcher, extractor or TechSpecHTMLExtractor(),
+            mcp_fetcher, web_fetcher,
+            extractor or TechSpecHTMLExtractor(),  # pure default (regex extractor)
             validator, self._cache, allowlist_registry or {},
         )
 

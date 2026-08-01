@@ -51,7 +51,7 @@ class RepairTestFile:
     ) -> None:
         self._deps = IcpExecutionDeps(
             gateway=gateway, router=router,
-            run_config=run_config or RunConfig())
+            run_config=run_config or RunConfig())  # pure default (frozen config VO)
         self._fs: ProjectFileSystem = fs
 
     def repair(self, request: TestRepairRequest) -> LLMResponse | None:

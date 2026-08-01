@@ -1,13 +1,14 @@
 """SqueakyCleanCLI: top-level CLI routing that invokes the command flows."""
 
-import logging
 import sys
+import traceback
 from pathlib import Path
 
 from squeaky_clean.application.shared.problem.load_problem_spec_from_file import (
     LoadProblemSpecFromFile,
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.interface.cli.commands.maintenance_commands import MaintenanceCommands
 from squeaky_clean.interface.cli.commands.recover_commands import RecoverCommands
@@ -20,11 +21,12 @@ from squeaky_clean.interface.cli.invocations.run_invocation import RunInvocation
 from squeaky_clean.interface.cli.micro_eval_command import MicroEvalCommand
 from squeaky_clean.interface.cli.router_factory import RouterFactory
 
-_LOG = logging.getLogger(__name__)
-
 
 class SqueakyCleanCLI:
     """Top-level CLI entry point — routes a CLIRequest to its command flow."""
+
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._log: RunLogger = logger or NullRunLogger()
 
     def run(self, request: CLIRequest) -> int:
         """Execute the pipeline for ``request`` and return a process exit code.
@@ -64,8 +66,11 @@ class SqueakyCleanCLI:
             return self._sweep(router, run)
         except Exception as exc:  # noqa: BLE001
             # Keep the 1-line stderr UX, but preserve the full traceback in the
-            # log so failures are diagnosable instead of silently discarded.
-            _LOG.exception("CLI run failed")
+            # event log so failures are diagnosable, not silently discarded.
+            self._log.event(
+                "cli_run_failed", error=f"{type(exc).__name__}: {exc}",
+                traceback=traceback.format_exc(),
+            )
             print(f"[squeaky] FAILED: {type(exc).__name__}: {exc}",
                   file=sys.stderr)
             return 1

@@ -6,13 +6,16 @@ gate errs toward refusing a call rather than overspending.
 """
 
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.infrastructure.llm.model_pricing import estimate_cost_usd
 
 _CHARS_PER_TOKEN: int = 4
 _DEFAULT_MAX_OUTPUT: int = 4096
 
 
-def estimate_request_cost(request: LLMRequest) -> float:
+def estimate_request_cost(
+    request: LLMRequest, *, logger: RunLogger | None = None,
+) -> float:
     """Return a conservative USD estimate for ``request``."""
     prompt_chars = len(request.system_prompt) + len(request.user_prompt)
     input_tokens = prompt_chars // _CHARS_PER_TOKEN
@@ -23,4 +26,5 @@ def estimate_request_cost(request: LLMRequest) -> float:
         output_tokens=output_tokens,
         cache_creation_tokens=0,
         cache_read_tokens=0,
+        logger=logger,
     )

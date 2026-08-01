@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
-import logging
 import shutil
 import subprocess
 from pathlib import Path
 from typing import cast
 
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.value_objects.sast_finding import (
     Confidence,
@@ -17,7 +17,6 @@ from squeaky_clean.domain.value_objects.sast_finding import (
 )
 from squeaky_clean.domain.value_objects.sast_report import SastReport
 
-_log = logging.getLogger(__name__)
 _TIMEOUT_S: int = 120
 _VALID_SEVERITY: frozenset[str] = frozenset({"LOW", "MEDIUM", "HIGH"})
 
@@ -25,10 +24,15 @@ _VALID_SEVERITY: frozenset[str] = frozenset({"LOW", "MEDIUM", "HIGH"})
 class BanditSastRunner(SastRunner):
     """SastRunner adapter that invokes the ``bandit`` CLI as a subprocess."""
 
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._log: RunLogger = logger or NullRunLogger()
+
     def scan(self, source_dir: Path) -> SastReport:
         """Run bandit on ``source_dir``; return empty report if absent/missing."""
         if shutil.which("bandit") is None:
-            _log.warning("bandit not installed; SAST scan skipped (opt-in dep)")
+            self._log.event(
+                "sast_skipped", reason="bandit not installed (opt-in dep)",
+            )
             return SastReport.empty()
         if not source_dir.exists():
             return SastReport.empty()
@@ -42,7 +46,9 @@ class BanditSastRunner(SastRunner):
         try:
             payload = cast(dict[str, object], json.loads(raw))
         except json.JSONDecodeError:
-            _log.warning("bandit produced unparseable JSON; treating as empty")
+            self._log.event(
+                "sast_output_unparseable", detail="treating report as empty",
+            )
             return SastReport.empty()
         results_raw = payload.get("results", ())
         if not isinstance(results_raw, list):

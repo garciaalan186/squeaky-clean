@@ -29,7 +29,7 @@ class FixOneClass:
     ) -> None:
         self._deps = IcpExecutionDeps(
             gateway=gateway, router=router,
-            run_config=run_config or RunConfig())
+            run_config=run_config or RunConfig())  # pure default (frozen config VO)
         self._builder = FixPromptBuilder()
         self._parser = ParseImplementedClass()
 

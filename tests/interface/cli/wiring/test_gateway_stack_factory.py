@@ -34,9 +34,9 @@ def test_inner_gateway_prefers_sdk_only_when_api_key_present(
 ) -> None:
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     assert isinstance(
-        GatewayStackFactory._select_inner_gateway(RunConfig()), ClaudeCLIGateway,
+        GatewayStackFactory()._select_inner_gateway(RunConfig()), ClaudeCLIGateway,
     )
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     assert isinstance(
-        GatewayStackFactory._select_inner_gateway(RunConfig()), AnthropicSDKGateway,
+        GatewayStackFactory()._select_inner_gateway(RunConfig()), AnthropicSDKGateway,
     )

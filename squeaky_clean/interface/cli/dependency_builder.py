@@ -51,7 +51,7 @@ class DependencyBuilder:
 
     def build(self, problem: ProblemSpec) -> RunEvalDependencies:
         """Return a RunEvalDependencies with every collaborator instantiated."""
-        rc = self._run_config or RunConfig()
+        rc = self._run_config or RunConfig()  # pure default (frozen config VO)
         ctx = WiringContext.create(self._router, rc)
         em = EmissionWiring(ctx).wire(problem)
         ta_deps = GenerateTestArchitectureDeps(
@@ -81,7 +81,7 @@ class DependencyBuilder:
             file_system=ctx.fs,
             run_config=rc,
             cost_gate=ctx.cost_gate,
-            sast_runner=BanditSastRunner() if rc.enable_sast else None,
+            sast_runner=BanditSastRunner(ctx.logger) if rc.enable_sast else None,
             model_router=ctx.router,
             run_logger=ctx.logger,
             verify_layer=(VerifyLayer(ctx.call_deps, ctx.loader)

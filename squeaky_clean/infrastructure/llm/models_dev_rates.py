@@ -8,14 +8,12 @@ the bundled snapshot, so an empty dict here is always safe.
 from __future__ import annotations
 
 import json
-import logging
 import time
 import urllib.request
 from pathlib import Path
 
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
-
-_LOG = logging.getLogger(__name__)
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 _CACHE = Path.home() / ".cache" / "squeaky-clean" / "models_dev.json"
 _TTL_S = 86_400
@@ -23,24 +21,27 @@ _URL = "https://models.dev/api.json"
 _LIVE: dict[str, tuple[float, float, float, float]] | None = None
 
 
-def _load_cached() -> dict[str, object] | None:
+def _load_cached(log: RunLogger) -> dict[str, object] | None:
     if not _CACHE.exists():
         return None
     try:
         loaded = json.loads(_CACHE.read_text())
     except (OSError, json.JSONDecodeError) as exc:
-        _LOG.warning("pricing cache unreadable at %s: %s", _CACHE, exc)
+        log.event("pricing_cache_unreadable", path=str(_CACHE), error=str(exc))
         return None
     return loaded if isinstance(loaded, dict) else None
 
 
-def live_rates() -> dict[str, tuple[float, float, float, float]]:
+def live_rates(
+    *, logger: RunLogger | None = None,
+) -> dict[str, tuple[float, float, float, float]]:
     """Anthropic (in, out, cache_write, cache_read) per-MTok by model id."""
     global _LIVE
+    log = logger or NullRunLogger()
     if _LIVE is not None:
         return _LIVE
     fresh = _CACHE.exists() and (time.time() - _CACHE.stat().st_mtime) < _TTL_S
-    data = _load_cached() if fresh else None
+    data = _load_cached(log) if fresh else None
     if data is None:
         try:
             req = urllib.request.Request(_URL, headers={"User-Agent": "squeaky-clean"})
@@ -48,7 +49,7 @@ def live_rates() -> dict[str, tuple[float, float, float, float]]:
                 data = json.loads(resp.read().decode())
             atomic_write_text(_CACHE, json.dumps(data))
         except (OSError, json.JSONDecodeError, ValueError):
-            data = _load_cached()
+            data = _load_cached(log)
     rates: dict[str, tuple[float, float, float, float]] = {}
     anthropic = data.get("anthropic") if data is not None else None
     models = anthropic.get("models") if isinstance(anthropic, dict) else None

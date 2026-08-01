@@ -38,7 +38,9 @@ class EmissionWiring:
             infrastructure_mode=rc.infrastructure_mode,
         )
         composer = (
-            TechSpecComposer(ctx.gateway, ctx.router, loader=ctx.loader)
+            TechSpecComposer(
+                ctx.gateway, ctx.router, loader=ctx.loader, logger=ctx.logger,
+            )
             if rc.infrastructure_mode == "auto" else None
         )
         parser = ParseImplementedClass(adapters.parser)
@@ -49,6 +51,7 @@ class EmissionWiring:
                 rc, composer=composer, parser=parser, loader=ctx.loader,
             ),
             assigner,
+            logger=ctx.logger,
         )
         return EmissionBundle(
             toolkit=toolkit, adapters=adapters, orchestrate_module=orchestrator,

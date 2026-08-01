@@ -9,6 +9,7 @@ from squeaky_clean.application.evaluation.eval.report.html_dashboard_writer impo
     HtmlDashboardWriter,
 )
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
+from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.invocations.maintenance_invocation import MaintenanceInvocation
 from squeaky_clean.interface.cli.resume_dispatch import ResumeDispatch
 
@@ -27,7 +28,7 @@ class MaintenanceCommands:
         """Rebuild meta-evaluation-results/dashboard.html from run history."""
         framework_root = Path(__file__).resolve().parents[4]
         root = framework_root.parent / "meta-evaluation-results"
-        snapshots = MetricsHistoryAggregator().aggregate(root)
+        snapshots = MetricsHistoryAggregator(JSONLogger()).aggregate(root)
         target = root / "dashboard.html"
         target.parent.mkdir(parents=True, exist_ok=True)
         HtmlDashboardWriter().write(snapshots, target)

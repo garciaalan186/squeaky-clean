@@ -1,7 +1,6 @@
 """RunEval: allocate a run dir, invoke the pipeline, and write artifacts."""
 
 import json
-import logging
 from dataclasses import asdict
 from pathlib import Path
 
@@ -21,8 +20,6 @@ from squeaky_clean.application.evaluation.eval.run.run_manifest import RunManife
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
-
-_LOG = logging.getLogger(__name__)
 
 # Repository root = parent of squeaky-clean/. Placeholder paths
 # anchored relative to this file so the framework runs from any checkout.
@@ -46,6 +43,7 @@ class RunEval:
             self._models_by_tier(),
         )
         self._manifest: RunManifest = deps.run_manifest
+        self._log = deps.run_logger
 
     def _models_by_tier(self) -> dict[str, str]:
         """Resolve the concrete model each tier actually used, via the router."""
@@ -87,7 +85,9 @@ class RunEval:
             self._manifest.write(run_dir, self._models_by_tier())
         except OSError as exc:
             # Manifest loss costs reproducibility, not the run — log, don't die.
-            _LOG.warning("run manifest write failed for %s: %s", run_dir, exc)
+            self._log.event(
+                "run_manifest_write_failed", run_dir=str(run_dir), error=str(exc),
+            )
 
     def _result(
         self, problem: ProblemSpec, bundle: EvalReportBundle, run_dir: Path,
