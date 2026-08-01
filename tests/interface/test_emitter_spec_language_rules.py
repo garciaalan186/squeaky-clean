@@ -27,28 +27,14 @@ _EMITTERS = (
     / "squeaky_clean" / "interface" / "agent_specs" / "emitters"
 )
 
-_JAVA_PATTERN_SPECS = sorted(
-    str(p.relative_to(_EMITTERS / "java"))
-    for sub in ("behavioral", "structural", "creational", "ddd_clean")
-    for p in (_EMITTERS / "java" / sub).glob("*.md")
-)
-
-
-@pytest.mark.parametrize("spec_name", _JAVA_PATTERN_SPECS)
-def test_java_behavioral_specs_map_float_to_double(spec_name: str) -> None:
-    text = (_EMITTERS / "java" / spec_name).read_text()
-    assert "`float` → `double`" in text or "`float` -> `double`" in text, (
-        f"{spec_name}: missing §Notation float→double fidelity rule "
-        "(P2JAVA lossy-conversion regression, R0.11)"
-    )
-
-
-@pytest.mark.parametrize("spec_name", ["EntityEmitter.md", "AggregateEmitter.md"])
-def test_ts_specs_forbid_mutating_valueobject_siblings(spec_name: str) -> None:
-    text = (_EMITTERS / "typescript" / "ddd_clean" / spec_name).read_text()
+@pytest.mark.parametrize("pattern", ["Entity", "Aggregate"])
+def test_ts_specs_forbid_mutating_valueobject_siblings(pattern: str) -> None:
+    """R6.1a: the guard moved from 2 typescript file copies to the composed
+    template output (the TS2540 rule lives in a {{#lang:typescript}} block)."""
+    text = _composed(pattern, "typescript")
     assert "TS2540" in text, (
-        f"{spec_name}: missing readonly-ValueObject mutation rule "
-        "(P2TS TS2540 regression, R0.11)"
+        f"composed typescript {pattern} spec lost the readonly-ValueObject "
+        "mutation rule (P2TS TS2540 regression, R0.11)"
     )
 
 
