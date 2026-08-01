@@ -12,6 +12,7 @@ from squeaky_clean.application.generation.recovery.squib.squib_review_error impo
 )
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.notation_parse_error import NotationParseError
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 
 _QUOTED = re.compile(r"'([^']+)'")
 
@@ -26,14 +27,14 @@ class SquibReviewGate:
     version. The gate never regenerates — it only brackets the human step.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, fs: ProjectFileSystem) -> None:
+        self._fs: ProjectFileSystem = fs
         self._emitter: SquibEmitter = SquibEmitter()
         self._parser: ParseArchitectureNotation = ParseArchitectureNotation()
 
     def emit(self, spec: ArchitectureSpec, path: Path) -> None:
         """Write the recovered architecture to ``path`` as editable Squib."""
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(self._emitter.emit(spec))
+        self._fs.write(path, self._emitter.emit(spec))
 
     def load(self, path: Path) -> ArchitectureSpec:
         """Reparse the human-edited Squib; raise with line context on error."""

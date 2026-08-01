@@ -6,6 +6,7 @@ from pathlib import Path
 
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
@@ -32,6 +33,7 @@ def generate(
     tech_specs: dict[str, TechSpec],
     output_dir: Path,
     problem: ProblemSpec,
+    *, fs: ProjectFileSystem,
 ) -> Path | None:
     """Emit ``<output_dir>/requirements.txt`` from Python ``pip`` TechSpecs.
 
@@ -56,8 +58,7 @@ def generate(
         return None
     path = output_dir / "requirements.txt"
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("\n".join(lines) + "\n")
+        fs.write(path, "\n".join(lines) + "\n")
     except OSError:
         return None
     return path

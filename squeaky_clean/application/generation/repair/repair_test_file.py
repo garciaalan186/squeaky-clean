@@ -13,6 +13,7 @@ from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPolicy
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
 _FENCE: re.Pattern[str] = re.compile(r"```[a-zA-Z]*\n(.*?)```", re.DOTALL)
@@ -50,11 +51,12 @@ class RepairTestFile:
 
     def __init__(
         self, gateway: LLMGateway, router: ModelRoutingPolicy,
-        run_config: RunConfig | None = None,
+        run_config: RunConfig | None = None, *, fs: ProjectFileSystem,
     ) -> None:
         self._deps = IcpExecutionDeps(
             gateway=gateway, router=router,
             run_config=run_config or RunConfig())
+        self._fs: ProjectFileSystem = fs
 
     def repair(self, request: TestRepairRequest) -> LLMResponse | None:
         """Rewrite the test file in place; return the LLM response (or None)."""
@@ -68,8 +70,7 @@ class RepairTestFile:
         if match is not None:
             fixed = match.group(1)
             if fixed.strip() and fixed != current:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(fixed)
+                self._fs.write(path, fixed)
         return response
 
     def _request(self, req: TestRepairRequest, current: str) -> LLMRequest:

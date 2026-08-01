@@ -7,9 +7,9 @@ import subprocess
 import time
 from pathlib import Path
 
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.interfaces.test_runner import TestRunner
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 
 _TIMEOUT_SECONDS: int = 300
 _MAX_OUTPUT: int = 8000
@@ -21,9 +21,12 @@ _RESULT_LINE: re.Pattern[str] = re.compile(
 class CargoTestRunner(TestRunner):
     """Runs ``cargo test --quiet`` and parses pass/fail counts from result lines."""
 
-    def __init__(self, exclude_glob: str | None = None) -> None:
+    def __init__(
+        self, exclude_glob: str | None = None,
+        logger: RunLogger | None = None,
+    ) -> None:
         self._exclude_glob: str | None = exclude_glob
-        self._logger: JSONLogger = JSONLogger()
+        self._logger: RunLogger = logger or NullRunLogger()
 
     def run(self, project_dir: Path) -> TestRunResult:
         """Invoke ``cargo test --quiet`` in ``project_dir`` and return a result.

@@ -42,6 +42,7 @@ from squeaky_clean.application.shared.problem.load_problem_spec_from_file import
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args import CLIArgs
@@ -136,7 +137,7 @@ class SqueakyCleanCLI:
         return 0
 
     def _recover(self, router: ModelRouter, args: CLIArgs) -> int:
-        spec = SquibReviewGate().load(Path(str(args.squib_file)))
+        spec = SquibReviewGate(LocalFileSystem()).load(Path(str(args.squib_file)))
         tests_dir = Path(args.legacy_tests) if args.legacy_tests else None
         problem = ProblemSpecSynthesizer().synthesize(spec, tests_dir)
         designer = SuppliedArchitectureDesigner(spec, SquibEmitter().emit(spec))
@@ -150,7 +151,7 @@ class SqueakyCleanCLI:
         out = Path(args.recover_out) if args.recover_out else Path("recovered.squib")
         ranking = args.criteria or ALL_ARCHITECTURAL_CRITERIA
         language = TargetLanguage(args.recover_language)
-        summary = RecoveryEmitter().emit(
+        summary = RecoveryEmitter(LocalFileSystem()).emit(
             Path(args.recover_from), out, ranking, language,  # type: ignore[arg-type]
         )
         close = " (close call — review)" if summary.recommendation_close else ""
@@ -178,7 +179,7 @@ class SqueakyCleanCLI:
             print("[squeaky] --refactor requires --plan", file=sys.stderr)
             return 1
         out = Path(args.refactor_out) if args.refactor_out else Path("refactored.squib")
-        summary = RefactorEmitter().emit(
+        summary = RefactorEmitter(LocalFileSystem()).emit(
             Path(str(args.refactor)), Path(args.plan), out,
         )
         print(f"[squeaky] refactored {summary.classes_before} -> "

@@ -4,6 +4,7 @@ from dataclasses import replace
 
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.value_objects.class_role import ClassRole
 
 # Patterns whose participants split into one abstract base + polymorphic
 # concretes (§Notation `concretes:`). Same-pattern `depends:` edges between
@@ -22,8 +23,10 @@ class PolymorphicRoleNormalizer:
     each concrete declares `depends: [Abstract]`. Emitter specs key on
     `implements`/`concretes` ("concretes non-empty => emit the interface"),
     so the second shape used to produce a CONCRETE abstract participant
-    (P2JAVA "interface expected here", R0.11). This pure pre-dispatch pass
-    translates the depends shape into the fields the emitters key on.
+    (P2JAVA "interface expected here", R0.11). This thin pre-dispatch pass
+    derives the missing edges from same-module `depends` — module-level
+    knowledge — while every per-class role question goes through
+    ``ClassSpec.role()`` (R6.6a).
     """
 
     def normalize(self, module: ModuleSpec) -> ModuleSpec:
@@ -37,10 +40,9 @@ class PolymorphicRoleNormalizer:
                 implements[cls.name] = base
                 concretes.setdefault(base, []).append(cls.name)
             # implements-driven (pattern-agnostic): a declared `implements:`
-            # target IS an abstract participant — stamp its concretes so the
-            # target's emitter renders an interface, whatever its pattern
-            # (e.g. an Adapter's port declared as SimpleClass — java
-            # "interface expected here", R5.6 micro-eval finding).
+            # target IS an abstract participant — stamp its concretes so its
+            # emitter renders an interface, whatever its pattern (R5.6). Keys
+            # on the raw implements EDGE (cross-class stamping), not the role.
             elif cls.implements and cls.implements in by_name:
                 concretes.setdefault(cls.implements, []).append(cls.name)
         if not implements and not concretes:
@@ -52,7 +54,9 @@ class PolymorphicRoleNormalizer:
 
     @staticmethod
     def _base_of(cls: ClassSpec, by_name: dict[str, ClassSpec]) -> str | None:
-        if cls.pattern not in _POLYMORPHIC or cls.implements:
+        # Only a still-PLAIN class needs a base derived; anything the
+        # architect already stamped (ABSTRACT or CONCRETE) is left alone.
+        if cls.pattern not in _POLYMORPHIC or cls.role() is not ClassRole.PLAIN:
             return None
         for dep in cls.depends:
             target = by_name.get(dep)

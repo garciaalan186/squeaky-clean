@@ -33,14 +33,16 @@ from squeaky_clean.application.shared.language.snake_case_converter import Snake
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class WiringGenerator:
     """Walks an ArchitectureSpec and emits a composition root file."""
 
-    def __init__(self) -> None:
+    def __init__(self, fs: ProjectFileSystem) -> None:
         self._snake: SnakeCaseConverter = SnakeCaseConverter()
+        self._fs: ProjectFileSystem = fs
 
     def generate(
         self, arch: ArchitectureSpec,
@@ -69,76 +71,65 @@ class WiringGenerator:
         ucs = use_cases(arch)
         body = self._render(adps, ucs, tech_specs)
         path = output_dir / "src" / "main.py"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(body)
+        self._fs.write(path, body)
         return path
 
     @staticmethod
     def _is_java(tech_specs: dict[str, TechSpec]) -> bool:
         return any(s.language == "java" for s in tech_specs.values())
 
-    @staticmethod
-    def _emit_java(output_dir: Path) -> Path:
+    def _emit_java(self, output_dir: Path) -> Path:
         path = output_dir / "src" / "main" / "java" / "com" / "example" / "App.java"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(render_spring_boot_main())
+        self._fs.write(path, render_spring_boot_main())
         return path
 
     @staticmethod
     def _is_go(tech_specs: dict[str, TechSpec]) -> bool:
         return any(s.language == "go" for s in tech_specs.values())
 
-    @staticmethod
-    def _emit_go(tech_specs: dict[str, TechSpec], output_dir: Path) -> Path:
+    def _emit_go(self, tech_specs: dict[str, TechSpec], output_dir: Path) -> Path:
         path = output_dir / "main.go"
-        path.parent.mkdir(parents=True, exist_ok=True)
         cats: dict[str, object] = {s.category: True for s in tech_specs.values()
                                    if s.language == "go"}
-        path.write_text(render_go_main(cats))
+        self._fs.write(path, render_go_main(cats))
         return path
 
     @staticmethod
     def _is_rust(tech_specs: dict[str, TechSpec]) -> bool:
         return any(s.language == "rust" for s in tech_specs.values())
 
-    @staticmethod
-    def _emit_rust(tech_specs: dict[str, TechSpec], output_dir: Path) -> Path:
+    def _emit_rust(self, tech_specs: dict[str, TechSpec], output_dir: Path) -> Path:
         path = output_dir / "src" / "main.rs"
-        path.parent.mkdir(parents=True, exist_ok=True)
         cats: dict[str, object] = {s.category: True for s in tech_specs.values()
                                    if s.language == "rust"}
-        path.write_text(render_rust_main(cats))
+        self._fs.write(path, render_rust_main(cats))
         return path
 
     @staticmethod
     def _is_javascript(tech_specs: dict[str, TechSpec]) -> bool:
         return any(s.language == "javascript" for s in tech_specs.values())
 
-    @staticmethod
-    def _emit_javascript(tech_specs: dict[str, TechSpec],
+    def _emit_javascript(self, tech_specs: dict[str, TechSpec],
                          output_dir: Path) -> Path:
         path = output_dir / "index.js"
-        path.parent.mkdir(parents=True, exist_ok=True)
         cats: dict[str, object] = {s.category: True for s in tech_specs.values()
                                    if s.language == "javascript"}
-        path.write_text(render_express_main(cats))
+        self._fs.write(path, render_express_main(cats))
         return path
 
     @staticmethod
     def _is_typescript(tech_specs: dict[str, TechSpec]) -> bool:
         return any(s.language == "typescript" for s in tech_specs.values())
 
-    @staticmethod
-    def _emit_typescript(tech_specs: dict[str, TechSpec],
+    def _emit_typescript(self, tech_specs: dict[str, TechSpec],
                          output_dir: Path) -> Path:
         path = output_dir / "src" / "index.ts"
-        path.parent.mkdir(parents=True, exist_ok=True)
         # Carry the technology (not a bare True) so the renderer can match
         # the wiring's HTTP framework to the resolved handler (e.g. express).
         cats: dict[str, object] = {s.category: s.technology
                                    for s in tech_specs.values()
                                    if s.language == "typescript"}
-        path.write_text(render_fastify_main(cats))
+        self._fs.write(path, render_fastify_main(cats))
         return path
 
     def _render(

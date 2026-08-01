@@ -111,7 +111,10 @@ class MapPatternToEmitter:
 
         Every recognized GoF/DDD PatternName resolves to its dedicated ICP
         spec. Only a genuinely unrecognized pattern name falls back to
-        ``<lang>/ddd_clean/SimpleClassEmitter``.
+        ``<lang>/ddd_clean/SimpleClassEmitter``. ``pattern`` is deliberately
+        `str`, not PatternName: this boundary accepts out-of-catalog names
+        (custom patterns, hallucinated names) and routes them to the escape
+        hatch instead of crashing.
         """
         library = toolkit.icp_library
         category = _PATTERN_CATEGORY.get(pattern)

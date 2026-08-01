@@ -3,9 +3,11 @@ import os
 from pathlib import Path
 
 from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
+from squeaky_clean.application.evaluation.eval.run.run_manifest import RunManifest
 from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
 from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
 from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
     ParseImplementedClass,
@@ -62,7 +64,11 @@ from squeaky_clean.infrastructure.llm.cost_estimator import estimate_request_cos
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.infrastructure.metrics.eval_metric_collector import EvalMetricCollector
+from squeaky_clean.infrastructure.observability.git_info_adapter import GitInfoAdapter
 from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
+from squeaky_clean.infrastructure.observability.toolchain_probe_adapter import (
+    ToolchainProbeAdapter,
+)
 from squeaky_clean.infrastructure.sast.bandit_sast_runner import BanditSastRunner
 from squeaky_clean.infrastructure.techspec.allowlist_loader import (
     load_allowlist_registry,
@@ -116,21 +122,24 @@ class DependencyBuilder:
             estimator=estimate_request_cost,
         )
         fs = LocalFileSystem()
+        logger = JSONLogger()
+        loader = LoadAgentSpec()
         toolkit = LanguageToolkitFactory().for_language(problem.target_language)
-        adapters = LanguageAdapterSelector().select(toolkit, fs)
+        adapters = LanguageAdapterSelector(logger).select(toolkit, fs)
         assigner = AssignPatterns(
             toolkit, Path(""),
             infrastructure_mode=rc.infrastructure_mode,
         )
         icp_router = self._icp_router(router, problem.target_language)
         composer = (
-            TechSpecComposer(gateway, router)
+            TechSpecComposer(gateway, router, loader=loader)
             if rc.infrastructure_mode == "auto" else None
         )
         parser = ParseImplementedClass(adapters.parser)
         orchestrator = OrchestrateModule(
             ImplementClass(
                 gateway, icp_router, rc, composer=composer, parser=parser,
+                loader=loader,
             ),
             assigner,
         )
@@ -155,8 +164,8 @@ class DependencyBuilder:
             run_config=rc,
         ))
         return RunEvalDependencies(
-            design_architecture=DesignArchitecture(call_deps),
-            generate_test_architecture=GenerateTestArchitecture(ta_deps),
+            design_architecture=DesignArchitecture(call_deps, loader),
+            generate_test_architecture=GenerateTestArchitecture(ta_deps, loader),
             orchestrate_module=orchestrator,
             integrate_module=IntegrateModule(fs, adapters.bootstrap),
             validate_architecture=ValidateArchitecture(
@@ -166,24 +175,26 @@ class DependencyBuilder:
             metric_collector=EvalMetricCollector(),
             functional_test_runner=adapters.functional_test_runner,
             llm_usage_recorder=recorder,
-            review_security=ReviewSecurity(call_deps),
-            generate_security_tests=GenerateSecurityTests(ta_deps),
+            review_security=ReviewSecurity(call_deps, loader),
+            generate_security_tests=GenerateSecurityTests(ta_deps, loader),
             fix_failing_classes=fixer,
             file_system=fs,
             run_config=rc,
             cost_gate=cost_gate,
             sast_runner=BanditSastRunner() if rc.enable_sast else None,
             model_router=router,
-            run_logger=JSONLogger(),
-            verify_layer=VerifyLayer(call_deps) if rc.verify_layers else None,
+            run_logger=logger,
+            verify_layer=(VerifyLayer(call_deps, loader)
+                          if rc.verify_layers else None),
             tech_spec_resolver=self._tech_spec_resolver(rc),
             infrastructure_choice_architect=self._infra_choice_architect(rc, call_deps),
             dependency_installer=adapters.dependency_installer,
             project_compiler=LanguageCompilerFactory().for_language(
                 problem.target_language
             ),
-            test_repairer=RepairTestFile(gateway, router, rc),
+            test_repairer=RepairTestFile(gateway, router, rc, fs=fs),
             toolkit=toolkit,
+            run_manifest=RunManifest(GitInfoAdapter(), ToolchainProbeAdapter()),
         )
 
     @staticmethod

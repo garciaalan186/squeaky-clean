@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.parsers.parse_implemented_class import (
     ParseImplementedClass,
 )
@@ -43,13 +44,14 @@ def build_implementers(
     """
     gateway = _gateway(rc)
     fs = LocalFileSystem()
+    loader = LoadAgentSpec()
     out: dict[str, ImplementClass] = {}
     for lang in _LANGUAGES:
         toolkit = LanguageToolkitFactory().for_language(lang)
         adapters = LanguageAdapterSelector().select(toolkit, fs)
         out[lang.value] = ImplementClass(
             gateway, _icp_router(router, lang), rc,
-            parser=ParseImplementedClass(adapters.parser),
+            parser=ParseImplementedClass(adapters.parser), loader=loader,
         )
     return out
 

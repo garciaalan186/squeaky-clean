@@ -29,8 +29,11 @@ from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuil
 class TechSpecComposer:
     """Bridge from (ClassAssignment, TechSpec) to a ready-to-dispatch prompt."""
 
-    def __init__(self, gateway: LLMGateway, routing: ModelRoutingPolicy) -> None:
-        self._loader = LoadAgentSpec()
+    def __init__(
+        self, gateway: LLMGateway, routing: ModelRoutingPolicy,
+        *, loader: LoadAgentSpec,
+    ) -> None:
+        self._loader = loader
         self._builder = TechSpecBuilder()
         self._manager = TechSpecComposerManagerCall(gateway, routing)
         self.stats: ComposerStats = ComposerStats()

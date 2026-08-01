@@ -32,12 +32,12 @@ class SecurityICPDispatcher:
 
     def __init__(
         self, gateway: LLMGateway, router: ModelRoutingPolicy,
-        run_config: RunConfig | None = None,
+        run_config: RunConfig | None = None, *, loader: LoadAgentSpec,
     ) -> None:
         self._gateway: LLMGateway = gateway
         self._router: ModelRoutingPolicy = router
         self._run_config: RunConfig = run_config or RunConfig()
-        self._loader: LoadAgentSpec = LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader
         self._mapper: MapConcernToSecurityEmitter = MapConcernToSecurityEmitter()
         self._asm: SecurityTestAssembler = SecurityTestAssembler()
 

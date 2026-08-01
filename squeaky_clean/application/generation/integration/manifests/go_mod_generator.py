@@ -6,6 +6,7 @@ from pathlib import Path
 
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
@@ -29,6 +30,7 @@ def generate_go_mod(
     tech_specs: dict[str, TechSpec],
     output_dir: Path,
     problem: ProblemSpec,
+    *, fs: ProjectFileSystem,
 ) -> Path | None:
     """Emit ``<output_dir>/go.mod`` and return the path (or None when no Go)."""
     del architecture  # currently unused; kept for interface symmetry
@@ -45,8 +47,7 @@ def generate_go_mod(
         requires.append(parsed)
     body = _render_body(problem.slug, requires)
     path = output_dir / "go.mod"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(body)
+    fs.write(path, body)
     return path
 
 

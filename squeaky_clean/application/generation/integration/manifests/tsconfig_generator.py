@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
@@ -17,6 +18,7 @@ def generate(
     tech_specs: dict[str, TechSpec],
     output_dir: Path,
     problem: ProblemSpec,
+    *, fs: ProjectFileSystem,
 ) -> Path | None:
     """Emit ``<output_dir>/tsconfig.json`` for TypeScript runs.
 
@@ -46,8 +48,7 @@ def generate(
     }
     path = output_dir / "tsconfig.json"
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(body, indent=2) + "\n")
+        fs.write(path, json.dumps(body, indent=2) + "\n")
     except OSError:
         return None
     return path
