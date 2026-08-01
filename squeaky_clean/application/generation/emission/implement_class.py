@@ -4,6 +4,9 @@ from squeaky_clean.application.generation.emission.class_assignment import Class
 from squeaky_clean.application.generation.emission.class_assignment_formatter import (
     ClassAssignmentFormatter,
 )
+from squeaky_clean.application.generation.emission.composition.compose_emitter_spec import (
+    ComposeEmitterSpec,
+)
 from squeaky_clean.application.generation.emission.dispatch.icp_execution_deps import (
     IcpExecutionDeps,
 )
@@ -33,19 +36,16 @@ class ImplementClass:
     ) -> None:
         rc = run_config or RunConfig()
         self._deps = IcpExecutionDeps(gateway=gateway, router=router, run_config=rc)
-        self._loader = loader
+        self._specs = ComposeEmitterSpec(loader)
         self._parser = parser or ParseImplementedClass()
         self._retry = ICPRetryHandler(gateway, rc.retry_policy, self._parser)
-        self.composer: TechSpecComposer | None = composer
-        self._composer: TechSpecComposer | None = composer
+        self.composer = self._composer = composer
 
     def execute(self, assignment: ClassAssignment) -> ImplementedClass:
         """Generate code with bounded retry, then build the result."""
         request = self._make_request(assignment)
         first = self._deps.gateway.complete(request)
-        response, retries = self._retry.run(
-            request, assignment.class_spec.name, first,
-        )
+        response, retries = self._retry.run(request, assignment.class_spec.name, first)
         return self._build(assignment, response, retries)
 
     def _build(
@@ -70,7 +70,7 @@ class ImplementClass:
             prompt = self._composer.compose(assignment, assignment.tech_spec)
             sys_p, usr_p = prompt.system_prompt, prompt.user_prompt
         else:
-            sys_p = self._loader.load(assignment.emitter_spec_name)
+            sys_p = self._specs.load(assignment.emitter_spec_name, assignment.toolkit)
             usr_p = ClassAssignmentFormatter(assignment.toolkit).format(assignment)
         return LLMRequest(
             model=self._deps.router.route(ModelTier.ICP),

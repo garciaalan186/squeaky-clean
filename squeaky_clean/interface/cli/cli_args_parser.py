@@ -66,6 +66,10 @@ class CLIArgsParser:
             ),
             rebuild_dashboard=bool(ns.rebuild_dashboard),
             micro_evals=bool(ns.micro_evals),
+            micro_patterns=tuple(
+                pat.strip() for pat in str(ns.micro_patterns).split(",")
+                if pat.strip()
+            ),
             replay_only=bool(ns.replay_only),
             architect_mode=str(ns.architect_mode),
             resume_run_dir=(
@@ -182,6 +186,11 @@ class CLIArgsParser:
         parser.add_argument(
             "--micro-evals", dest="micro_evals", action="store_true",
             help="R5.4: emit+compile every squib fixture per language; exit",
+        )
+        parser.add_argument(
+            "--micro-patterns", dest="micro_patterns", default="",
+            help="R6.1a: only run micro-eval fixtures whose stem starts "
+                 "with one of these comma-separated prefixes",
         )
         parser.add_argument(
             "--rebuild-dashboard", dest="rebuild_dashboard",

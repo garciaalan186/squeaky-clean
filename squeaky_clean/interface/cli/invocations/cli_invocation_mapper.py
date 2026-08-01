@@ -34,7 +34,7 @@ class CLIInvocationMapper:
             ),
             micro_eval=MicroEvalInvocation(
                 enabled=args.micro_evals, model_override=args.model_override,
-                settings=settings,
+                patterns=args.micro_patterns, settings=settings,
             ),
             maintenance=MaintenanceInvocation(
                 rebuild_dashboard=args.rebuild_dashboard,

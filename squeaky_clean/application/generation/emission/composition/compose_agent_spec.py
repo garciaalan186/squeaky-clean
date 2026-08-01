@@ -25,7 +25,11 @@ class ComposeAgentSpec:
     def compose(self, spec_name: str, toolkit: LanguageToolkit) -> str:
         """Return the spec's text with language placeholders substituted."""
         template = self._loader.load(spec_name)
-        return self._substitute(template, toolkit)
+        return self.render(template, toolkit)
+
+    def render(self, text: str, toolkit: LanguageToolkit) -> str:
+        """Substitute toolkit placeholders in already-loaded template text."""
+        return self._substitute(text, toolkit)
 
     def _substitute(self, text: str, t: LanguageToolkit) -> str:
         mapping: dict[str, str] = {

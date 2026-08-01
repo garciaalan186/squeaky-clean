@@ -11,6 +11,10 @@ from pathlib import Path
 import pytest
 
 import squeaky_clean
+from squeaky_clean.application.generation.emission.composition.compose_emitter_spec import (
+    ComposeEmitterSpec,
+)
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
     ACTIVE_EMITTER_LANGUAGES,
     MapPatternToEmitter,
@@ -38,12 +42,18 @@ _CASES: list[tuple[str, TargetLanguage]] = [
 def test_every_pattern_resolves_to_an_existing_spec(
     pattern: str, language: TargetLanguage,
 ) -> None:
+    # R6.1a: a pattern is resolvable through EITHER its per-language spec
+    # file OR the shared template + language profile — loaded through the
+    # same ComposeEmitterSpec path production uses.
     toolkit = LanguageToolkitFactory().for_language(language)
     spec_name = MapPatternToEmitter().map(pattern, toolkit)
-    spec_file = _ICPS_ROOT / f"{spec_name}.md"
-    assert spec_file.is_file(), (
+    try:
+        text = ComposeEmitterSpec(LoadAgentSpec()).load(spec_name, toolkit)
+    except FileNotFoundError:
+        text = ""
+    assert text.startswith("# Role:"), (
         f"{pattern} ({language.value}) resolved to {spec_name}, "
-        f"but {spec_file} does not exist"
+        f"but no per-language spec or shared template composes for it"
     )
 
 
