@@ -32,7 +32,7 @@ def test_failed_install_sets_metric_and_test_runner_still_runs(
     pipeline = RunEvalPipeline(deps)
     bundle = pipeline.run(P0, tmp_path)
     assert stub.calls == 1
-    assert bundle.metrics.dependency_install_failed is True
+    assert bundle.metrics.notation.dependency_install_failed is True
     deps.test_runner.run.assert_called_once()  # type: ignore[attr-defined]
 
 
@@ -43,11 +43,11 @@ def test_succeeded_install_keeps_metric_false(tmp_path: Path) -> None:
     pipeline = RunEvalPipeline(deps)
     bundle = pipeline.run(P0, tmp_path)
     assert stub.calls == 1
-    assert bundle.metrics.dependency_install_failed is False
+    assert bundle.metrics.notation.dependency_install_failed is False
 
 
 def test_no_installer_keeps_metric_false(tmp_path: Path) -> None:
     deps = build_stub_deps()  # dependency_installer is None
     pipeline = RunEvalPipeline(deps)
     bundle = pipeline.run(P0, tmp_path)
-    assert bundle.metrics.dependency_install_failed is False
+    assert bundle.metrics.notation.dependency_install_failed is False

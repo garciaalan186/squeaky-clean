@@ -4,7 +4,7 @@ from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer im
     CacheSummaryRenderer,
 )
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
+from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
 
 
 def test_renders_zero_activity_message() -> None:
@@ -14,13 +14,14 @@ def test_renders_zero_activity_message() -> None:
 
 
 def test_renders_table_when_tokens_present() -> None:
-    m = EvalMetrics.empty()
-    m.cache_creation_input_tokens = 1_200
-    m.cache_read_input_tokens = 4_800
-    m.cache_by_tier["architect"] = TierCacheStats(
-        create_tokens=1_200, read_tokens=4_800, savings_usd=0.018,
+    m = EvalMetrics(
+        cache_creation_input_tokens=1_200,
+        cache_read_input_tokens=4_800,
+        cache_by_tier={"architect": TierCacheStats(
+            create_tokens=1_200, read_tokens=4_800, savings_usd=0.018,
+        )},
+        cache_savings_usd=0.018,
     )
-    m.cache_savings_usd = 0.018
     out = "\n".join(CacheSummaryRenderer().render(m))
     assert "## Cache" in out
     assert "Cache create toks" in out
@@ -32,11 +33,12 @@ def test_renders_table_when_tokens_present() -> None:
 
 
 def test_per_tier_zero_rows_show_n_a() -> None:
-    m = EvalMetrics.empty()
-    m.cache_creation_input_tokens = 100
-    m.cache_read_input_tokens = 0
-    m.cache_by_tier["architect"] = TierCacheStats(create_tokens=100)
-    m.cache_savings_usd = -0.001
+    m = EvalMetrics(
+        cache_creation_input_tokens=100,
+        cache_read_input_tokens=0,
+        cache_by_tier={"architect": TierCacheStats(create_tokens=100)},
+        cache_savings_usd=-0.001,
+    )
     out = "\n".join(CacheSummaryRenderer().render(m))
     # Manager / icp / fixer rows should show n/a since no tokens for them.
     assert "n/a" in out

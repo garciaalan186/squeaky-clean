@@ -4,7 +4,10 @@ from pathlib import Path
 
 from squeaky_clean.application.generation.emission.assign_patterns_paths import AssignPatternsPaths
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
-from squeaky_clean.application.generation.emission.map_pattern_to_emitter import MapPatternToEmitter
+from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
+    CATEGORY_TO_ICP,
+    MapPatternToEmitter,
+)
 from squeaky_clean.application.generation.emission.polymorphic_role_normalizer import (
     PolymorphicRoleNormalizer,
 )
@@ -81,29 +84,9 @@ class AssignPatterns:
         )
 
     def _tech_for(self, icp_name: str) -> TechSpec | None:
-        # Find the TechSpec whose category matches the routed Tier C ICP.
+        # Find the TechSpec whose category matches the routed Tier C ICP
+        # (CATEGORY_TO_ICP is the one canonical table — R6.7).
         for cat, spec in self._tech_specs.items():
-            if cat in _CATEGORY_TO_ICP_SUFFIX and (
-                _CATEGORY_TO_ICP_SUFFIX[cat] in icp_name
-            ):
+            if cat in CATEGORY_TO_ICP and CATEGORY_TO_ICP[cat] in icp_name:
                 return spec
         return None
-
-
-_CATEGORY_TO_ICP_SUFFIX: dict[str, str] = {
-    "blob_storage": "BlobStorageAdapterEmitter",
-    "kv_cache": "KvCacheEmitter",
-    "rest_client": "RestClientEmitter",
-    "relational_db": "RelationalDBRepositoryEmitter",
-    "document_db": "DocumentDBRepositoryEmitter",
-    "message_queue_producer": "MessageQueueProducerEmitter",
-    "message_queue_consumer": "MessageQueueConsumerEmitter",
-    "stream_processor": "StreamProcessorEmitter",
-    "rest_server_handler": "RestServerHandlerEmitter",
-    "grpc_client": "GrpcClientEmitter",
-    "grpc_server_handler": "GrpcServerHandlerEmitter",
-    "websocket_server_handler": "WebSocketServerHandlerEmitter",
-    "observability_logger": "ObservabilityLoggerEmitter",
-    "secrets_provider": "SecretsProviderEmitter",
-    "search": "SearchEmitter",
-}

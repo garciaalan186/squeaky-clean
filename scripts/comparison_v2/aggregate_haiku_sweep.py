@@ -15,6 +15,23 @@ SWEEP_PROBLEMS = ("p0_calculator", "p1_todo_manager", "p3_chat_app", "p5_oauth2_
 CUTOFF = "20260513"  # only count runs from today's experiment
 
 
+def _flat_metrics(raw: dict) -> dict:
+    """Flatten schema-v2 nested VO payloads to v1 leaf names (v1 passthrough).
+
+    Leaf names were unique flat fields in schema v1, so promoting nested
+    scalars restores the historical keys; top-level scalars win and
+    cache_by_tier's dict-of-dicts is naturally skipped.
+    """
+    flat: dict = {}
+    for value in raw.values():
+        if isinstance(value, dict):
+            for leaf, scalar in value.items():
+                if not isinstance(scalar, (dict, list)):
+                    flat.setdefault(leaf, scalar)
+    flat.update({k: v for k, v in raw.items()
+                 if not isinstance(v, (dict, list))})
+    return flat
+
 def main() -> None:
     cells: dict[tuple[str, str], list[dict]] = {}
     for run_dir in sorted(OUTPUT_ROOT.glob("comparison_v2_*")):
@@ -46,6 +63,7 @@ def main() -> None:
             if eval_path.exists():
                 try:
                     er = json.loads(eval_path.read_text())
+                    er["metrics"] = _flat_metrics(er.get("metrics", {}))
                     for k in ("security_tests_pass", "functional_tests_pass",
                               "max_methods_per_class", "max_file_line_count"):
                         if k in er.get("metrics", {}) and k not in m:

@@ -112,7 +112,7 @@ class RunEvalPipeline:
         for stage in self._stages:
             ctx = stage.run(ctx)
         metrics = self._metrics.build(ctx)
-        self._finalize.finalize(ctx, metrics)
+        metrics = self._finalize.finalize(ctx, metrics)
         assert ctx.test_run is not None and ctx.validation is not None
         return EvalReportBundle(
             problem=problem, metrics=metrics,

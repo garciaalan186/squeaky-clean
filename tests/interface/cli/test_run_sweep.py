@@ -11,6 +11,8 @@ from squeaky_clean.application.evaluation.eval.sweep.sweep_request import SweepR
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
@@ -30,9 +32,10 @@ def _problem(pid: str, tier: int) -> ProblemSpec:
 
 
 def _bundle(pid: str, cost: float) -> EvalReportBundle:
-    metrics = EvalMetrics.empty()
-    metrics.tests_pass = 1.0
-    metrics.estimated_cost_usd = cost
+    metrics = EvalMetrics(
+        test_outcome=TestOutcome(tests_pass=1.0),
+        cost=CostBreakdown(estimated_cost_usd=cost),
+    )
     return EvalReportBundle(
         problem=_problem(pid, 0), metrics=metrics,
         test_run_result=TestRunResult(

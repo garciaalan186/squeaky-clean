@@ -1,43 +1,45 @@
-"""RunEvalTokenMapper: copy token/cost fields from MetricsInputs to EvalMetrics."""
+"""RunEvalTokenMapper: build the CostBreakdown VO from MetricsInputs."""
 
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
 
 
 class RunEvalTokenMapper:
-    """Maps token-count and cost fields from pipeline inputs to metrics."""
+    """Maps per-agent token counts and costs into one frozen CostBreakdown."""
 
-    def apply(self, m: EvalMetrics, i: MetricsInputs) -> None:
-        """Copy per-agent token counts and costs onto ``m``."""
-        m.architect_input_tokens = i.architect_input_tokens
-        m.architect_output_tokens = i.architect_output_tokens
-        m.architect_cost_usd = i.architect_cost_usd
-        m.architect_duration_ms = i.architect_duration_ms
-        m.test_architect_input_tokens = i.test_architect_input_tokens
-        m.test_architect_output_tokens = i.test_architect_output_tokens
-        m.test_architect_cost_usd = i.test_architect_cost_usd
-        m.test_architect_duration_ms = i.test_architect_duration_ms
-        m.icp_input_tokens = i.icp_input_tokens
-        m.icp_output_tokens = i.icp_output_tokens
-        m.icp_cost_usd = i.icp_cost_usd
-        m.icp_duration_ms = i.icp_duration_ms
-        m.icp_wall_duration_ms = i.icp_wall_duration_ms
-        m.security_architect_input_tokens = i.security_architect_input_tokens
-        m.security_architect_output_tokens = i.security_architect_output_tokens
-        m.security_architect_cost_usd = i.security_architect_cost_usd
-        m.security_architect_duration_ms = i.security_architect_duration_ms
-        m.classes_fixed = i.classes_fixed
-        m.fixer_input_tokens = i.fixer_input_tokens
-        m.fixer_output_tokens = i.fixer_output_tokens
-        m.fixer_cost_usd = i.fixer_cost_usd
-        m.fixer_duration_ms = i.fixer_duration_ms
-        m.total_tokens_input = (
-            i.architect_input_tokens + i.test_architect_input_tokens
-            + i.icp_input_tokens + i.security_architect_input_tokens
-            + i.fixer_input_tokens
-        )
-        m.total_tokens_output = (
-            i.architect_output_tokens + i.test_architect_output_tokens
-            + i.icp_output_tokens + i.security_architect_output_tokens
-            + i.fixer_output_tokens
+    def map(self, i: MetricsInputs) -> CostBreakdown:
+        """Return the CostBreakdown for ``i`` (fixer cost included in total)."""
+        return CostBreakdown(
+            estimated_cost_usd=(
+                i.architect_cost_usd + i.test_architect_cost_usd
+                + i.icp_cost_usd + i.security_architect_cost_usd
+                + i.fixer_cost_usd
+            ),
+            total_tokens_input=(
+                i.architect_input_tokens + i.test_architect_input_tokens
+                + i.icp_input_tokens + i.security_architect_input_tokens
+                + i.fixer_input_tokens
+            ),
+            total_tokens_output=(
+                i.architect_output_tokens + i.test_architect_output_tokens
+                + i.icp_output_tokens + i.security_architect_output_tokens
+                + i.fixer_output_tokens
+            ),
+            architect_input_tokens=i.architect_input_tokens,
+            architect_output_tokens=i.architect_output_tokens,
+            architect_cost_usd=i.architect_cost_usd,
+            architect_duration_ms=i.architect_duration_ms,
+            test_architect_input_tokens=i.test_architect_input_tokens,
+            test_architect_output_tokens=i.test_architect_output_tokens,
+            test_architect_cost_usd=i.test_architect_cost_usd,
+            test_architect_duration_ms=i.test_architect_duration_ms,
+            icp_input_tokens=i.icp_input_tokens,
+            icp_output_tokens=i.icp_output_tokens,
+            icp_cost_usd=i.icp_cost_usd,
+            icp_duration_ms=i.icp_duration_ms,
+            icp_wall_duration_ms=i.icp_wall_duration_ms,
+            security_architect_input_tokens=i.security_architect_input_tokens,
+            security_architect_output_tokens=i.security_architect_output_tokens,
+            security_architect_cost_usd=i.security_architect_cost_usd,
+            security_architect_duration_ms=i.security_architect_duration_ms,
         )

@@ -74,7 +74,8 @@ _FALLBACK_CATEGORY: str = "ddd_clean"
 _INFRA_PATTERNS: frozenset[str] = frozenset({"Repository", "Gateway", "Adapter"})
 
 # H1+H3+H5a+H5b heuristic: TechSpec category → Tier C ICP spec name.
-_CATEGORY_TO_ICP: dict[str, str] = {
+# CANONICAL (R6.7): the one category→ICP table; assign_patterns imports it.
+CATEGORY_TO_ICP: dict[str, str] = {
     "blob_storage": "BlobStorageAdapterEmitter",
     "kv_cache": "KvCacheEmitter",
     "rest_client": "RestClientEmitter",
@@ -145,12 +146,12 @@ class MapPatternToEmitter:
         category = infer_category(method_names)
         if category and not self._layer_matches(category, layer):
             category = None
-        icp = _CATEGORY_TO_ICP.get(category) if category else None
+        icp = CATEGORY_TO_ICP.get(category) if category else None
         if icp is None and declared_categories:
             for declared in declared_categories:
-                if (declared in _CATEGORY_TO_ICP
+                if (declared in CATEGORY_TO_ICP
                         and self._layer_matches(declared, layer)):
-                    icp = _CATEGORY_TO_ICP[declared]
+                    icp = CATEGORY_TO_ICP[declared]
                     break
         if icp is not None:
             return f"{toolkit.icp_library}/infrastructure/{icp}"

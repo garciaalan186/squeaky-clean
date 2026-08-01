@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from squeaky_clean.application.evaluation.eval.resume.checkpoint_checksum import CheckpointChecksum
 from squeaky_clean.application.evaluation.eval.resume.checkpoint_reader import CheckpointReader
+from squeaky_clean.application.evaluation.eval.resume.completed_metrics_reader import (
+    CompletedMetricsReader,
+)
 from squeaky_clean.application.evaluation.eval.resume.resume_run_executor import ResumeRunExecutor
 from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
 from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
@@ -52,15 +54,9 @@ class ResumeRun:
     def _short_circuit(
         self, cp: RunCheckpoint, problem: ProblemSpec, run_dir: Path,
     ) -> EvalReportBundle:
-        report_path = self._find_report(run_dir)
-        metrics = EvalMetrics.empty()
-        metrics.estimated_cost_usd = cp.cost_spent_usd
-        if report_path is not None:
-            data = json.loads(report_path.read_text()).get("metrics", {})
-            metrics.estimated_cost_usd = float(
-                data.get("estimated_cost_usd", cp.cost_spent_usd)
-            )
-            metrics.tests_pass = float(data.get("tests_pass", 0.0))
+        metrics: EvalMetrics = CompletedMetricsReader().read(
+            self._find_report(run_dir), cp.cost_spent_usd,
+        )
         return EvalReportBundle(
             problem=problem, metrics=metrics,
             test_run_result=TestRunResult(

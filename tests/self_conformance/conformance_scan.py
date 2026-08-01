@@ -22,6 +22,9 @@ from squeaky_clean.domain.rules.python_granularity_rule import PythonGranularity
 from squeaky_clean.domain.value_objects.violation import Violation
 
 _PACKAGE = "squeaky_clean"
+# R6.3 tranche 5: ban f-string-driven reflection (setattr/getattr with a
+# dynamically built attribute name) anywhere in the framework source.
+_REFLECTION_RE = re.compile(r"""(set|get)attr\([^)]*f["']""")
 _LAYER_ORDER: dict[str, int] = {
     "domain": 0, "application": 1, "infrastructure": 2, "interface": 3,
 }
@@ -115,6 +118,20 @@ def _missing_mirror_keys(root: Path) -> set[str]:
     return keys
 
 
+def _reflection_ban_keys(root: Path) -> set[str]:
+    """Keys for files using f-string setattr/getattr reflection (R6.3 t5)."""
+    keys: set[str] = set()
+    for path in _iter_py_files(root):
+        try:
+            text = path.read_text()
+        except OSError:
+            continue
+        if _REFLECTION_RE.search(text):
+            rel = path.relative_to(root.parent)
+            keys.add(f"ReflectionBan|{rel}|f-string setattr/getattr")
+    return keys
+
+
 def scan_violation_keys() -> set[str]:
     """Return the set of normalized self-conformance violation keys."""
     root = package_root()
@@ -130,4 +147,5 @@ def scan_violation_keys() -> set[str]:
     for v in ComponentDependencyRule().check_tree(root):
         keys.add(_key(v, root))
     keys |= _missing_mirror_keys(root)
+    keys |= _reflection_ban_keys(root)
     return keys

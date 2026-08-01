@@ -4,18 +4,21 @@ import math
 
 from squeaky_clean.application.evaluation.eval.sweep.replicate_aggregator import ReplicateAggregator
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 
 
 def _metrics(tests_pass: float, cost: float, hit: int, miss: int) -> EvalMetrics:
-    m = EvalMetrics()
-    m.tests_pass = tests_pass
-    m.functional_tests_pass = tests_pass
-    m.security_tests_pass = tests_pass
-    m.estimated_cost_usd = cost
-    m.total_wall_clock_ms = 1000
-    m.cache_hit_count = hit
-    m.cache_miss_count = miss
-    return m
+    return EvalMetrics(
+        test_outcome=TestOutcome(
+            tests_pass=tests_pass, functional_tests_pass=tests_pass,
+            security_tests_pass=tests_pass,
+        ),
+        cost=CostBreakdown(estimated_cost_usd=cost),
+        total_wall_clock_ms=1000,
+        cache_hit_count=hit,
+        cache_miss_count=miss,
+    )
 
 
 def test_empty_replicates_returns_zero_summary() -> None:

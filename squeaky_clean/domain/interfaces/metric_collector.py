@@ -1,21 +1,23 @@
 """MetricCollector port: abstract interface for recording eval metrics."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 
 from squeaky_clean.domain.entities.metric import Metric
 
-if TYPE_CHECKING:
-    from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-
 
 class MetricCollector(ABC):
-    """Port for recording metrics during a run and taking a final snapshot."""
+    """Port for recording named scalar metrics during a run.
+
+    R6.3: ``snapshot`` returns the recorded name->value mapping. The old
+    contract (mutating a named EvalMetrics field via ``setattr``) died
+    with the frozen EvalMetrics; no production caller ever recorded
+    through this port, so the honest surface is the plain mapping.
+    """
 
     @abstractmethod
     def record(self, metric: Metric) -> None:
         """Record a single metric into the running totals."""
 
     @abstractmethod
-    def snapshot(self) -> "EvalMetrics":
-        """Return an immutable-at-call-time copy of current EvalMetrics."""
+    def snapshot(self) -> dict[str, float]:
+        """Return a copy of the recorded metric values keyed by name."""
