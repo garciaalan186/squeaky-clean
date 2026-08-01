@@ -26,11 +26,9 @@ from squeaky_clean.infrastructure.llm.retrying_gateway import RetryingGateway
 from squeaky_clean.interface.cli.language_adapter_selector import (
     LanguageAdapterSelector,
 )
+from squeaky_clean.interface.cli.micro_eval_scaffold import LANGUAGES
 
 _FRAMEWORK_ROOT = Path(__file__).resolve().parents[3]
-_LANGUAGES: tuple[TargetLanguage, ...] = (
-    TargetLanguage.PYTHON, TargetLanguage.JAVA, TargetLanguage.TYPESCRIPT,
-)
 
 
 def build_implementers(
@@ -46,7 +44,7 @@ def build_implementers(
     fs = LocalFileSystem()
     loader = LoadAgentSpec()
     out: dict[str, ImplementClass] = {}
-    for lang in _LANGUAGES:
+    for lang in LANGUAGES:
         toolkit = LanguageToolkitFactory().for_language(lang)
         adapters = LanguageAdapterSelector().select(toolkit, fs)
         out[lang.value] = ImplementClass(
@@ -65,8 +63,17 @@ def _gateway(rc: RunConfig) -> LLMGateway:
     return CachingLLMGateway(RetryingGateway(inner, rc.retry_policy), cache_dir)
 
 
+# Languages whose ICP tier promotes to the manager model: Haiku misses
+# their cross-file contracts (java measured 20/35 in R5.4; go measured
+# 16/35 on the R6.1d inaugural sweep with the same failure profile —
+# sibling redeclaration, import hygiene, pointer-vs-value).
+_PROMOTED_ICP_LANGUAGES: frozenset[TargetLanguage] = frozenset({
+    TargetLanguage.JAVA, TargetLanguage.GO,
+})
+
+
 def _icp_router(base: ModelRouter, lang: TargetLanguage) -> ModelRouter:
-    if lang is not TargetLanguage.JAVA:
+    if lang not in _PROMOTED_ICP_LANGUAGES:
         return base
     mapping = {tier: base.route(tier) for tier in ModelTier}
     mapping[ModelTier.ICP] = mapping[ModelTier.MANAGER]

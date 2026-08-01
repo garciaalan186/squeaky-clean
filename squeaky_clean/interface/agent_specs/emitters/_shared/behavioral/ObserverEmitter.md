@@ -13,7 +13,7 @@ A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends
 Exactly one {{profile:language_name}} file body inside a single ```{{profile:fence_tag}} fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
 1. {{profile:file_preamble}}
 2. For the abstract Observer port:
-{{#lang:python,javascript,java}}
+{{#lang:python,javascript,java,go,rust}}
    {{profile:abstract_idiom}} One method per `methods:` entry (e.g. `update(...)`).
 {{/lang}}
 {{#lang:typescript}}
@@ -34,7 +34,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{/lang}}
    implement register/remove methods that add to / remove from the collection, and a notify method that iterates the collection calling `observer.update(...)` on each with real arguments drawn from the Subject's state.
 4. For a concrete Observer:
-{{#lang:python,javascript,java}}
+{{#lang:python,javascript,java,go,rust}}
    {{profile:concrete_idiom}} Provide a real `update(...)` body that reacts to the notification.
 {{/lang}}
 {{#lang:typescript}}

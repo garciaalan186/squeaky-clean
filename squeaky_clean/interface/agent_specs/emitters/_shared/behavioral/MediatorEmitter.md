@@ -11,7 +11,7 @@ A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends
 
 ## Output Contract
 Exactly one {{profile:language_name}} file body inside a single ```{{profile:fence_tag}} fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
-{{#lang:python,javascript,java}}
+{{#lang:python,javascript,java,go,rust}}
 1. {{profile:file_preamble}}
 2. For the abstract Mediator port: {{profile:abstract_idiom}} The abstract operations are the `methods:` entries (a `notify(sender, event)`-style coordination signature). No fields.
 {{/lang}}
@@ -19,7 +19,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 1. Start with a single-line `//` comment describing the class. Use ES module syntax: `export interface <Name>` or `export class <Name>`.
 2. For the abstract Mediator port: declare `export interface <Name> { ... }` with each `methods:` entry (a `notify(sender, event)`-style coordination signature) as a method signature. No fields, no bodies.
 {{/lang}}
-{{#lang:python,javascript}}
+{{#lang:python,javascript,go,rust}}
 3. For a ConcreteMediator: {{profile:concrete_idiom}} It holds a field per colleague named in `fields:`/`depends`, assigned in the constructor, and implements the coordination method(s) with real bodies that invoke the appropriate colleague in response to the `event`.
 {{/lang}}
 {{#lang:typescript}}

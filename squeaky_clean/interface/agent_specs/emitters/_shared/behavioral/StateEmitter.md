@@ -13,14 +13,14 @@ A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends
 Exactly one {{profile:language_name}} file body inside a single ```{{profile:fence_tag}} fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
 1. {{profile:file_preamble}}
 2. For the abstract State:
-{{#lang:python,javascript,java}}
+{{#lang:python,javascript,java,go,rust}}
    {{profile:abstract_idiom}} One method per `methods:` entry.
 {{/lang}}
 {{#lang:typescript}}
    declare `export interface <Name> { ... }` with each `methods:` entry as a method signature, no bodies. TypeScript interfaces carry no implementation.
 {{/lang}}
 3. For a concrete State:
-{{#lang:python,javascript,java}}
+{{#lang:python,javascript,java,go,rust}}
    {{profile:concrete_idiom}} Provide real per-state method bodies.
 {{/lang}}
 {{#lang:typescript}}

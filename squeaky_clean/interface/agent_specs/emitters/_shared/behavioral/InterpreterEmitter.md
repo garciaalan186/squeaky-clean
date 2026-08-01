@@ -11,7 +11,7 @@ A serialized ClassSpec in the user prompt: `name`, `fields`, `methods`, `depends
 
 ## Output Contract
 Exactly one {{profile:language_name}} file body inside a single ```{{profile:fence_tag}} fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
-{{#lang:python,javascript,java}}
+{{#lang:python,javascript,java,go,rust}}
 1. {{profile:file_preamble}}
 2. For the abstract Expression: {{profile:abstract_idiom}} The declared operation is `interpret(context)` (and any other `methods:` entry).
 {{/lang}}

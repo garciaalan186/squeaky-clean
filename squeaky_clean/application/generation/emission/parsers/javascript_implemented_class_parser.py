@@ -9,7 +9,10 @@ from squeaky_clean.application.generation.emission.parsers.implemented_class_par
 from squeaky_clean.domain.interfaces.implemented_class_parser import ImplementedClassParser
 
 _PREFIX: str = r"(?:export\s+(?:default\s+)?)?(?:abstract\s+)?"
-_KIND: str = r"(?:class|interface|function|type|enum)"
+# `export const <Name> = ...` counts as declaring <Name>: the JS Singleton
+# idiom exports a frozen instance binding while the class itself stays
+# module-private under a different identifier (R6.1d finding).
+_KIND: str = r"(?:class|interface|function|type|enum|const)"
 
 
 class JavaScriptImplementedClassParser(ImplementedClassParser):

@@ -28,6 +28,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    `public interface <Name> { ... }`. Every step method from `methods:` is a signature returning `<Name>`; a `build()`-style entry returns the Product type. NO bodies (no `default`).
 {{/lang}}
+{{#lang:go}}
+   {{profile:abstract_idiom}} Every step method from `methods:` is a signature returning `<Name>`; a `Build()`-style entry returns the Product type.
+{{/lang}}
+{{#lang:rust}}
+   {{profile:abstract_idiom}} Every step method from `methods:` is a signature taking `self` by value and returning `Self`; a `build`-style entry returns `Result<Product, String>`.
+{{/lang}}
 3. **Concrete Builder**: one accumulator field per Product field, each defaulted — NO required constructor arguments. Each `methods:` step entry sets EXACTLY ONE accumulator field from its single argument and returns the builder itself. The `build()`/result method constructs and returns the Product, honoring the Product sibling's `fields:` verbatim, in order, from SIBLING_INTERFACES.
 {{#lang:python}}
    Declare one plain class. `__init__(self) -> None:` initializes one accumulator attribute per Product field, defaulted (`None` / `""` / `[]`) — never required constructor args. Each step returns `self` annotated `-> "<Name>"`.
@@ -60,6 +66,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    `build()` throws `new IllegalStateException("<message>")` if a required Product field was never set via a step method.
 {{/lang}}
+{{#lang:go}}
+   `Build()` returns `fmt.Errorf("<message>")` as its error value if a required Product field was never set via a step method — NEVER `panic` in domain code.
+{{/lang}}
+{{#lang:rust}}
+   `build` returns `Err("<message>".into())` if a required Product field was never set via a step method — NEVER `panic!` or `.unwrap()`.
+{{/lang}}
 5. **No shadowing.** {{profile:shadowing_rule}}
 6. **Honor the Product's `fields:` declaration.** When `build()` constructs the Product, pass exactly the field values its `fields:` entry declares, in order, using the accumulator state. Do NOT guess constructor shapes.
 7. **Chaining is mandatory.**
@@ -68,6 +80,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{/lang}}
 {{#lang:javascript,typescript,java}}
    Every step method ends `return this;` — never `void` — so calls compose as `builder.withX(1).withY(2).build()`.
+{{/lang}}
+{{#lang:go}}
+   Every step method is a pointer-receiver method returning `*<Name>` (`return b`) — never a bare method with no return — so calls compose as `builder.WithX(1).WithY(2).Build()`.
+{{/lang}}
+{{#lang:rust}}
+   Every step method consumes and returns the builder (`pub fn with_x(mut self, x: Type) -> Self { ...; self }`) — never `()` — so calls compose as `Builder::new().with_x(1).with_y(2).build()`.
 {{/lang}}
 {{profile:extra_constraints}}
 

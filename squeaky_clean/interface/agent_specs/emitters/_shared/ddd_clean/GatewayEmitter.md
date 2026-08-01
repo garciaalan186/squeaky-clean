@@ -13,6 +13,12 @@ Lowest-tier emitter that emits one abstract TypeScript port — an `interface` t
 {{#lang:java}}
 Lowest-tier emitter that emits one abstract Java port — an `interface` that an Infrastructure-layer Adapter implements.
 {{/lang}}
+{{#lang:go}}
+Lowest-tier emitter that emits one abstract Go port — an `interface` that an Infrastructure-layer Adapter implements against an external SDK/datastore.
+{{/lang}}
+{{#lang:rust}}
+Lowest-tier emitter that emits one abstract Rust port — a `trait` that an Infrastructure-layer Adapter implements against an external SDK/datastore.
+{{/lang}}
 
 ## Model Tier
 ICP
@@ -101,4 +107,12 @@ In Java a port is an `interface` — signatures only, zero implementation — so
 {{#lang:java}}
 - Zero methods: emit an empty `public interface <Name> {}`.
 - If a return type is not declared, assume `void` — never emit prose asking for clarification.
+{{/lang}}
+{{#lang:go}}
+- Zero methods: emit an empty `type <Name> interface {}`.
+- If a return type is not declared, assume the method returns only `error` — never emit prose asking for clarification.
+{{/lang}}
+{{#lang:rust}}
+- Zero methods: emit an empty `pub trait <Name> {}`.
+- If a return type is not declared, assume `Result<(), String>` — never emit prose asking for clarification.
 {{/lang}}
