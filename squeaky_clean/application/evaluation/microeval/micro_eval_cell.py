@@ -9,6 +9,8 @@ from dataclasses import dataclass
 class MicroEvalCell:
     """One compile-verified emission: pattern fixture x target language."""
 
+    # Deliberately `str`, not PatternName: this is the fixture FILE stem
+    # (lowercase, e.g. "strategy"), an eval artifact id — not a catalog name.
     pattern: str
     language: str
     passed: bool

@@ -17,14 +17,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
-from squeaky_clean.domain.value_objects.metrics.notation_stats import NotationStats
-from squeaky_clean.domain.value_objects.metrics.reliability_stats import ReliabilityStats
+from squeaky_clean.application.evaluation.eval.metrics.model.cost_breakdown import CostBreakdown
+from squeaky_clean.application.evaluation.eval.metrics.model.notation_stats import NotationStats
+from squeaky_clean.application.evaluation.eval.metrics.model.reliability_stats import (
+    ReliabilityStats,
+)
+from squeaky_clean.application.evaluation.eval.metrics.model.structure_stats import StructureStats
+from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
+from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
+from squeaky_clean.application.evaluation.eval.metrics.model.velocity_stats import VelocityStats
 from squeaky_clean.domain.value_objects.metrics.security_scan_stats import SecurityScanStats
-from squeaky_clean.domain.value_objects.metrics.structure_stats import StructureStats
-from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
-from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
-from squeaky_clean.domain.value_objects.metrics.velocity_stats import VelocityStats
 
 
 @dataclass(frozen=True)

@@ -16,6 +16,7 @@ from squeaky_clean.application.evaluation.eval.report.dashboard_series_builder i
     MetricSeries,
 )
 from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
 
 class HtmlDashboardWriter:
@@ -26,7 +27,7 @@ class HtmlDashboardWriter:
     ) -> Path:
         """Write `output`; on empty input write a placeholder; return path."""
         if not snapshots:
-            output.write_text(EMPTY_TEMPLATE)
+            atomic_write_text(output, EMPTY_TEMPLATE)
             return output
         series = DashboardSeriesBuilder().build(snapshots)
         body = DASHBOARD_TEMPLATE.format(
@@ -37,7 +38,7 @@ class HtmlDashboardWriter:
             charts=self._charts_block(series),
             series_json=json.dumps([self._series_payload(s) for s in series]),
         )
-        output.write_text(body)
+        atomic_write_text(output, body)
         return output
 
     def _date_range(self, snapshots: tuple[RunMetricsSnapshot, ...]) -> str:

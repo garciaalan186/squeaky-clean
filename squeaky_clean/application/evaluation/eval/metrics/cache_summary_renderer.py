@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 
 _TIERS: tuple[str, ...] = tuple(t.value for t in ModelTier)

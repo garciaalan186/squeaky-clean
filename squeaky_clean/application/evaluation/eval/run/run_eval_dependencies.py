@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 
+from squeaky_clean.application.evaluation.eval.run.run_manifest import RunManifest
 from squeaky_clean.application.generation.architecture.design_architecture import DesignArchitecture
 from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
 from squeaky_clean.application.generation.integration.integrate_module import IntegrateModule
@@ -73,3 +74,6 @@ class RunEvalDependencies:
     project_compiler: ProjectCompiler | None = None
     test_repairer: RepairTestFile | None = None
     toolkit: LanguageToolkit | None = None
+    # R6.4c: provenance-probing manifest writer; the composition root
+    # injects one wired with the GitInfo/ToolchainInfo adapters.
+    run_manifest: RunManifest = field(default_factory=RunManifest)

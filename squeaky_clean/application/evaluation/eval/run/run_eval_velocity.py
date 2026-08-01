@@ -2,8 +2,8 @@
 
 from dataclasses import replace
 
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.velocity_stats import VelocityStats
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.velocity_stats import VelocityStats
 
 
 class RunEvalVelocity:

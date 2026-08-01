@@ -6,6 +6,7 @@ from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer im
     CacheSummaryRenderer,
 )
 from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
 
 class RunEvalSummaryWriter:
@@ -59,7 +60,7 @@ class RunEvalSummaryWriter:
         lines.extend(self._cache_renderer.render(m))
         self._render_acs(lines, bundle)
         self._honest_assessment(lines, bundle)
-        path.write_text("\n".join(lines))
+        atomic_write_text(path, "\n".join(lines))
 
     @staticmethod
     def _render_acs(lines: list[str], bundle: EvalReportBundle) -> None:

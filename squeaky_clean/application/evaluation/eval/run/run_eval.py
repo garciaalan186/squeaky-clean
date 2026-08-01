@@ -44,7 +44,7 @@ class RunEval:
         self._paths: MetaEvalPaths = MetaEvalPaths(run_root or _DEFAULT_RUN_ROOT)
         self._report_writer: RunEvalReportWriter = RunEvalReportWriter()
         self._summary_writer: RunEvalSummaryWriter = RunEvalSummaryWriter()
-        self._manifest: RunManifest = RunManifest()
+        self._manifest: RunManifest = deps.run_manifest
 
     def _models_by_tier(self) -> dict[str, str]:
         """Resolve the concrete model each tier actually used, via the router."""

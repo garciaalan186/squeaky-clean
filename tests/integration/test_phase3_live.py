@@ -5,6 +5,7 @@ import os
 import pytest
 
 from eval.problems.p0_calculator import P0
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.testgen.generate_test_architecture import (
     GenerateTestArchitecture,
 )
@@ -76,7 +77,7 @@ def test_generate_test_architecture_live() -> None:
         gateway=recorder, router=router, toolkit=toolkit,
         recorder=LLMUsageRecorder(),
     )
-    uc = GenerateTestArchitecture(deps)
+    uc = GenerateTestArchitecture(deps, LoadAgentSpec())
     ctx = TestArchitectureContext(module=_p0_module(), problem=P0)
     ta = uc.execute(ctx)
     assert len(ta.test_skeletons) >= 1

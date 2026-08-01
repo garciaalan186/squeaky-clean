@@ -7,6 +7,7 @@ generalized core of the recovery path's ProblemSpecSynthesizer.
 
 from squeaky_clean.application.shared.problem.structural_hints import StructuralHints
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.value_objects.pattern_name import PatternName
 
 
 def derive_structural_hints_from_squib(
@@ -15,7 +16,7 @@ def derive_structural_hints_from_squib(
     """Derive the structural expectations a Squib already encodes."""
     modules = architecture.modules
     classes = [c for m in modules for c in m.classes]
-    patterns: list[str] = sorted({c.pattern for c in classes})
+    patterns: list[PatternName] = sorted({c.pattern for c in classes})
     contexts = [m.name for m in modules]
     return StructuralHints(
         required_bounded_contexts=contexts,

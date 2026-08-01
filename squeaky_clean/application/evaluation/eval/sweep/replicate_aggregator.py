@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.sweep.replicate_summary import ReplicateSummary
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 def _mean(values: Sequence[float]) -> float:

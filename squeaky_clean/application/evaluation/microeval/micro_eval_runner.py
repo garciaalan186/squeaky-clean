@@ -10,6 +10,7 @@ from squeaky_clean.application.generation.emission.assign_patterns import Assign
 from squeaky_clean.application.generation.notation.parse_architecture_notation import (
     ParseArchitectureNotation,
 )
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
@@ -60,12 +61,11 @@ class MicroEvalRunner:
             implemented = implementer.execute(assignment)
             cost += implemented.cost_usd
             target = cell_dir / implemented.file_path
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(implemented.code)
+            atomic_write_text(target, implemented.code)
         for name, content in self._deps.extra_files.get(
             language.value, {},
         ).items():
-            (cell_dir / name).write_text(content)
+            atomic_write_text(cell_dir / name, content)
         result = compiler.compile(cell_dir)
         return MicroEvalCell(
             pattern=pattern, language=language.value, passed=result.ok,

@@ -36,8 +36,7 @@ class NotationNoveltyReporter:
     def persist(self, output_dir: Path, notation: str) -> int:
         """Write architecture.notation + novelty artifacts; return count."""
         path = output_dir / "architecture.notation"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(notation)
+        atomic_write_text(path, notation)
         return self.report(output_dir, notation)
 
     def report(self, output_dir: Path, notation: str) -> int:
@@ -60,8 +59,7 @@ class NotationNoveltyReporter:
         # output_dir = <run_dir>/problem-set-*-code -> results root is 2 up.
         triage = output_dir.parent.parent / "notation-triage"
         try:
-            triage.mkdir(parents=True, exist_ok=True)
             name = f"{output_dir.parent.name}-{output_dir.name}.notation"
-            (triage / name).write_text(notation)
+            atomic_write_text(triage / name, notation)
         except OSError:
             pass  # harvesting is best-effort; the sidecar already records it

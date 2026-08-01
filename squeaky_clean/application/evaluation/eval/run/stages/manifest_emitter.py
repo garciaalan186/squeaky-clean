@@ -21,6 +21,7 @@ from squeaky_clean.application.generation.integration.manifests.package_json_gen
 from squeaky_clean.application.generation.integration.manifests.python_requirements_generator import (  # noqa: E501
     generate as generate_python_requirements,
 )
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
@@ -28,9 +29,10 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 class ManifestEmitter:
     """Best-effort emission of build/dependency manifests, loudly logged."""
 
-    def __init__(self, logger: RunLogger) -> None:
+    def __init__(self, logger: RunLogger, fs: ProjectFileSystem) -> None:
         self._logger = logger
-        self._build_manifest = BuildManifestGenerator()
+        self._fs = fs
+        self._build_manifest = BuildManifestGenerator(fs)
 
     def emit(self, ctx: PipelineContext) -> None:
         arch, specs = ctx.arch, ctx.tech_specs
@@ -39,9 +41,9 @@ class ManifestEmitter:
             ("build_manifest", lambda: self._build_manifest.generate(
                 arch, specs, ctx.output_dir, ctx.problem)),
             ("go_mod", lambda: generate_go_mod(
-                arch, specs, ctx.output_dir, ctx.problem)),
+                arch, specs, ctx.output_dir, ctx.problem, fs=self._fs)),
             ("cargo_toml", lambda: generate_cargo_toml(
-                arch, specs, ctx.output_dir, ctx.problem)),
+                arch, specs, ctx.output_dir, ctx.problem, fs=self._fs)),
         )
         for name, gen in emitters:
             try:
@@ -59,13 +61,15 @@ class ManifestEmitter:
         try:
             if lang is TargetLanguage.PYTHON:
                 path = generate_python_requirements(
-                    arch, ctx.tech_specs, ctx.output_dir, ctx.problem)
+                    arch, ctx.tech_specs, ctx.output_dir, ctx.problem,
+                    fs=self._fs)
                 if path is not None:
                     self._logger.event(
                         "requirements_txt_emitted", path=str(path))
             elif lang in (TargetLanguage.JAVASCRIPT, TargetLanguage.TYPESCRIPT):
                 path = generate_package_json(
-                    arch, ctx.tech_specs, ctx.output_dir, ctx.problem)
+                    arch, ctx.tech_specs, ctx.output_dir, ctx.problem,
+                    fs=self._fs)
                 if path is not None:
                     self._logger.event("package_json_emitted", path=str(path))
         except OSError as exc:

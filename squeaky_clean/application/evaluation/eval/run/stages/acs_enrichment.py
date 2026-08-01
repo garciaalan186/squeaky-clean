@@ -7,8 +7,8 @@ from dataclasses import replace
 from squeaky_clean.application.evaluation.eval.metrics.architectural_complexity_scorer import (  # noqa: E501
     ArchitecturalComplexityScorer,
 )
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class AcsEnrichment:
