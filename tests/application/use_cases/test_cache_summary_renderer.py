@@ -4,6 +4,7 @@ from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer im
     CacheSummaryRenderer,
 )
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
 
 
 def test_renders_zero_activity_message() -> None:
@@ -16,10 +17,9 @@ def test_renders_table_when_tokens_present() -> None:
     m = EvalMetrics.empty()
     m.cache_creation_input_tokens = 1_200
     m.cache_read_input_tokens = 4_800
-    m.cache_create_architect_tokens = 1_200
-    m.cache_read_architect_tokens = 4_800
-    m.cache_hit_ratio_architect = 0.8
-    m.cache_savings_architect_usd = 0.018
+    m.cache_by_tier["architect"] = TierCacheStats(
+        create_tokens=1_200, read_tokens=4_800, savings_usd=0.018,
+    )
     m.cache_savings_usd = 0.018
     out = "\n".join(CacheSummaryRenderer().render(m))
     assert "## Cache" in out
@@ -35,7 +35,7 @@ def test_per_tier_zero_rows_show_n_a() -> None:
     m = EvalMetrics.empty()
     m.cache_creation_input_tokens = 100
     m.cache_read_input_tokens = 0
-    m.cache_create_architect_tokens = 100
+    m.cache_by_tier["architect"] = TierCacheStats(create_tokens=100)
     m.cache_savings_usd = -0.001
     out = "\n".join(CacheSummaryRenderer().render(m))
     # Manager / icp / fixer rows should show n/a since no tokens for them.

@@ -45,10 +45,7 @@ def test_optional_fields_default_to_unmeasured() -> None:
     assert inputs.cache_hit_count == 0
     assert inputs.cache_creation_input_tokens == 0
     assert inputs.llm_timeouts == 0
-    assert inputs.cache_create_architect_tokens == 0
-    assert inputs.cache_read_fixer_tokens == 0
-    assert inputs.architect_model == ""
-    assert inputs.fixer_model == ""
+    assert inputs.cache_tokens_by_tier == {}
     assert inputs.composer_validation_failures == 0
     assert inputs.wall_clock_ms == 0
 

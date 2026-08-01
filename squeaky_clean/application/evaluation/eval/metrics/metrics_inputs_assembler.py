@@ -2,6 +2,9 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
+    TierCacheTokens,
+)
 from squeaky_clean.application.evaluation.eval.metrics.file_stats_scanner import FileStatsScanner
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
 from squeaky_clean.application.evaluation.eval.run.pipeline_outputs import PipelineOutputs
@@ -31,10 +34,6 @@ class MetricsInputsAssembler:
         sta = self._recorder.stats("security_icp")
         f = outputs.fix_stats
         hits, misses, ctok, rtok = self._recorder.cache_stats()
-        ac, ar = self._recorder.tier_cache_stats("architect")
-        mc, mr = self._recorder.tier_cache_stats("manager")
-        ic, ir = self._recorder.tier_cache_stats("icp")
-        fc, fr = self._recorder.tier_cache_stats("fixer")
         return MetricsInputs(
             implementation=impl, test_run_result=outputs.test_run,
             validation=outputs.validation,
@@ -63,15 +62,19 @@ class MetricsInputsAssembler:
             cache_hit_count=hits, cache_miss_count=misses,
             cache_creation_input_tokens=ctok, cache_read_input_tokens=rtok,
             llm_timeouts=self._recorder.timeout_count(),
-            cache_create_architect_tokens=ac, cache_read_architect_tokens=ar,
-            cache_create_manager_tokens=mc, cache_read_manager_tokens=mr,
-            cache_create_icp_tokens=ic, cache_read_icp_tokens=ir,
-            cache_create_fixer_tokens=fc, cache_read_fixer_tokens=fr,
-            architect_model=self._router.route(ModelTier.ARCHITECT),
-            manager_model=self._router.route(ModelTier.MANAGER),
-            icp_model=self._router.route(ModelTier.ICP),
-            fixer_model=self._router.route(ModelTier.FIXER),
+            cache_tokens_by_tier=self._cache_tokens_by_tier(),
             composer_validation_failures=outputs.composer_stats.validation_failures,
             composer_manager_fallback_calls=outputs.composer_stats.manager_fallback_calls,
             wall_clock_ms=outputs.wall_clock_ms,
         )
+
+    def _cache_tokens_by_tier(self) -> dict[str, TierCacheTokens]:
+        """Fold per-label recorder cache totals into routing-tier buckets."""
+        out: dict[str, TierCacheTokens] = {}
+        for tier in ModelTier:
+            create, read = self._recorder.tier_cache_stats(tier.value)
+            out[tier.value] = TierCacheTokens(
+                create_tokens=create, read_tokens=read,
+                model=self._router.route(tier),
+            )
+        return out

@@ -2,6 +2,9 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
+    TierCacheTokens,
+)
 from squeaky_clean.application.evaluation.eval.metrics.file_stats import FileStats
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs_assembler import (
@@ -108,20 +111,21 @@ def test_assembles_cache_timeout_fixer_and_routing_fields(tmp_path: Path) -> Non
     assert inputs.cache_creation_input_tokens == 21
     assert inputs.cache_read_input_tokens == 22
     assert inputs.llm_timeouts == 1
-    # Per-tier cache tokens: labels are folded into their routing tier.
-    assert (inputs.cache_create_architect_tokens,
-            inputs.cache_read_architect_tokens) == (7, 3)
-    assert (inputs.cache_create_manager_tokens,
-            inputs.cache_read_manager_tokens) == (1, 2)
-    assert (inputs.cache_create_icp_tokens, inputs.cache_read_icp_tokens) == (11, 13)
-    assert (inputs.cache_create_fixer_tokens, inputs.cache_read_fixer_tokens) == (2, 4)
+    # Per-tier cache tokens: labels are folded into their routing tier,
+    # each bucket carrying the model routed for that tier.
+    assert inputs.cache_tokens_by_tier == {
+        "architect": TierCacheTokens(create_tokens=7, read_tokens=3,
+                                     model="m-architect"),
+        "manager": TierCacheTokens(create_tokens=1, read_tokens=2,
+                                   model="m-manager"),
+        "icp": TierCacheTokens(create_tokens=11, read_tokens=13,
+                               model="m-icp"),
+        "fixer": TierCacheTokens(create_tokens=2, read_tokens=4,
+                                 model="m-fixer"),
+    }
     assert (inputs.classes_fixed, inputs.fixer_input_tokens,
             inputs.fixer_output_tokens) == (2, 30, 40)
     assert (inputs.fixer_cost_usd, inputs.fixer_duration_ms) == (0.5, 70)
-    assert inputs.architect_model == "m-architect"
-    assert inputs.manager_model == "m-manager"
-    assert inputs.icp_model == "m-icp"
-    assert inputs.fixer_model == "m-fixer"
     assert (inputs.composer_validation_failures,
             inputs.composer_manager_fallback_calls) == (4, 5)
 

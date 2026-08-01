@@ -1,7 +1,10 @@
 """MetricsInputs DTO: inputs to RunEvalMetricsBuilder.build()."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
+    TierCacheTokens,
+)
 from squeaky_clean.application.evaluation.eval.metrics.file_stats import FileStats
 from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
@@ -53,18 +56,8 @@ class MetricsInputs:
     llm_timeouts: int = 0
     replicate_id: int = 0
     spec_conformance_violations: int = 0
-    cache_create_architect_tokens: int = 0
-    cache_read_architect_tokens: int = 0
-    cache_create_manager_tokens: int = 0
-    cache_read_manager_tokens: int = 0
-    cache_create_icp_tokens: int = 0
-    cache_read_icp_tokens: int = 0
-    cache_create_fixer_tokens: int = 0
-    cache_read_fixer_tokens: int = 0
-    architect_model: str = ""
-    manager_model: str = ""
-    icp_model: str = ""
-    fixer_model: str = ""
+    # Per-tier cache token totals + routed model, keyed by ModelTier.value.
+    cache_tokens_by_tier: dict[str, TierCacheTokens] = field(default_factory=dict)
     composer_validation_failures: int = 0
     composer_manager_fallback_calls: int = 0
     wall_clock_ms: int = 0
