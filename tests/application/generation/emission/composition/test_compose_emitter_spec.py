@@ -9,6 +9,7 @@ from squeaky_clean.application.generation.emission.composition.compose_emitter_s
     ComposeEmitterSpec,
 )
 from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
+from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
@@ -20,7 +21,7 @@ _ACTIVE = (
 )
 
 
-def _toolkit(language: TargetLanguage):  # noqa: ANN202 — test helper
+def _toolkit(language: TargetLanguage) -> LanguageToolkit:
     return LanguageToolkitFactory().for_language(language)
 
 
