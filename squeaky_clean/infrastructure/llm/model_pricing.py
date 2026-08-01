@@ -8,12 +8,9 @@ earlier $15/$75 tier was Opus 3 and Opus 4.0/4.1).
 """
 from __future__ import annotations
 
-import logging
-
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.infrastructure.llm.model_catalog import ModelId
 from squeaky_clean.infrastructure.llm.models_dev_rates import live_rates
-
-_LOG = logging.getLogger(__name__)
 
 _FALLBACK: dict[str, tuple[float, float, float, float]] = {
     # Current models — keyed off the ModelId single source of truth.
@@ -29,7 +26,7 @@ _FALLBACK: dict[str, tuple[float, float, float, float]] = {
 }
 
 
-def _resolve_rates(model: str) -> tuple[float, float, float, float]:
+def _resolve_rates(model: str, log: RunLogger) -> tuple[float, float, float, float]:
     """Known rate for ``model``, else a conservative family fallback.
 
     An unknown model MUST NOT price at $0 — that silently defeats budget
@@ -37,7 +34,7 @@ def _resolve_rates(model: str) -> tuple[float, float, float, float]:
     rates, defaulting to the most expensive tier (Opus) so an unrecognised
     future model over-estimates rather than under-charges. Always warns loudly.
     """
-    rates = live_rates().get(model) or _FALLBACK.get(model)
+    rates = live_rates(logger=log).get(model) or _FALLBACK.get(model)
     if rates is not None:
         return rates
     lower = model.lower()
@@ -47,9 +44,9 @@ def _resolve_rates(model: str) -> tuple[float, float, float, float]:
         family, fallback = "sonnet", _FALLBACK[ModelId.SONNET]
     else:
         family, fallback = "opus (conservative default)", _FALLBACK[ModelId.OPUS]
-    _LOG.warning(
-        "unknown model %r for pricing; using %s-family rates to avoid $0 "
-        "budget accounting", model, family,
+    log.event(
+        "pricing_unknown_model", model=model, family_used=family,
+        detail="family rates applied to avoid $0 budget accounting (R0.10)",
     )
     return fallback
 
@@ -71,11 +68,15 @@ def estimate_cost_usd(
     output_tokens: int,
     cache_creation_tokens: int = 0,
     cache_read_tokens: int = 0,
+    *,
+    logger: RunLogger | None = None,
 ) -> float:
     """USD cost from token counts. Tuple is (in, out, cache_write,
     cache_read) per-MTok. Unknown models fall back to a conservative
-    same-family rate (never a silent $0) — see ``_resolve_rates``."""
-    in_r, out_r, cw_r, cr_r = _resolve_rates(model)
+    same-family rate (never a silent $0) — see ``_resolve_rates``.
+    ``logger`` receives the unknown-model event; production callers
+    thread the run's RunLogger (R6.12 DIP residue close-out)."""
+    in_r, out_r, cw_r, cr_r = _resolve_rates(model, logger or NullRunLogger())
     plain_in = max(0, input_tokens - cache_creation_tokens - cache_read_tokens)
     return (
         plain_in * in_r

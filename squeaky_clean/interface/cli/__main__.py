@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from squeaky_clean.infrastructure.config.env_loader import EnvLoader
+from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 from squeaky_clean.interface.cli.cli_args_parser import CLIArgsParser
 from squeaky_clean.interface.cli.invocations.cli_invocation_mapper import CLIInvocationMapper
 from squeaky_clean.interface.cli.squeaky_clean_cli import SqueakyCleanCLI
@@ -17,7 +18,7 @@ def main() -> int:
             EnvLoader(candidate).load()
             break
     request = CLIInvocationMapper().map(CLIArgsParser().parse(sys.argv[1:]))
-    return SqueakyCleanCLI().run(request)
+    return SqueakyCleanCLI(JSONLogger()).run(request)
 
 
 if __name__ == "__main__":

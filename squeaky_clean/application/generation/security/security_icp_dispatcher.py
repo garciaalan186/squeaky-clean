@@ -36,7 +36,7 @@ class SecurityICPDispatcher:
     ) -> None:
         self._gateway: LLMGateway = gateway
         self._router: ModelRoutingPolicy = router
-        self._run_config: RunConfig = run_config or RunConfig()
+        self._run_config = run_config or RunConfig()  # pure default (frozen config VO)
         self._loader: LoadAgentSpec = loader
         self._mapper: MapConcernToSecurityEmitter = MapConcernToSecurityEmitter()
 

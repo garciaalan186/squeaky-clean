@@ -23,7 +23,7 @@ class CostGate:
     """
 
     def __init__(self, budget: CostBudget | None = None) -> None:
-        self.budget: CostBudget = budget or CostBudget()
+        self.budget: CostBudget = budget or CostBudget()  # pure default (frozen VO)
         self._spent_usd: float = 0.0
         self._reserved_usd: float = 0.0
         self._warned: bool = False

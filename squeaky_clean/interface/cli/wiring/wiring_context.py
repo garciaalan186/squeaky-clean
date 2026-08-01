@@ -31,7 +31,8 @@ class WiringContext:
     @classmethod
     def create(cls, router: ModelRouter, run_config: RunConfig) -> "WiringContext":
         """Build the shared context (gateway stack + fs/logger/recorder)."""
-        gateway, cost_gate = GatewayStackFactory().build(run_config)
+        logger = JSONLogger()
+        gateway, cost_gate = GatewayStackFactory(logger).build(run_config)
         recorder = LLMUsageRecorder()
         return cls(
             run_config=run_config,
@@ -39,7 +40,7 @@ class WiringContext:
             gateway=gateway,
             cost_gate=cost_gate,
             fs=LocalFileSystem(),
-            logger=JSONLogger(),
+            logger=logger,
             loader=LoadAgentSpec(),
             recorder=recorder,
             call_deps=LLMCallDeps(

@@ -10,20 +10,20 @@ from squeaky_clean.domain.interfaces.techspec.mcp_not_configured_error import (
 from squeaky_clean.domain.interfaces.techspec.tech_doc_fetch_error import (
     TechDocFetchError,
 )
-from squeaky_clean.infrastructure.techspec.webfetch_tech_doc_fetcher import (
-    WebFetchTechDocFetcher,
-)
 
 _ENV_VAR: str = "CLEAN_AGENT_TECHSPEC_MCP_URL"
 
 
 class MCPTechDocFetcher(TechDocFetcher):
-    """Reads techspec JSON from the configured MCP URL or raises."""
+    """Reads techspec JSON from the configured MCP URL or raises.
 
-    def __init__(
-        self, inner: TechDocFetcher | None = None,
-    ) -> None:
-        self._inner: TechDocFetcher = inner or WebFetchTechDocFetcher()
+    ``inner`` (the transport) is REQUIRED: it is an I/O-touching
+    collaborator, so the composition root must inject it explicitly
+    (R6.12 — no impure ``or Default()`` fallback).
+    """
+
+    def __init__(self, inner: TechDocFetcher) -> None:
+        self._inner: TechDocFetcher = inner
 
     def fetch(self, url: str) -> str:
         """Fetch via MCP base; require JSON body. Raises on misconfiguration."""

@@ -10,6 +10,7 @@ class ParseImplementedClass:
     """Delegates parsing of an ICP fenced response to a language adapter."""
 
     def __init__(self, parser: ImplementedClassParser | None = None) -> None:
+        # pure default (stateless parser) — R6.12-audited fallback
         self._parser: ImplementedClassParser = parser or PythonImplementedClassParser()
 
     def parse(self, raw: str, class_name: str) -> str:

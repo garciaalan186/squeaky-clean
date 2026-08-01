@@ -1,6 +1,5 @@
 """RetryingGateway: retry transient transport failures at every tier."""
 
-import logging
 import random
 import time
 from collections.abc import Callable
@@ -9,9 +8,8 @@ from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.infrastructure.llm.llm_gateway_error import LLMGatewayError
-
-_LOG = logging.getLogger(__name__)
 
 
 class RetryingGateway(LLMGateway):
@@ -30,11 +28,14 @@ class RetryingGateway(LLMGateway):
         policy: RetryPolicy | None = None,
         sleep: Callable[[float], None] = time.sleep,
         rand: Callable[[], float] = random.random,
+        *,
+        logger: RunLogger | None = None,
     ) -> None:
         self._inner: LLMGateway = inner
-        self._policy: RetryPolicy = policy or RetryPolicy()
+        self._policy: RetryPolicy = policy or RetryPolicy()  # pure default (config VO)
         self._sleep: Callable[[float], None] = sleep
         self._rand: Callable[[], float] = rand
+        self._log: RunLogger = logger or NullRunLogger()
 
     def complete(self, request: LLMRequest) -> LLMResponse:
         """Call the inner gateway, retrying transient faults up to the cap."""
@@ -59,9 +60,10 @@ class RetryingGateway(LLMGateway):
 
     def _backoff(self, attempt: int, reason: str) -> None:
         delay = self._policy.jittered_delay_for(attempt, self._rand())
-        _LOG.warning(
-            "gateway retry %d/%d after %s (sleeping %.2fs)",
-            attempt + 1, self._policy.max_transport_retries, reason, delay,
+        self._log.event(
+            "gateway_retry", attempt=attempt + 1,
+            max_retries=self._policy.max_transport_retries,
+            reason=reason, sleep_seconds=round(delay, 2),
         )
         if delay > 0:
             self._sleep(delay)

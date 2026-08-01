@@ -24,7 +24,7 @@ class SecretPathScanner:
     """Recursively scan a path tree for secrets via SecretScanner."""
 
     def __init__(self, scanner: SecretScanner | None = None) -> None:
-        self._scanner: SecretScanner = scanner or SecretScanner()
+        self._scanner = scanner or SecretScanner()  # pure default (regex scanner)
 
     def scan(self, root: Path) -> tuple[SecretHit, ...]:
         """Walk ``root`` and return all secret hits (filename + content)."""

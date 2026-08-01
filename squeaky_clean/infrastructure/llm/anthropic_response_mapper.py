@@ -7,11 +7,15 @@ import time
 import anthropic
 
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.infrastructure.llm.model_pricing import estimate_cost_usd
 
 
 class AnthropicResponseMapper:
     """Maps a completed SDK message into the port-level LLMResponse."""
+
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._log: RunLogger = logger or NullRunLogger()
 
     def map(self, msg: anthropic.types.Message, start: float) -> LLMResponse:
         """Build the LLMResponse; ``start`` is the monotonic call start."""
@@ -27,6 +31,7 @@ class AnthropicResponseMapper:
             output_tokens=out,
             cache_creation_tokens=cache_create,
             cache_read_tokens=cache_read,
+            logger=self._log,
         )
         return LLMResponse(
             content=text,

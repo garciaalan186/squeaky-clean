@@ -8,7 +8,6 @@ prefix across the 5-minute Anthropic window.
 
 from __future__ import annotations
 
-import logging
 import os
 import time
 
@@ -18,6 +17,7 @@ from squeaky_clean.application.shared.gateways.prompt_cache_config import Prompt
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.infrastructure.llm.anthropic_prompt_blocks import AnthropicPromptBlocks
 from squeaky_clean.infrastructure.llm.anthropic_response_mapper import (
     AnthropicResponseMapper,
@@ -32,7 +32,6 @@ _DEFAULT_TIMEOUT: float = 240.0
 _DEFAULT_RPS: float = 4.0
 _DEFAULT_BURST: int = 8
 _DEFAULT_TEMPERATURE: float = 0.0
-_LOG = logging.getLogger(__name__)
 
 
 class AnthropicSDKGateway(LLMGateway):
@@ -45,6 +44,7 @@ class AnthropicSDKGateway(LLMGateway):
         max_tokens: int = _DEFAULT_MAX_TOKENS,
         rate_limiter: TokenBucketRateLimiter | None = None,
         prompt_cache_config: PromptCacheConfig | None = None,
+        logger: RunLogger | None = None,
     ) -> None:
         key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
         if not key:
@@ -54,6 +54,8 @@ class AnthropicSDKGateway(LLMGateway):
         )
         self._graceful: bool = graceful_timeout
         self._max_tokens: int = max_tokens
+        # R6.12-audited defaults: in-memory throttle (no I/O at construction)
+        # and a frozen config VO — both stay injectable for tests/wiring.
         self._limiter: TokenBucketRateLimiter = (
             rate_limiter
             if rate_limiter is not None
@@ -66,18 +68,22 @@ class AnthropicSDKGateway(LLMGateway):
             if prompt_cache_config is not None
             else PromptCacheConfig()
         )
+        self._log: RunLogger = logger or NullRunLogger()
         self._blocks: AnthropicPromptBlocks = AnthropicPromptBlocks()
-        self._mapper: AnthropicResponseMapper = AnthropicResponseMapper()
+        self._mapper: AnthropicResponseMapper = AnthropicResponseMapper(self._log)
+        self._seed_noted: bool = False
 
     def complete(self, request: LLMRequest) -> LLMResponse:
         """Call messages.create with optional cache_control blocks."""
         self._limiter.acquire()
         start = time.monotonic()
-        if request.seed is not None:
-            _LOG.debug(
-                "Anthropic API does not accept seed=%s; current models also "
-                "deprecate the temperature param, so sampling knobs are "
-                "omitted and the model default is used", request.seed,
+        if request.seed is not None and not self._seed_noted:
+            # Once per gateway instance (was a per-call DEBUG record).
+            self._seed_noted = True
+            self._log.event(
+                "sdk_sampling_knobs_ignored", seed=request.seed,
+                detail="Anthropic API accepts no seed; temperature is "
+                       "deprecated on current models — model defaults used",
             )
         cache_on = self._cache_enabled_for(request)
         try:

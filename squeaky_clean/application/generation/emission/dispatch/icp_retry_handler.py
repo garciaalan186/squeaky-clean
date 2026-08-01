@@ -28,8 +28,8 @@ class ICPRetryHandler:
         parser: ParseImplementedClass | None = None,
     ) -> None:
         self._gateway: LLMGateway = gateway
-        self._policy: RetryPolicy = policy or RetryPolicy()
-        self._parser: ParseImplementedClass = parser or ParseImplementedClass()
+        self._policy: RetryPolicy = policy or RetryPolicy()  # pure default (config VO)
+        self._parser = parser or ParseImplementedClass()  # pure default (parser)
 
     def run(
         self, request: LLMRequest, class_name: str,

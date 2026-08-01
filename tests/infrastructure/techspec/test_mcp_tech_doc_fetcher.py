@@ -29,7 +29,8 @@ class _StubFetcher(TechDocFetcher):
 def test_mcp_raises_when_env_var_unset(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CLEAN_AGENT_TECHSPEC_MCP_URL", raising=False)
     with pytest.raises(MCPNotConfiguredError):
-        MCPTechDocFetcher().fetch("blob_storage/x/v1.json")
+        # inner is required (R6.12): the impure WebFetch default is gone.
+        MCPTechDocFetcher(_StubFetcher("{}")).fetch("blob_storage/x/v1.json")
 
 
 def test_mcp_returns_body_when_configured(

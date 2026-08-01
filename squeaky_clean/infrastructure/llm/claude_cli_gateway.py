@@ -1,6 +1,5 @@
 """ClaudeCLIGateway: LLMGateway adapter that shells out to `claude -p`."""
 
-import logging
 import os
 import signal
 import subprocess
@@ -8,12 +7,12 @@ import subprocess
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.infrastructure.llm.cli_command_builder import CLICommandBuilder
 from squeaky_clean.infrastructure.llm.cli_response_parser import CLIResponseParser
 from squeaky_clean.infrastructure.llm.llm_gateway_error import LLMGatewayError
 
 _TIMEOUT_SECONDS: int = 240
-_LOG = logging.getLogger(__name__)
 
 
 class ClaudeCLIGateway(LLMGateway):
@@ -24,11 +23,14 @@ class ClaudeCLIGateway(LLMGateway):
         binary_path: str = "claude",
         graceful_timeout: bool = True,
         timeout_seconds: int = _TIMEOUT_SECONDS,
+        *,
+        logger: RunLogger | None = None,
     ) -> None:
         self._builder: CLICommandBuilder = CLICommandBuilder(binary_path)
         self._parser: CLIResponseParser = CLIResponseParser()
         self._graceful: bool = graceful_timeout
         self._timeout: int = timeout_seconds
+        self._log: RunLogger = logger or NullRunLogger()
 
     def complete(self, request: LLMRequest) -> LLMResponse:
         """Run `claude -p` for this request and return the parsed response."""
@@ -92,18 +94,16 @@ class ClaudeCLIGateway(LLMGateway):
         except (ProcessLookupError, PermissionError):
             proc.kill()
 
-    @staticmethod
-    def _warn_if_unsupported(request: LLMRequest) -> None:
+    def _warn_if_unsupported(self, request: LLMRequest) -> None:
         """`claude -p` has no --temperature/--seed flags; log if requested."""
         if request.temperature is not None:
-            _LOG.warning(
-                "claude CLI ignores temperature=%s (no --temperature flag); "
-                "use AnthropicSDKGateway for sampling control",
-                request.temperature,
+            self._log.event(
+                "cli_sampling_flag_ignored", flag="temperature",
+                value=request.temperature,
+                hint="use AnthropicSDKGateway for sampling control",
             )
         if request.seed is not None:
-            _LOG.warning(
-                "claude CLI ignores seed=%s (no --seed flag); "
-                "use AnthropicSDKGateway for seed control",
-                request.seed,
+            self._log.event(
+                "cli_sampling_flag_ignored", flag="seed", value=request.seed,
+                hint="use AnthropicSDKGateway for seed control",
             )

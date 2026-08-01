@@ -1,14 +1,13 @@
 """ParallelICPDispatcher: run ImplementClass across many assignments via threads."""
 
-import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from threading import Lock
 
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
-_LOG = logging.getLogger(__name__)
 _MAX_WORKERS: int = 4
 
 
@@ -22,9 +21,11 @@ class ParallelICPDispatcher:
 
     def __init__(
         self, implement_class: ImplementClass, max_workers: int = _MAX_WORKERS,
+        *, logger: RunLogger | None = None,
     ) -> None:
         self._implement: ImplementClass = implement_class
         self._max_workers: int = max_workers
+        self._log: RunLogger = logger or NullRunLogger()
         self.peak_parallelism: int = 0
         self._active: int = 0
         self._gauge_lock: Lock = Lock()
@@ -53,9 +54,10 @@ class ParallelICPDispatcher:
                 try:
                     results[index] = future.result()
                 except Exception as exc:  # noqa: BLE001
-                    _LOG.warning(
-                        "ICP failed for %s: %s",
-                        assignments[index].class_spec.name, exc,
+                    self._log.event(
+                        "icp_failed",
+                        class_name=assignments[index].class_spec.name,
+                        error=str(exc),
                     )
         return tuple(results[i] for i in sorted(results))
 

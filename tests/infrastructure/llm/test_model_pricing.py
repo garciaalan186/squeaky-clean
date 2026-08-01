@@ -1,5 +1,6 @@
 """Tests for ModelPricing unknown-model fallback (R0.10)."""
 
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger
 from squeaky_clean.infrastructure.llm import model_pricing
 from squeaky_clean.infrastructure.llm.model_catalog import ModelId
 from squeaky_clean.infrastructure.llm.model_pricing import (
@@ -20,16 +21,16 @@ def test_unknown_model_never_prices_zero() -> None:
 
 
 def test_unknown_model_infers_family_from_substring() -> None:
-    assert _resolve_rates("something-haiku-unknown") == model_pricing._FALLBACK[
+    assert _resolve_rates("something-haiku-unknown", NullRunLogger()) == model_pricing._FALLBACK[
         ModelId.HAIKU
     ]
-    assert _resolve_rates("something-sonnet-unknown") == model_pricing._FALLBACK[
+    assert _resolve_rates("something-sonnet-unknown", NullRunLogger()) == model_pricing._FALLBACK[
         ModelId.SONNET
     ]
 
 
 def test_unrecognised_family_defaults_to_conservative_opus() -> None:
     # No family hint → most expensive tier, so budgets over-estimate not under.
-    assert _resolve_rates("mystery-model-x") == model_pricing._FALLBACK[
+    assert _resolve_rates("mystery-model-x", NullRunLogger()) == model_pricing._FALLBACK[
         ModelId.OPUS
     ]

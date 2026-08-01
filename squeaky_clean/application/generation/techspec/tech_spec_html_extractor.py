@@ -34,21 +34,21 @@ class TechSpecHTMLExtractor:
     @staticmethod
     def _extract_aws(html: str) -> str | None:
         if "awsdocs-page-title" not in html:
-            return None
+            return None  # R6.8-legit: detector not applicable; extract() raises when all decline
         m = _AWS_ANCHOR.search(html)
         return m.group(1) if m else None
 
     @staticmethod
     def _extract_sphinx(html: str) -> str | None:
         if "py method" not in html:
-            return None
+            return None  # R6.8-legit: detector not applicable; extract() raises when all decline
         m = _SPHINX_METHOD.search(html)
         return m.group(1).rsplit(".", 1)[-1] if m else None
 
     @staticmethod
     def _extract_github_pages(html: str) -> str | None:
         if "<section" not in html.lower():
-            return None
+            return None  # R6.8-legit: detector not applicable; extract() raises when all decline
         m = _GHP_SECTION.search(html)
         return m.group(1).replace("-", "_") if m else None
 

@@ -84,4 +84,6 @@ def infer_category(method_names: tuple[str, ...]) -> str | None:
         return "document_db"
     if names & _RDB_VERBS:
         return "relational_db"
+    # R6.8-legit: None = "not an infrastructure adapter" — a meaningful
+    # routing outcome; callers branch on it (Tier C vs plain emission).
     return None

@@ -3,18 +3,20 @@
 from __future__ import annotations
 
 import json
-import logging
 import re
 from pathlib import Path
 
 from squeaky_clean.application.evaluation.eval.run.run_metrics_snapshot import RunMetricsSnapshot
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 _DIR_RE = re.compile(r"^meta-evaluation_(\d+)_(.+)$")
-_LOG = logging.getLogger(__name__)
 
 
 class MetricsHistoryAggregator:
     """Walk a results root for meta-eval runs and load metric snapshots."""
+
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._log: RunLogger = logger or NullRunLogger()
 
     def aggregate(self, results_root: Path) -> tuple[RunMetricsSnapshot, ...]:
         """Return snapshots ordered by run number; skip malformed dirs."""
@@ -40,7 +42,8 @@ class MetricsHistoryAggregator:
         try:
             raw = json.loads(metrics_path.read_text())
         except (OSError, json.JSONDecodeError) as exc:
-            _LOG.warning("skipping unreadable %s: %s", metrics_path, exc)
+            self._log.event("metrics_snapshot_skipped",
+                            path=str(metrics_path), error=str(exc))
             return None
         if not isinstance(raw, dict):
             return None
@@ -52,13 +55,10 @@ class MetricsHistoryAggregator:
         )
 
     def _flatten(self, raw: dict[str, object]) -> dict[str, float | int]:
-        """Flatten schema-v2 value-object payloads to their v1 leaf names.
-
-        Every leaf name was a unique flat field in schema v1, so promoting
-        nested scalars restores the exact historical key set — old and new
-        metrics.json files yield identical snapshot keys. ``cache_by_tier``
-        is skipped (its per-tier leaves collide); top-level scalars win.
-        """
+        """Flatten schema-v2 value objects to their v1 leaf names — every
+        leaf was a unique flat field in v1, so old and new metrics.json yield
+        identical keys. ``cache_by_tier`` skipped (its per-tier leaves
+        collide); top-level scalars win."""
         flat: dict[str, float | int] = {}
         for key, value in raw.items():
             if key == "cache_by_tier" or not isinstance(value, dict):
