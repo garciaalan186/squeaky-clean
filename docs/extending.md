@@ -1,6 +1,6 @@
 # Extending Squeaky Clean
 
-Two extension hooks for users who need patterns or technologies the bundled catalog doesn't cover. The bundled pattern catalog is the full 34-pattern GoF + DDD/Clean set in all six languages; the custom-pattern hook is for domain-specific patterns beyond it.
+Two extension hooks for users who need patterns or technologies the bundled catalog doesn't cover. The bundled pattern catalog is the full 34-pattern GoF + DDD/Clean set in all four languages; the custom-pattern hook is for domain-specific patterns beyond it.
 
 ## Custom patterns (Milestone F4)
 
@@ -40,13 +40,15 @@ squeaky generate \
     --infra=auto
 ```
 
-When the architect produces `MyAggregate -> EventSourcedAggregate`, the framework routes to your custom emitter. The bundled library still resolves every other pattern to its own dedicated emitter — all 34 recognized patterns are covered in each of the six languages, so a custom manifest is only needed for patterns outside that catalog.
+When the architect produces `MyAggregate -> EventSourcedAggregate`, the framework routes to your custom emitter. The bundled library still resolves every other pattern to its own dedicated emitter — all 34 recognized patterns are covered in each of the four languages, so a custom manifest is only needed for patterns outside that catalog.
+
+A custom pattern is by definition a name the catalog doesn't hold, which is also what `ProblemSpec.required_patterns` validates against: list only catalog names there, and let the manifest carry the custom ones. A name neither the catalog nor a manifest recognizes still falls through to the `SimpleClass` escape hatch rather than aborting the run.
 
 See `eval/custom_patterns/example_event_sourced_aggregate.json` + the matching `eval/custom_patterns/specs/emitters/python/custom/EventSourcedAggregateEmitter.md` for a worked example.
 
 ## Custom Tier C technologies (Milestone H)
 
-Add technology snapshots beyond the bundled catalog. The framework's `TechSpecResolver` walks four sources in priority order: bundled snapshot → cache → MCP → web fetch. The first three are extension points.
+Add technology snapshots beyond the bundled catalog. The framework's `TechSpecResolver` walks its sources in priority order: bundled snapshot → fresh cache → MCP → web fetch → a stale-tolerant cache entry inside the grace window → fail. The first three are extension points. Every source that fails emits a structured JSON run-log event carrying its reason, and if nothing resolves the run fails with `TechSpecResolutionError` carrying one reason per source it tried — so a snapshot you added that the framework then declined is visible rather than silently skipped.
 
 ### Add a bundled snapshot
 
@@ -82,7 +84,7 @@ Drop a JSON file at `eval/tech_specs/<category>/<technology>/<version>.json` mat
 }
 ```
 
-Validate against the schema before shipping:
+A snapshot that is unreadable, is not a JSON object, fails schema validation, or is rejected by the builder is logged as a `techspec_snapshot_rejected` event naming the path and the reason, and the resolver falls through to the next source. Validate against the schema before shipping:
 
 ```bash
 python -c "from squeaky_clean.infrastructure.techspec.jsonschema_techspec_validator import JSONSchemaTechSpecValidator; from pathlib import Path; print(JSONSchemaTechSpecValidator(Path('eval/tech_specs/_schema.v1.json')).validate(__import__('json').loads(Path('your-spec.json').read_text())))"
@@ -97,7 +99,7 @@ export CLEAN_AGENT_TECHSPEC_MCP_URL=https://docs.internal.example.com/techspecs
 squeaky generate ...
 ```
 
-The MCP must respond with JSON conforming to the TechSpec schema. The sanitizer + validator pipeline still runs on every fetched response.
+The MCP must respond with JSON conforming to the TechSpec schema. The sanitizer + validator pipeline still runs on every fetched response, and a rejected response is logged as a `techspec_source_failed` event naming `mcp` and the reason before the resolver falls through.
 
 ### Add a custom MCDA scoring entry
 
@@ -115,15 +117,35 @@ If you want `--infer-infrastructure` to consider your custom technology, add it 
 
 Scores 1–5 across 8 criteria (ops, cost, cold, thru, eco, reg, lic, team). Stability tier is `ga | beta | preview` for the tie-breaker.
 
+## Pattern emitter spec shapes
+
+A bundled pattern emitter is authored in one of two shapes, and both resolve through the same lookup.
+
+| Shape | Where it lives |
+|---|---|
+| Per-language | One complete spec per language at `squeaky_clean/interface/agent_specs/emitters/<language>/<category>/<Pattern>Emitter.md`. The 11 DDD/Clean patterns ship this way — 44 files. |
+| Shared template | One cross-language template at `emitters/_shared/<category>/<Pattern>Emitter.md`, composed at emission time with the language profile at `emitters/_shared/profiles/<language>.md`. Profiles ship for `python`, `javascript`, `typescript` and `java`. All 23 creational, structural and behavioral patterns ship this way. |
+
+Resolution prefers the shared template and falls back to the per-language file, so a pattern not yet cut over behaves exactly as before; a shared template with no matching language profile raises rather than degrading silently.
+
+For a pattern authored as a shared template:
+
+- A language-specific fix goes in that language's profile block.
+- A change to the shared contract goes in the single template, so it lands in all four languages at once and needs validating across them.
+- Adding a language means adding its profile, not cloning the spec.
+- The drift guards — for example the Java §Notation `float` → `double` type-fidelity rule — are asserted once per pattern against the composed template + profile, parameterized over every shared-template pattern, rather than against four file copies.
+
+A template pulls a named block in with `{{profile:<block_name>}}` and gates lines on language with a flat, non-nesting `{{#lang:java}}` … `{{/lang}}` block whose opener accepts a comma list. Full grammar and the shipped block names: [`architecture.md`](architecture.md#emitter-spec-composition).
+
 ## Custom languages
 
-The framework's `LanguageAdapterRegistry` is registry-driven (Milestone K9). Adding a new language requires:
+The framework's `LanguageAdapterRegistry` is the single per-language dispatch table (Milestone K9): the adapter selector, the compiler factory and the test-runner factory are all thin views over it, so a language is added in one place. Adding a new language requires:
 
 1. Add a `TargetLanguage` enum value.
-2. Provide six adapters: emitter-spec library, integration bootstrap, granularity rule, test runner, dependency installer, implemented-class parser.
+2. Provide the emitter-spec library for the language — a spec file for each of the 11 DDD/Clean patterns authored per language, under `emitters/<language>/ddd_clean/`, plus one profile at `emitters/_shared/profiles/<language>.md` supplying the delta blocks for all 23 creational, structural and behavioral patterns, which are authored once as shared cross-language templates.
 3. Provide a `ProblemSpecFormatter` extension if the language has unusual identifier conventions (e.g. PowerShell verb-noun).
-4. Register everything in `language_adapter_registry.py`'s `REGISTRY` dict.
-5. Run `pytest tests/interface/cli/test_language_adapter_registry_coverage.py` — it asserts every enum value has a registered factory.
+4. Add one `LanguageAdapterEntry` to `language_adapter_registry.py`'s `REGISTRY` dict, carrying the test-runner factory (it takes an exclude glob, `None` meaning run everything, plus the composition root's `RunLogger`, `None` meaning a silent null logger) plus the language's functional-test exclude pattern, the granularity rule, the integration bootstrap, the implemented-class parser, the dependency installer (it takes the same logger, so a failed install lands in the structured JSON run log), and — only if the language has a meaningful ahead-of-time compile/typecheck step — a compiler. TypeScript and Java declare one; Python, JavaScript, Go and Rust leave it `None`.
+5. Run `pytest tests/interface/cli/test_language_adapter_registry_coverage.py` — it asserts every enum value has a registered entry.
 
 This is a substantial body of work (~2000 lines for a new language at full Tier C parity); we recommend opening an RFC issue first.
 
@@ -131,7 +153,7 @@ This is a substantial body of work (~2000 lines for a new language at full Tier 
 
 Adding a language to **Architecture Recovery** (the brownfield-ingest inverse pipeline) is much lighter than full generation parity, because everything after ingest is language-neutral. You only implement one thing: a `ClassCatalogExtractor`.
 
-1. Implement `ClassCatalogExtractor.extract(root) -> ClassCatalog` in `squeaky_clean/application/use_cases/recovery/`. Python uses a real `ast` walk; Java/JS/TS subclass `RegexCatalogExtractor` and reuse `RegexClassParser` + `RegexDecoratorScanner`, providing the class/method/field regexes and the FQN scheme.
+1. Implement `ClassCatalogExtractor.extract(root) -> ClassCatalog` in `squeaky_clean/application/generation/recovery/extraction/`. Python uses a real `ast` walk; Java/JS/TS subclass `RegexCatalogExtractor` and reuse `RegexClassParser` + `RegexDecoratorScanner`, providing the class/method/field regexes and the FQN scheme.
 2. Register it in `class_catalog_extractor_factory.py` under its `TargetLanguage`.
 3. If the language has test/build conventions not already covered, extend `IngestScope`.
 

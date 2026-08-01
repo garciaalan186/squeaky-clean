@@ -36,6 +36,8 @@ Reducing the ecological footprint of AI-assisted development is a goal this open
 
 ## Quick Start
 
+**Prerequisites.** Python 3.10+ and an Anthropic API key cover generating Python projects. Generating Java additionally needs a JDK on `PATH` — that is also what the micro-eval `javac` compile gate runs on — and generating TypeScript or JavaScript needs Node.js. CI pins Temurin JDK 21 and Node.js 20 so the Java and TypeScript gates don't float with the runner image. The Java that comes out is JDK-neutral — plain `public final class` with explicit private final fields, a constructor and getters, no `record`, `sealed` or `var` — so a generated project compiles on any JDK ≥ 11.
+
 **macOS / Linux**
 
 ```bash
@@ -94,24 +96,24 @@ PYTHONPATH=.:.test-deps python -m pytest tests/ -q
 
 ## Coverage matrix
 
-| Category | Python | Java | Go | Rust | JS | TS |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| creational (AbstractFactory, Builder, FactoryMethod, Singleton, Prototype) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| structural (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| behavioral (ChainOfResponsibility, Command, Interpreter, Iterator, Mediator, Memento, Observer, State, Strategy, TemplateMethod, Visitor) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ddd_clean (Entity, ValueObject, Aggregate, DomainEvent, Specification, Repository, Gateway, Presenter, UseCase, DTOMapper, SimpleClass) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| security agents (5 categories) | ✅ | ✅ | ✅ | ✅ | ⏳ | ⏳ |
-| blob_storage | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| kv_cache | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| relational_db / document_db | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| message_queue (producer + consumer) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| stream_processor | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| rest_client / rest_server_handler | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| grpc_client / grpc_server_handler | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| websocket_server_handler | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| observability_logger | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| secrets_provider | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| search | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Category | Python | Java | JS | TS |
+|---|:---:|:---:|:---:|:---:|
+| creational (AbstractFactory, Builder, FactoryMethod, Singleton, Prototype) | ✅ | ✅ | ✅ | ✅ |
+| structural (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy) | ✅ | ✅ | ✅ | ✅ |
+| behavioral (ChainOfResponsibility, Command, Interpreter, Iterator, Mediator, Memento, Observer, State, Strategy, TemplateMethod, Visitor) | ✅ | ✅ | ✅ | ✅ |
+| ddd_clean (Entity, ValueObject, Aggregate, DomainEvent, Specification, Repository, Gateway, Presenter, UseCase, DTOMapper, SimpleClass) | ✅ | ✅ | ✅ | ✅ |
+| security agents (5 categories) | ✅ | ✅ | ⏳ | ⏳ |
+| blob_storage | ✅ | ✅ | ✅ | ✅ |
+| kv_cache | ✅ | ✅ | ✅ | ✅ |
+| relational_db / document_db | ✅ | ✅ | ✅ | ✅ |
+| message_queue (producer + consumer) | ✅ | ✅ | ✅ | ✅ |
+| stream_processor | ✅ | ✅ | ✅ | ✅ |
+| rest_client / rest_server_handler | ✅ | ✅ | ✅ | ✅ |
+| grpc_client / grpc_server_handler | ✅ | ✅ | ✅ | ✅ |
+| websocket_server_handler | ✅ | ✅ | ✅ | ✅ |
+| observability_logger | ✅ | ✅ | ✅ | ✅ |
+| secrets_provider | ✅ | ✅ | ✅ | ✅ |
+| search | ✅ | ✅ | ✅ | ✅ |
 
 `✅` = full Tier C atomic agent + ≥2 TechSpec snapshots + e2e build available. `⏳` = on the roadmap. The four pattern rows are the complete 34-pattern GoF + DDD/Clean catalog; every entry is a dedicated, language-idiomatic emitter spec.
 
@@ -121,7 +123,15 @@ Squeaky includes a **meta-evaluation framework** to iteratively benchmark codege
 
 Rather than relying on raw lines of code (LOC), it normalizes these metrics against a **composite architectural complexity score** that captures the structural, source (McCabe + Halstead), and constraint complexity of the output.
 
-Every figure on the [Benchmarks page](https://docs.squeakyclean.ai/benchmarks/) traces to a specific run ID under `meta-evaluation-results/`.
+Measurement is trusted only as far as it is replicated. Accepting a fix, declaring a regression or updating a baseline requires **N ≥ 3 replicates** (`--replicates 3`); a single run is labelled exploratory in its own report. Every sweep judges each problem against that problem's routing-stamped golden baseline and prints a per-problem verdict — `no golden`, `not comparable` (the model routing changed, which is not a tool regression), `OK`, or `REGRESSION` at a 2σ drop. And an unmeasured metric is reported as `n/a`, never as `0.00`.
+
+Between unit tests and full benchmark problems sits the **micro-eval matrix**: `squeaky --micro-evals` emits every squib fixture's classes — one minimal fixture per catalog pattern, plus a peer-shape fixture per polymorphic pattern family — through the real routing and the real pattern emitters, then compiles the result in Python, Java and TypeScript, and writes a pattern × language pass matrix to `micro_eval_report.md`. `--micro-patterns strategy,visitor` narrows that run to the fixtures whose names start with those prefixes, so iterating on one pattern's emitters doesn't pay for the whole grid.
+
+A run can also be replayed for **$0**. `--replay-only` modifies a normal run — `squeaky --problem P0 --replay-only` — and serves every LLM call from the content-addressed response cache; a prompt that isn't in the cache fails the run loudly with a `ReplayCacheMissError` naming the model, the cache-key prefix and the head of the prompt, so you can see exactly which prompt drifted. No API key is needed. `SQUEAKY_CACHE_DIR` points the cache somewhere other than the default `meta-evaluation-results/cache/`.
+
+That is how CI verifies the pipeline end-to-end on every push: it replays P0 against a small cache bundle committed at `tests/ci_replay_cache/`, alongside the unit suite. The whole pipeline runs for real — spec parsing, model routing, pattern emission, integration, the generated project's pytest suite and scoring — with only the LLM calls read from disk. Prompt or agent-spec drift shows up as a cache miss; a harness regression shows up as a changed score. The gate costs nothing and uses no API key.
+
+Every figure on the [Benchmarks page](https://docs.squeakyclean.ai/benchmarks/) traces to a specific run ID under `meta-evaluation-results/`. The calibrated baselines for the whole canonical suite P0–P11 — several of them spread wide across seeds, and published that way — along with the regression gate's verdicts and the replication policy, are in [`BENCHMARK_METHODOLOGY.md`](BENCHMARK_METHODOLOGY.md).
 
 ## How it works (60 seconds)
 
@@ -145,7 +155,7 @@ RequirementCompiler ──► Squib ModuleSpec (text)
        └────► IntegrateModule → src/ + tests/ + main.py + requirements.txt
                                                     │
                                                     ▼
-                                          mvn / cargo / pytest / etc.
+                                          mvn / npm / pytest / etc.
 ```
 
 Three model tiers: Architect (high-parameter), Manager (mid), atomic agent (compact, lightly sampled, parallelized). Cost is dominated by the atomic-agent tier.
@@ -183,7 +193,7 @@ squeaky --squib-file out/refactored.squib --legacy-tests ./legacy-app/tests
 - **Faithful recovery.** The recovered Squib is a true photograph of the original — coupling and all. Judgment (Analyze) and fixing (Refactor) are separate, opt-in phases.
 - **Framework-agnostic violation analysis.** A generic detector flags domain classes welded to a foreign base (ORM models, Active Record) by allowlisting the language *standard library*, not indexing every framework. Plus dependency-rule, cyclic-dependency, granularity, and decorative-class categories.
 - **Priorities-driven refactoring.** You rank shared architectural criteria (`--criteria`); a weighted MCDA decides *preserve* vs *split* per coupled class, with hard invariants as non-negotiable gates.
-- **Four-language ingest.** `--language {python,javascript,typescript,java}` — Python via a real AST walk, JS/TS/Java via regex extractors (lower fidelity, documented). Go/Rust follow.
+- **Four-language ingest.** `--language {python,javascript,typescript,java}` — Python via a real AST walk, JS/TS/Java via regex extractors (lower fidelity, documented).
 
 Full guide: [Agentic Architecture Recovery](docs/architecture_recovery.md). Tracked as Milestones **L / M / N** on the [roadmap](docs/roadmap.md).
 
@@ -217,4 +227,4 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). The framework eats its own dog food: e
 
 ## Project status
 
-**Active development.** The full 34-pattern GoF + DDD/Clean emitter catalog across all six target languages; 60 Tier C atomic agents across 15 infrastructure categories. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.
+**Active development.** The full 34-pattern GoF + DDD/Clean emitter catalog across all four target languages; 60 Tier C atomic agents across 15 infrastructure categories. Pre-launch milestone (Milestone K) complete. Agentic Architecture Recovery (Milestones L / M / N) — the brownfield-in, Clean-Architecture-out inverse pipeline — landed with four-language ingest. Looking for early users with real ProblemSpecs and brownfield projects.
