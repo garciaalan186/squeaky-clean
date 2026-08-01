@@ -11,7 +11,10 @@ from pathlib import Path
 import pytest
 
 import squeaky_clean
-from squeaky_clean.application.generation.emission.map_pattern_to_emitter import MapPatternToEmitter
+from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
+    ACTIVE_EMITTER_LANGUAGES,
+    MapPatternToEmitter,
+)
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
@@ -21,10 +24,13 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 _ICPS_ROOT: Path = (
     Path(squeaky_clean.__file__).parent / "interface" / "agent_specs" / "emitters"
 )
+# R6.10: parametrize over ACTIVE_EMITTER_LANGUAGES, not the full enum —
+# Go/Rust fleets are archived under agent_specs/_attic/emitters/ until a
+# real problem funds them.
 _CASES: list[tuple[str, TargetLanguage]] = [
     (pattern, language)
     for pattern in sorted(ALL_PATTERNS)
-    for language in TargetLanguage
+    for language in ACTIVE_EMITTER_LANGUAGES
 ]
 
 

@@ -12,10 +12,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from eval.agent_scorers.prompt_candidate import PromptCandidate
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.eval.agent_scorers.icp_scorer import ICPScorer
-from squeaky_clean.eval.agent_scorers.prompt_candidate import PromptCandidate
 
 
 @dataclass(frozen=True)

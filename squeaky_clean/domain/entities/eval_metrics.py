@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
+
 
 @dataclass(slots=True)
 class EvalMetrics:
@@ -87,22 +89,8 @@ class EvalMetrics:
     # R5.5: architect Squib constructions absent from the fixture corpus.
     notation_novelty: int = 0
 
-    cache_create_architect_tokens: int = 0
-    cache_read_architect_tokens: int = 0
-    cache_create_manager_tokens: int = 0
-    cache_read_manager_tokens: int = 0
-    cache_create_icp_tokens: int = 0
-    cache_read_icp_tokens: int = 0
-    cache_create_fixer_tokens: int = 0
-    cache_read_fixer_tokens: int = 0
-    cache_hit_ratio_architect: float = 0.0
-    cache_hit_ratio_manager: float = 0.0
-    cache_hit_ratio_icp: float = 0.0
-    cache_hit_ratio_fixer: float = 0.0
-    cache_savings_architect_usd: float = 0.0
-    cache_savings_manager_usd: float = 0.0
-    cache_savings_icp_usd: float = 0.0
-    cache_savings_fixer_usd: float = 0.0
+    # Per-tier cache breakdown, keyed by ModelTier.value ("architect", ...).
+    cache_by_tier: dict[str, TierCacheStats] = field(default_factory=dict)
     cache_savings_usd: float = 0.0
     # Architectural Complexity Score (ACS) — see BENCHMARK_METHODOLOGY.md.
     acs_structural: float = 0.0

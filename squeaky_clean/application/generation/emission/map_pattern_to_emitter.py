@@ -5,13 +5,27 @@ from squeaky_clean.application.generation.techspec.infrastructure_category_infer
 )
 from squeaky_clean.application.shared.language.language_toolkit import LanguageToolkit
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+
+# R6.10: languages with a live emitter spec fleet on the loader search path.
+# Go/Rust fleets are ARCHIVED under interface/agent_specs/_attic/emitters/
+# until a real Go/Rust problem funds them (their P0 toys were never run in
+# CI). Single source of truth — spec-existence tests parametrize over this,
+# NOT over the full TargetLanguage enum.
+ACTIVE_EMITTER_LANGUAGES: tuple[TargetLanguage, ...] = (
+    TargetLanguage.PYTHON,
+    TargetLanguage.JAVASCRIPT,
+    TargetLanguage.TYPESCRIPT,
+    TargetLanguage.JAVA,
+)
 
 # Full GoF + DDD/Clean catalog → category directory under emitters/<lang>/.
 # Every PatternName in domain.value_objects.pattern_name has a dedicated ICP
-# spec in every supported language; test_pattern_icp_resolution enforces that
-# invariant against the files on disk. SimpleClassEmitter is the ONLY fallback and
-# is reserved for genuinely unrecognized pattern names — it is never a silent
-# stand-in for a catalog pattern that lacks a spec.
+# spec in every ACTIVE emitter language (see ACTIVE_EMITTER_LANGUAGES above);
+# test_pattern_emitter_resolution enforces that invariant on disk.
+# SimpleClassEmitter is the ONLY fallback and is reserved for genuinely
+# unrecognized pattern names — it is never a silent stand-in for a catalog
+# pattern that lacks a spec.
 _PATTERN_CATEGORY: dict[str, str] = {
     # Creational
     "AbstractFactory": "creational",

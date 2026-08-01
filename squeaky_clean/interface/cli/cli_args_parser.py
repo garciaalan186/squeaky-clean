@@ -67,6 +67,7 @@ class CLIArgsParser:
             rebuild_dashboard=bool(ns.rebuild_dashboard),
             micro_evals=bool(ns.micro_evals),
             replay_only=bool(ns.replay_only),
+            architect_mode=str(ns.architect_mode),
             resume_run_dir=(
                 str(ns.resume_run_dir) if ns.resume_run_dir is not None else None
             ),
@@ -168,6 +169,11 @@ class CLIArgsParser:
             "--prompt-cache-tiers", dest="prompt_cache_tiers",
             default="architect,manager,icp,fixer",
             help="CSV subset of tiers to cache (default: all four)",
+        )
+        parser.add_argument(
+            "--architect-mode", dest="architect_mode", default="patterned",
+            choices=("patterned", "free"),
+            help="R6.9 ablation: free = every class SimpleClass",
         )
         parser.add_argument(
             "--replay-only", dest="replay_only", action="store_true",

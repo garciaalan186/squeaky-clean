@@ -38,6 +38,7 @@ class CLIArgs:
     rebuild_dashboard: bool = False
     micro_evals: bool = False
     replay_only: bool = False
+    architect_mode: str = "patterned"
     resume_run_dir: str | None = None
     infrastructure_mode: str = "manual"
     infer_infrastructure: bool = False

@@ -12,6 +12,7 @@ from squeaky_clean.application.evaluation.eval.metrics.unmeasured_nulls import (
 from squeaky_clean.application.evaluation.eval.sweep.sweep_result import SweepResult
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
 
 
 class SweepSummaryWriter:
@@ -70,20 +71,12 @@ class SweepSummaryWriter:
         agg = EvalMetrics.empty()
         for b in result.bundles:
             m = b.metrics
-            for tier in ("architect", "manager", "icp", "fixer"):
-                for kind in ("create", "read"):
-                    f = f"cache_{kind}_{tier}_tokens"
-                    setattr(agg, f, getattr(agg, f) + getattr(m, f))
-                f = f"cache_savings_{tier}_usd"
-                setattr(agg, f, getattr(agg, f) + getattr(m, f))
+            for tier, stats in m.cache_by_tier.items():
+                prev = agg.cache_by_tier.get(tier, TierCacheStats())
+                agg.cache_by_tier[tier] = prev.combined(stats)
             agg.cache_creation_input_tokens += m.cache_creation_input_tokens
             agg.cache_read_input_tokens += m.cache_read_input_tokens
             agg.cache_savings_usd += m.cache_savings_usd
-        for tier in ("architect", "manager", "icp", "fixer"):
-            c = int(getattr(agg, f"cache_create_{tier}_tokens"))
-            r = int(getattr(agg, f"cache_read_{tier}_tokens"))
-            ratio = (r / (c + r)) if (c + r) > 0 else 0.0
-            setattr(agg, f"cache_hit_ratio_{tier}", ratio)
         return agg
 
     def _totals(self, result: SweepResult) -> list[str]:

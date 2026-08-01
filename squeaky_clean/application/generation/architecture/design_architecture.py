@@ -52,7 +52,9 @@ class DesignArchitecture:
         ``prior_violations`` re-invokes after a downstream validator
         (e.g. constraint #22) rejected the previous output.
         """
-        system = self._loader.load(_ARCHITECT_SPEC)
+        mode = self._deps.run_config.architect_mode
+        spec = _ARCHITECT_SPEC + ("Free" if mode == "free" else "")
+        system = self._loader.load(spec)
         user = self._formatter.format(problem)
         if prior_violations:
             user = (f"{user}\n\nYour prior output had these constraint #22 "

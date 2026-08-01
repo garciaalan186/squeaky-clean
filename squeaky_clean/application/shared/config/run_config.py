@@ -38,6 +38,8 @@ class RunConfig:
     verify_layers: bool = False
     # R5.7: serve everything from cache; a miss raises (CI replay gate).
     replay_only: bool = False
+    # R6.9 ablation: "patterned" (default) or "free" (all SimpleClass).
+    architect_mode: str = "patterned"
 
     def sampling_for(self, tier: ModelTier) -> TierSampling:
         """Return effective TierSampling for ``tier`` using this run's seed."""

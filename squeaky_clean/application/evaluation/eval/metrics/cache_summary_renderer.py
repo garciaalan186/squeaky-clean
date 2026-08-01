@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.model_tier import ModelTier
+from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
 
-_TIERS: tuple[str, ...] = ("architect", "manager", "icp", "fixer")
+_TIERS: tuple[str, ...] = tuple(t.value for t in ModelTier)
+_EMPTY: TierCacheStats = TierCacheStats()
 
 
 class CacheSummaryRenderer:
@@ -27,14 +30,12 @@ class CacheSummaryRenderer:
         )
         total_c, total_r = 0, 0
         for tier in _TIERS:
-            c = int(getattr(m, f"cache_create_{tier}_tokens"))
-            r = int(getattr(m, f"cache_read_{tier}_tokens"))
-            ratio = float(getattr(m, f"cache_hit_ratio_{tier}"))
-            s = float(getattr(m, f"cache_savings_{tier}_usd"))
-            ratio_text = f"{ratio * 100:.1f}%" if (c + r) > 0 else "n/a"
+            s = m.cache_by_tier.get(tier, _EMPTY)
+            c, r = s.create_tokens, s.read_tokens
+            ratio_text = f"{s.hit_ratio * 100:.1f}%" if (c + r) > 0 else "n/a"
             lines.append(
                 f"| {tier.capitalize():<9} | {c:>17,} | {r:>15,} "
-                f"| {ratio_text:>9} | ${s:.3f} |"
+                f"| {ratio_text:>9} | ${s.savings_usd:.3f} |"
             )
             total_c += c
             total_r += r

@@ -9,6 +9,10 @@ from pathlib import Path
 
 import pytest
 
+from squeaky_clean.application.generation.emission.map_pattern_to_emitter import (
+    ACTIVE_EMITTER_LANGUAGES,
+)
+
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _ICPS_ROOT = _REPO_ROOT / "squeaky_clean" / "interface" / "agent_specs" / "emitters"
 
@@ -29,8 +33,14 @@ _LANGUAGE_TOKENS: dict[str, str] = {
     "rust": "#[cfg(test)] mod tests",
 }
 
+# R6.10: only languages with a live emitter fleet are asserted; Go/Rust
+# specs are archived under agent_specs/_attic/emitters/ (tokens kept above
+# for when a real Go/Rust problem revives them).
+_ACTIVE = {language.value for language in ACTIVE_EMITTER_LANGUAGES}
 _PARAMS = [
-    (lang, cat) for lang in _LANGUAGE_TOKENS for cat in _CATEGORIES
+    (lang, cat)
+    for lang in _LANGUAGE_TOKENS if lang in _ACTIVE
+    for cat in _CATEGORIES
 ]
 
 

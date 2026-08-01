@@ -2,12 +2,12 @@
 
 from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator import (
     CacheSavingsCalculator,
-    TierCacheTokens,
 )
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
 from squeaky_clean.application.evaluation.eval.run.run_eval_token_mapper import RunEvalTokenMapper
 from squeaky_clean.application.evaluation.eval.run.run_eval_velocity import RunEvalVelocity
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
 
 _PARALLELISM_LIMIT: int = 4
 
@@ -26,24 +26,14 @@ class RunEvalMetricsBuilder:
 
     def _cache_breakdown(self, m: EvalMetrics, i: MetricsInputs) -> None:
         calc = CacheSavingsCalculator()
-        tiers = (
-            ("architect", i.cache_create_architect_tokens,
-             i.cache_read_architect_tokens, i.architect_model),
-            ("manager", i.cache_create_manager_tokens,
-             i.cache_read_manager_tokens, i.manager_model),
-            ("icp", i.cache_create_icp_tokens,
-             i.cache_read_icp_tokens, i.icp_model),
-            ("fixer", i.cache_create_fixer_tokens,
-             i.cache_read_fixer_tokens, i.fixer_model),
-        )
         savings = 0.0
-        for name, c, r, model in tiers:
-            tok = TierCacheTokens(create_tokens=c, read_tokens=r, model=model)
-            setattr(m, f"cache_create_{name}_tokens", c)
-            setattr(m, f"cache_read_{name}_tokens", r)
-            setattr(m, f"cache_hit_ratio_{name}", calc.hit_ratio(tok))
-            tier_savings = calc.savings_usd(tok)
-            setattr(m, f"cache_savings_{name}_usd", tier_savings)
+        for tier, tokens in i.cache_tokens_by_tier.items():
+            tier_savings = calc.savings_usd(tokens)
+            m.cache_by_tier[tier] = TierCacheStats(
+                create_tokens=tokens.create_tokens,
+                read_tokens=tokens.read_tokens,
+                savings_usd=tier_savings,
+            )
             savings += tier_savings
         m.cache_savings_usd = savings
 

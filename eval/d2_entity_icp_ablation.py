@@ -11,12 +11,12 @@ from __future__ import annotations
 import statistics
 from pathlib import Path
 
-from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
-from squeaky_clean.eval.agent_scorers.prompt_optimizer import (
+from eval.agent_scorers.prompt_optimizer import (
     OptimizationFixture,
     PromptOptimizer,
     make_fixture,
 )
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.infrastructure.config.env_loader import EnvLoader
 from squeaky_clean.infrastructure.llm.anthropic_sdk_gateway import AnthropicSDKGateway
 
