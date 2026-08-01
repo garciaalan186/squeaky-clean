@@ -6,13 +6,13 @@ from pathlib import Path
 import pytest
 
 from eval.problems.p0_calculator import P0
+from squeaky_clean.application.evaluation.eval.metrics.model.cost_breakdown import CostBreakdown
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.resume.checkpoint_emitter import CheckpointEmitter
 from squeaky_clean.application.evaluation.eval.run.stages.acs_enrichment import AcsEnrichment
 from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
 from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
     LifecycleTimestampLog,
 )

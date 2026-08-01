@@ -1,6 +1,7 @@
 """Tests for GenerateSecurityTests use case."""
 
 from eval.problems.p0_calculator import P0
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.security.generate_security_tests import (
     GenerateSecurityTests,
 )
@@ -60,7 +61,7 @@ def _deps(recorder: LLMUsageRecorder | None = None) -> GenerateTestArchitectureD
 
 def test_execute_returns_test_architecture() -> None:
     ctx = SecurityTestContext(review=_REVIEW, module=_MOD, problem=P0)
-    ta = GenerateSecurityTests(_deps()).execute(ctx)
+    ta = GenerateSecurityTests(_deps(), LoadAgentSpec()).execute(ctx)
     assert len(ta.test_skeletons) == 1
     assert ta.test_skeletons[0].class_name == "Calculator"
     assert "security" in ta.test_skeletons[0].file_path
@@ -69,5 +70,5 @@ def test_execute_returns_test_architecture() -> None:
 def test_execute_records_token_usage() -> None:
     recorder = LLMUsageRecorder()
     ctx = SecurityTestContext(review=_REVIEW, module=_MOD, problem=P0)
-    GenerateSecurityTests(_deps(recorder)).execute(ctx)
+    GenerateSecurityTests(_deps(recorder), LoadAgentSpec()).execute(ctx)
     assert recorder.stats("security_icp")[:2] == (8, 12)

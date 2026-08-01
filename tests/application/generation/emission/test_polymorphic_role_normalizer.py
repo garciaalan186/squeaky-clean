@@ -77,6 +77,21 @@ def test_declared_concretes_merge_without_duplicates() -> None:
     assert by["Handler"].concretes == ("AuthHandler", "LogHandler")
 
 
+def test_declared_abstract_is_never_restamped_as_concrete() -> None:
+    # R6.6a: role() guards derivation — a class the architect already
+    # stamped ABSTRACT (concretes non-empty) must not be re-derived as a
+    # concrete of a same-pattern dep.
+    mod = PolymorphicRoleNormalizer().normalize(_module(
+        _cls("Fallback", "Strategy"),
+        _cls("Primary", "Strategy", depends=("Fallback",),
+             concretes=("CardStrategy",)),
+        _cls("CardStrategy", "Strategy", depends=("Primary",)),
+    ))
+    by = {c.name: c for c in mod.classes}
+    assert by["Primary"].implements is None
+    assert by["CardStrategy"].implements == "Primary"
+
+
 def test_declared_implements_stamps_target_concretes_cross_pattern() -> None:
     # An Adapter's port declared as SimpleClass must still become an
     # interface: implements-driven stamping is pattern-agnostic (R5.6).

@@ -6,6 +6,7 @@ from squeaky_clean.application.generation.emission.assign_patterns import Assign
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
 from squeaky_clean.application.generation.emission.implemented_class import ImplementedClass
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
@@ -23,7 +24,7 @@ from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 class _StubImplementClass(ImplementClass):
     def __init__(self) -> None:
         gateway = _NullGateway()
-        super().__init__(gateway, ModelRouter())
+        super().__init__(gateway, ModelRouter(), loader=LoadAgentSpec())
         self.calls: list[str] = []
         self.seen_module_names: list[str] = []
 

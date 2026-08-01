@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.application.evaluation.eval.metrics.model.cost_breakdown import CostBreakdown
 
 
 def test_defaults_are_zero() -> None:

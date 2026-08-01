@@ -6,6 +6,7 @@ from squeaky_clean.application.generation.notation.parse_architecture_notation i
     ParseArchitectureNotation,
 )
 from squeaky_clean.application.generation.recovery.refactor.recovery_emitter import RecoveryEmitter
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 _FILES = {
     "shop/__init__.py": "",
@@ -38,7 +39,7 @@ def _run(tmp: Path) -> object:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(body)
     out = tmp / "out" / "recovered.squib"
-    return RecoveryEmitter().emit(tmp, out, _PURITY_FIRST)
+    return RecoveryEmitter(LocalFileSystem()).emit(tmp, out, _PURITY_FIRST)
 
 
 def test_excludes_test_classes_from_catalog(tmp_path: Path) -> None:

@@ -16,6 +16,7 @@ from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.value_objects.assertion_kind import AssertionKind
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _DISCHARGING = (
@@ -47,7 +48,7 @@ def test_loop_converges_gaps_to_zero(tmp_path: Path) -> None:
     # a test that calls the method but has no raises assertion -> a gap
     (tmp_path / "test_thing.py").write_text(
         "def test_x():\n    obj = Ingester()\n    obj.ingest_event('x')\n")
-    repairer = RepairTestFile(_FakeGateway(_DISCHARGING), ModelRouter())
+    repairer = RepairTestFile(_FakeGateway(_DISCHARGING), ModelRouter(), fs=LocalFileSystem())
     result = RepairObligationGaps(repairer).run(_req(tmp_path))
     assert result.residual_gaps == 0
     assert result.usage.classes_fixed >= 1

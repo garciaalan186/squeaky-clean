@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.rules.architecture_spec_rules import collect_violations
+from squeaky_clean.domain.rules.cross_module_dependency_rules import (
+    collect_cross_module_violations,
+)
 
 
 @dataclass(frozen=True)
@@ -24,6 +27,10 @@ class ArchitectureSpec:
     def validate(self) -> tuple[str, ...]:
         """Return tuple of violations from architecture_spec_rules."""
         return tuple(collect_violations(self))
+
+    def cross_module_dep_violations(self) -> tuple[str, ...]:
+        """Strict per-edge ``Module::Type`` dep checks (R6.6c)."""
+        return collect_cross_module_violations(self)
 
     @classmethod
     def single(cls, module: ModuleSpec) -> ArchitectureSpec:

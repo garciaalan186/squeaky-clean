@@ -5,6 +5,7 @@ import dataclasses
 import pytest
 
 from squeaky_clean.domain.entities.class_spec import ClassSpec
+from squeaky_clean.domain.value_objects.class_role import ClassRole
 
 
 def test_class_spec_fields_roundtrip() -> None:
@@ -72,3 +73,50 @@ def test_class_spec_defaults_invariants_to_empty() -> None:
         concretes=(),
     )
     assert spec.invariants == ()
+
+
+def _spec(
+    implements: str | None = None,
+    depends: tuple[str, ...] = (),
+    concretes: tuple[str, ...] = (),
+    fields: tuple[str, ...] = (),
+) -> ClassSpec:
+    return ClassSpec(
+        name="A", pattern="Strategy", implements=implements,
+        methods=(), depends=depends, concretes=concretes, fields=fields,
+    )
+
+
+def test_role_abstract_when_concretes_declared() -> None:
+    assert _spec(concretes=("B", "C")).role() is ClassRole.ABSTRACT
+
+
+def test_role_abstract_wins_over_implements() -> None:
+    assert _spec(implements="P", concretes=("B",)).role() is ClassRole.ABSTRACT
+
+
+def test_role_concrete_when_implements_set() -> None:
+    assert _spec(implements="P").role() is ClassRole.CONCRETE
+
+
+def test_role_plain_otherwise() -> None:
+    assert _spec().role() is ClassRole.PLAIN
+
+
+def test_unknown_dep_violations_flags_unresolvable() -> None:
+    spec = _spec(depends=("Known", "Ghost"))
+    assert spec.unknown_dep_violations({"Known"}) == [
+        "A depends on unknown class Ghost",
+    ]
+
+
+def test_unknown_dep_violations_resolves_qualified_by_bare_name() -> None:
+    spec = _spec(depends=("Mod::Known",))
+    assert spec.unknown_dep_violations({"Known"}) == []
+
+
+def test_field_syntax_violations_flags_missing_colon() -> None:
+    spec = _spec(fields=("ok: Type", "broken"))
+    assert spec.field_syntax_violations() == [
+        "A field 'broken' missing 'name: Type'",
+    ]

@@ -11,6 +11,7 @@ from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 
 def _adapter(name: str, methods: tuple[str, ...]) -> ClassSpec:
@@ -72,7 +73,7 @@ def test_flask_runtime_with_kafka_producer(tmp_path: Path) -> None:
                                                ["use_case"]),
              "message_queue_producer": _tech_spec("message_queue_producer",
                                                   ["bootstrap_servers"])}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     body = path.read_text()
     ast.parse(body)
     assert "Flask(__name__)" in body
@@ -93,7 +94,7 @@ def test_kafka_consumer_loop(tmp_path: Path) -> None:
             "message_queue_consumer",
             ["KAFKA_BOOTSTRAP_SERVERS", "KAFKA_GROUP_ID", "KAFKA_TOPIC"]),
     }
-    body = WiringGenerator().generate(arch, specs, tmp_path).read_text()
+    body = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path).read_text()
     ast.parse(body)
     assert "while True:" in body
     assert "KeyboardInterrupt" in body
@@ -102,7 +103,7 @@ def test_kafka_consumer_loop(tmp_path: Path) -> None:
 
 def test_default_skeleton_when_no_inbound(tmp_path: Path) -> None:
     arch = _arch((), ())
-    body = WiringGenerator().generate(arch, {}, tmp_path).read_text()
+    body = WiringGenerator(LocalFileSystem()).generate(arch, {}, tmp_path).read_text()
     ast.parse(body)
     assert "TODO: no inbound entry point" in body
     assert 'if __name__ == "__main__":' in body
@@ -113,7 +114,7 @@ def test_techspec_dependencies_become_environ_lookups(tmp_path: Path) -> None:
                     ("put_blob(key: str, body: bytes): None",))
     arch = _arch((blob,), ())
     specs = {"blob_storage": _tech_spec("blob_storage", ["root_dir"])}
-    body = WiringGenerator().generate(arch, specs, tmp_path).read_text()
+    body = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path).read_text()
     ast.parse(body)
     assert 'os.environ.get("ROOT_DIR"' in body
 
@@ -126,7 +127,7 @@ def test_multiple_adapters_get_distinct_names(tmp_path: Path) -> None:
     specs = {"blob_storage": _tech_spec("blob_storage", ["root_dir"]),
              "message_queue_producer": _tech_spec("message_queue_producer",
                                                   ["bootstrap_servers"])}
-    body = WiringGenerator().generate(arch, specs, tmp_path).read_text()
+    body = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path).read_text()
     ast.parse(body)
     assert "blob_store_one =" in body
     assert "kafka_producer =" in body
@@ -138,7 +139,7 @@ def test_emitted_file_within_120_lines(tmp_path: Path) -> None:
     arch = _arch((rest,), (use_case,))
     specs = {"rest_server_handler": _tech_spec("rest_server_handler",
                                                ["use_case"])}
-    body = WiringGenerator().generate(arch, specs, tmp_path).read_text()
+    body = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path).read_text()
     assert body.count("\n") <= 120
 
 
@@ -176,7 +177,7 @@ def test_go_emits_main_go_for_rest(tmp_path: Path) -> None:
     rest = _adapter("StdlibIngest", ("Handle()",))
     arch = _arch((rest,), ())
     specs = {"rest_server_handler": _go_tech_spec("rest_server_handler")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     assert path == tmp_path / "main.go"
     body = path.read_text()
     assert "package main" in body
@@ -190,7 +191,7 @@ def test_go_emits_main_go_for_consumer(tmp_path: Path) -> None:
     consumer = _adapter("SaramaConsumer", ("ConsumeRaw()",))
     arch = _arch((consumer,), ())
     specs = {"message_queue_consumer": _go_tech_spec("message_queue_consumer")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     body = path.read_text()
     assert "package main" in body
     assert "signal.Notify" in body
@@ -201,7 +202,7 @@ def test_go_emits_default_skeleton_main_go(tmp_path: Path) -> None:
     blob = _adapter("LocalBlob", ("PutBlob()",))
     arch = _arch((blob,), ())
     specs = {"blob_storage": _go_tech_spec("blob_storage")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     body = path.read_text()
     assert "package main" in body
     assert "service ready" in body
@@ -226,7 +227,7 @@ def test_rust_emits_main_rs_for_rest(tmp_path: Path) -> None:
     rest = _adapter("AxumIngest", ("handle()",))
     arch = _arch((rest,), ())
     specs = {"rest_server_handler": _rust_tech_spec("rest_server_handler")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     assert path == tmp_path / "src" / "main.rs"
     body = path.read_text()
     assert "#[tokio::main]" in body
@@ -238,7 +239,7 @@ def test_rust_emits_main_rs_for_consumer(tmp_path: Path) -> None:
     consumer = _adapter("RdkafkaConsumer", ("consume_raw()",))
     arch = _arch((consumer,), ())
     specs = {"message_queue_consumer": _rust_tech_spec("message_queue_consumer")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     body = path.read_text()
     assert "#[tokio::main]" in body
     assert "consumer started" in body
@@ -248,7 +249,7 @@ def test_rust_emits_default_skeleton_main_rs(tmp_path: Path) -> None:
     blob = _adapter("LocalBlob", ("put_blob()",))
     arch = _arch((blob,), ())
     specs = {"blob_storage": _rust_tech_spec("blob_storage")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     body = path.read_text()
     assert "#[tokio::main]" in body
     assert "service ready" in body
@@ -258,7 +259,7 @@ def test_java_emits_spring_boot_app(tmp_path: Path) -> None:
     rest = _adapter("EventIngestController", ("handle(body: str): dict",))
     arch = _arch((rest,), ())
     specs = {"rest_server_handler": _java_tech_spec("rest_server_handler")}
-    path = WiringGenerator().generate(arch, specs, tmp_path)
+    path = WiringGenerator(LocalFileSystem()).generate(arch, specs, tmp_path)
     assert path == tmp_path / "src" / "main" / "java" / "com" / "example" / "App.java"
     body = path.read_text()
     assert "@SpringBootApplication" in body

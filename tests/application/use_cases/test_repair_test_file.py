@@ -13,6 +13,7 @@ from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 
@@ -41,7 +42,7 @@ def _req(tmp_path: Path) -> TestRepairRequest:
 def test_repair_rewrites_file_from_fenced_block(tmp_path: Path) -> None:
     proj = _project(tmp_path)
     gw = _FakeGateway("```typescript\nFIXED CONTENT\n```")
-    resp = RepairTestFile(gw, ModelRouter()).repair(_req(proj))
+    resp = RepairTestFile(gw, ModelRouter(), fs=LocalFileSystem()).repair(_req(proj))
     assert resp is not None
     assert (proj / "tests" / "foo.test.ts").read_text().strip() == "FIXED CONTENT"
 
@@ -49,5 +50,5 @@ def test_repair_rewrites_file_from_fenced_block(tmp_path: Path) -> None:
 def test_repair_leaves_file_when_no_fence(tmp_path: Path) -> None:
     proj = _project(tmp_path)
     gw = _FakeGateway("sorry, no code here")
-    RepairTestFile(gw, ModelRouter()).repair(_req(proj))
+    RepairTestFile(gw, ModelRouter(), fs=LocalFileSystem()).repair(_req(proj))
     assert (proj / "tests" / "foo.test.ts").read_text() == "BROKEN"

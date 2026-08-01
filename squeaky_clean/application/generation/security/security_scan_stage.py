@@ -13,7 +13,6 @@ from pathlib import Path
 
 from squeaky_clean.application.generation.security.secret_path_scanner import SecretPathScanner
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
 from squeaky_clean.domain.value_objects.metrics.security_scan_stats import SecurityScanStats
 from squeaky_clean.domain.value_objects.sast_report import SastReport
@@ -30,9 +29,9 @@ class SecurityScanStage:
         self._sast: SastRunner | None = sast_runner
 
     def apply(
-        self, output_dir: Path, metrics: EvalMetrics, enable_sast: bool,
-    ) -> EvalMetrics:
-        """Return ``metrics`` with scan counts; persist sast_report.json."""
+        self, output_dir: Path, enable_sast: bool,
+    ) -> SecurityScanStats:
+        """Return the scan stats VO; persist sast_report.json."""
         scan = SecurityScanStats(
             secret_leaks_detected=self._count_secrets(output_dir),
         )
@@ -45,7 +44,7 @@ class SecurityScanStage:
                 sast_failed=report.has_high_high(),
             )
             self._write_report(output_dir, report)
-        return replace(metrics, security_scan=scan)
+        return scan
 
     def _count_secrets(self, output_dir: Path) -> int:
         total: int = 0

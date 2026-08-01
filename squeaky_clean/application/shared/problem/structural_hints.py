@@ -8,12 +8,14 @@ they are derived from the IR rather than authored.
 
 from dataclasses import dataclass
 
+from squeaky_clean.domain.value_objects.pattern_name import PatternName
+
 
 @dataclass(frozen=True)
 class StructuralHints:
     """Structural expectations derivable from a Squib architecture."""
 
     required_bounded_contexts: list[str]
-    required_patterns: list[str]
+    required_patterns: list[PatternName]
     expected_module_count: tuple[int, int]
     expected_class_count: tuple[int, int]

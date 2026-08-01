@@ -12,6 +12,7 @@ from squeaky_clean.application.shared.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.shared.problem.behavior_spec import BehaviorSpec
 from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.structural_hints import StructuralHints
+from squeaky_clean.domain.value_objects.pattern_name import PatternName
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 
@@ -34,7 +35,7 @@ class ProblemSpec:
     acceptance_criteria: list[str]
     expected_module_count: tuple[int, int]
     expected_class_count: tuple[int, int]
-    required_patterns: list[str]
+    required_patterns: list[PatternName]
     target_language: TargetLanguage
     domain_conventions: tuple[str, ...] = ()
     query_semantics: tuple[QuerySemantic, ...] = ()

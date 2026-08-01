@@ -12,6 +12,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
     LifecycleTimestampLog,
 )
@@ -55,7 +56,7 @@ def _ctx(tmp_path: Path, tech_specs: dict[str, TechSpec]) -> PipelineContext:
 def test_no_tech_specs_emits_no_manifest_events(tmp_path: Path) -> None:
     logger = _FakeRunLogger()
     ctx = _ctx(tmp_path, {})
-    ManifestEmitter(logger).emit(ctx)
+    ManifestEmitter(logger, LocalFileSystem()).emit(ctx)
     assert logger.events == []
     assert not (ctx.output_dir / "requirements.txt").exists()
 
@@ -63,7 +64,7 @@ def test_no_tech_specs_emits_no_manifest_events(tmp_path: Path) -> None:
 def test_python_pip_spec_emits_requirements_event_on_success(tmp_path: Path) -> None:
     logger = _FakeRunLogger()
     ctx = _ctx(tmp_path, {"kv_cache": _pip_spec()})
-    ManifestEmitter(logger).emit(ctx)
+    ManifestEmitter(logger, LocalFileSystem()).emit(ctx)
     kinds = [kind for kind, _ in logger.events]
     assert kinds == ["requirements_txt_emitted"]
     requirements = ctx.output_dir / "requirements.txt"

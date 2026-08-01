@@ -7,6 +7,7 @@ from squeaky_clean.application.generation.architecture.design_architecture impor
 from squeaky_clean.application.generation.architecture.design_architecture_error import (
     DesignArchitectureError,
 )
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
 from squeaky_clean.application.shared.gateways.llm_usage_recorder import LLMUsageRecorder
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
@@ -61,7 +62,7 @@ def _deps(gateway: LLMGateway) -> LLMCallDeps:
 
 def test_execute_returns_parsed_architecture_spec() -> None:
     gateway = _StubGateway(_CALC_NOTATION)
-    uc = DesignArchitecture(_deps(gateway))
+    uc = DesignArchitecture(_deps(gateway), LoadAgentSpec())
     arch = uc.execute(P0)
     assert len(arch.modules) >= 1
     first = arch.modules[0]
@@ -78,7 +79,7 @@ def test_execute_records_token_usage() -> None:
     deps = LLMCallDeps(
         gateway=gateway, router=ModelRouter(), recorder=recorder
     )
-    DesignArchitecture(deps).execute(P0)
+    DesignArchitecture(deps, LoadAgentSpec()).execute(P0)
     assert recorder.stats("architect")[:2] == (42, 17)
     assert recorder.stats()[:2] == (42, 17)
 
@@ -86,7 +87,7 @@ def test_execute_records_token_usage() -> None:
 def test_execute_raises_on_invalid_spec() -> None:
     bad = "MODULE X\nLAYER Domain\nCLASSES { }\n"
     gateway = _StubGateway(bad)
-    uc = DesignArchitecture(_deps(gateway))
+    uc = DesignArchitecture(_deps(gateway), LoadAgentSpec())
     with pytest.raises(DesignArchitectureError):
         uc.execute(P0)
 

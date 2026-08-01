@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.structure_stats import StructureStats
+from squeaky_clean.application.evaluation.eval.metrics.model.structure_stats import StructureStats
 
 
 def test_defaults_zero_except_normalized_acs() -> None:

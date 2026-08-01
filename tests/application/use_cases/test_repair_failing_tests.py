@@ -14,6 +14,7 @@ from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
 from squeaky_clean.domain.interfaces.llm_request import LLMRequest
 from squeaky_clean.domain.interfaces.llm_response import LLMResponse
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 from squeaky_clean.infrastructure.llm.model_router import ModelRouter
 
 _FIXED = "```python\ndef test_x():\n    assert 1 == 1\n```"
@@ -35,7 +36,7 @@ def test_repairs_a_crashing_test(tmp_path: Path) -> None:
     out = "tests/../test_thing.py:2: AttributeError\nFAILED test_thing.py"
     # normalise the path to what exists
     out = "test_thing.py:2: AttributeError"
-    repairer = RepairTestFile(_FakeGateway(), ModelRouter())
+    repairer = RepairTestFile(_FakeGateway(), ModelRouter(), fs=LocalFileSystem())
     result = RepairFailingTests(repairer).run(_req(tmp_path, out))
     assert result.classes_fixed == 1
 
@@ -43,7 +44,7 @@ def test_repairs_a_crashing_test(tmp_path: Path) -> None:
 def test_ignores_plain_assertion_failures(tmp_path: Path) -> None:
     (tmp_path / "test_thing.py").write_text("def test_x():\n    assert False\n")
     out = "test_thing.py:2: AssertionError"
-    repairer = RepairTestFile(_FakeGateway(), ModelRouter())
+    repairer = RepairTestFile(_FakeGateway(), ModelRouter(), fs=LocalFileSystem())
     result = RepairFailingTests(repairer).run(_req(tmp_path, out))
     assert result.classes_fixed == 0  # never rewrite a real assertion away
 
@@ -52,6 +53,6 @@ def test_ignores_source_crashes(tmp_path: Path) -> None:
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "port.py").write_text("x = 1\n")
     out = "src/port.py:14: NotImplementedError"
-    repairer = RepairTestFile(_FakeGateway(), ModelRouter())
+    repairer = RepairTestFile(_FakeGateway(), ModelRouter(), fs=LocalFileSystem())
     result = RepairFailingTests(repairer).run(_req(tmp_path, out))
     assert result.classes_fixed == 0  # not a test file

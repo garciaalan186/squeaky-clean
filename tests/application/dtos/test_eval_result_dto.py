@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.run.eval_result_dto import EvalResult
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 def test_eval_result_bundles_fields() -> None:

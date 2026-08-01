@@ -4,6 +4,18 @@ import json
 from pathlib import Path
 
 from squeaky_clean.application.evaluation.eval.run.run_manifest import RunManifest
+from squeaky_clean.domain.interfaces.provenance.git_info import GitInfo
+from squeaky_clean.domain.interfaces.provenance.toolchain_info import ToolchainInfo
+
+
+class _FakeGit(GitInfo):
+    def head_sha(self) -> str:
+        return "deadbeef" * 5
+
+
+class _FakeToolchains(ToolchainInfo):
+    def versions(self) -> dict[str, str]:
+        return {"node": "v20.11.0"}
 
 
 def test_writes_manifest_with_required_fields(tmp_path: Path) -> None:
@@ -34,3 +46,22 @@ def test_missing_spec_dir_does_not_crash(tmp_path: Path) -> None:
     )
     data = json.loads(target.read_text())
     assert data["spec_hashes"] == {}
+
+
+def test_unwired_probes_degrade_honestly(tmp_path: Path) -> None:
+    target = RunManifest().write(
+        run_dir=tmp_path, models={}, spec_dirs=[], replicate_id=0,
+    )
+    data = json.loads(target.read_text())
+    assert data["framework_sha"] == "unknown"
+    assert data["toolchains"] == {}
+
+
+def test_injected_ports_populate_provenance(tmp_path: Path) -> None:
+    manifest = RunManifest(_FakeGit(), _FakeToolchains())
+    target = manifest.write(
+        run_dir=tmp_path, models={}, spec_dirs=[], replicate_id=2,
+    )
+    data = json.loads(target.read_text())
+    assert data["framework_sha"] == "deadbeef" * 5
+    assert data["toolchains"] == {"node": "v20.11.0"}

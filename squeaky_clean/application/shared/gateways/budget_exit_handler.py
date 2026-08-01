@@ -2,13 +2,13 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.metrics.model.cost_breakdown import CostBreakdown
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.application.shared.gateways.budget_exit_writer import BudgetExitWriter
 from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError, CostGate
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 

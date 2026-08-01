@@ -1,5 +1,6 @@
 """ModuleSpec entity: immutable §Notation module declaration."""
 
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 
 from squeaky_clean.domain.entities.class_spec import ClassSpec
@@ -30,16 +31,26 @@ class ModuleSpec:
             violations.append("module name is empty")
         if not self.classes:
             violations.append("module declares zero classes")
-        class_names = {c.name for c in self.classes}
-        for cls in self.classes:
-            for dep in cls.depends:
-                if dep not in class_names:
-                    violations.append(
-                        f"{cls.name} depends on unknown class {dep}"
-                    )
-            for entry in cls.fields:
-                if ":" not in entry:
-                    violations.append(
-                        f"{cls.name} field {entry!r} missing 'name: Type'"
-                    )
+        violations.extend(self.unknown_dep_violations(frozenset()))
+        violations.extend(self.field_syntax_violations())
         return violations
+
+    def unknown_dep_violations(self, external: AbstractSet[str]) -> list[str]:
+        """Class deps unresolvable against local classes ∪ ``external``.
+
+        ``external`` carries the names resolvable beyond this module
+        (e.g. classes exported by sibling modules); pass an empty set
+        for standalone single-module validation.
+        """
+        resolvable = {c.name for c in self.classes} | set(external)
+        out: list[str] = []
+        for cls in self.classes:
+            out.extend(cls.unknown_dep_violations(resolvable))
+        return out
+
+    def field_syntax_violations(self) -> list[str]:
+        """Malformed `name: Type` fields entries across all classes."""
+        out: list[str] = []
+        for cls in self.classes:
+            out.extend(cls.field_syntax_violations())
+        return out

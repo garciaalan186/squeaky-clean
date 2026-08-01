@@ -1,6 +1,7 @@
 """Tests for ReviewSecurity use case."""
 
 from eval.problems.p0_calculator import P0
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.security.review_security import ReviewSecurity
 from squeaky_clean.application.generation.security.security_review_context import (
     SecurityReviewContext,
@@ -51,7 +52,7 @@ def test_execute_returns_parsed_security_review() -> None:
         gateway=gateway, router=ModelRouter(), recorder=LLMUsageRecorder()
     )
     ctx = SecurityReviewContext(module=_module(), problem=P0)
-    review = ReviewSecurity(deps).execute(ctx)
+    review = ReviewSecurity(deps, LoadAgentSpec()).execute(ctx)
     assert len(review.concerns) == 1
     assert review.concerns[0].category == "boundary"
     assert gateway.last_request is not None
@@ -63,5 +64,5 @@ def test_execute_records_token_usage() -> None:
     recorder = LLMUsageRecorder()
     deps = LLMCallDeps(gateway=gateway, router=ModelRouter(), recorder=recorder)
     ctx = SecurityReviewContext(module=_module(), problem=P0)
-    ReviewSecurity(deps).execute(ctx)
+    ReviewSecurity(deps, LoadAgentSpec()).execute(ctx)
     assert recorder.stats("security_architect")[:2] == (10, 5)

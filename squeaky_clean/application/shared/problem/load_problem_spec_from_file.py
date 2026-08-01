@@ -20,6 +20,7 @@ from squeaky_clean.application.shared.mcda.entity_lifecycle import (
 from squeaky_clean.application.shared.mcda.expected_outcome import ExpectedOutcome
 from squeaky_clean.application.shared.mcda.query_semantic import QuerySemantic
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
+from squeaky_clean.domain.value_objects.pattern_name import ALL_PATTERNS, PatternName
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 
@@ -45,7 +46,7 @@ class LoadProblemSpecFromFile:
                 cast(list[int], d.get("expected_module_count") or [1, 1])),
             expected_class_count=self._pair(
                 cast(list[int], d.get("expected_class_count") or [3, 6])),
-            required_patterns=[str(p) for p in gs("required_patterns")],
+            required_patterns=[self._pattern(p) for p in gs("required_patterns")],
             target_language=TargetLanguage(
                 str(d.get("target_language") or "python")),
             domain_conventions=tuple(str(c) for c in gs("domain_conventions")),
@@ -85,6 +86,14 @@ class LoadProblemSpecFromFile:
                 for i in cast(list[dict[str, object]],
                               d.get("expected_outcomes") or [])),
         )
+
+    @staticmethod
+    def _pattern(raw: object) -> PatternName:
+        """Boundary check: runtime strings must name a catalog pattern."""
+        name = str(raw)
+        if name not in ALL_PATTERNS:
+            raise ValueError(f"unknown pattern: {name!r}")
+        return name
 
     @staticmethod
     def _weights(raw: object) -> dict[str, float] | None:

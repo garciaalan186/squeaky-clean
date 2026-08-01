@@ -15,6 +15,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.entities.class_spec import ClassSpec
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 _SPEC = ArchitectureSpec(
     modules=(ModuleSpec(
@@ -35,7 +36,7 @@ def _run(tmp: Path) -> object:
     squib.write_text(SquibEmitter().emit(_SPEC))
     plan = tmp / "refactor_plan.json"
     plan.write_text('{"fix": ["framework-coupling:app.page.Page"], "ignore": []}')
-    return RefactorEmitter().emit(squib, plan, tmp / "refactored.squib")
+    return RefactorEmitter(LocalFileSystem()).emit(squib, plan, tmp / "refactored.squib")
 
 
 def test_emits_refactored_squib_with_the_split(tmp_path: Path) -> None:
