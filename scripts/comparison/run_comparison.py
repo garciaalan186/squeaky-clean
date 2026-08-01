@@ -26,6 +26,23 @@ _DEFAULT_OPUS_MODEL = "claude-opus-4-7"
 _TEMPLATES_DIR = Path(__file__).parent / "prompt_templates"
 
 
+def _flat_metrics(raw: dict) -> dict:
+    """Flatten schema-v2 nested VO payloads to v1 leaf names (v1 passthrough).
+
+    Leaf names were unique flat fields in schema v1, so promoting nested
+    scalars restores the historical keys; top-level scalars win and
+    cache_by_tier's dict-of-dicts is naturally skipped.
+    """
+    flat: dict = {}
+    for value in raw.values():
+        if isinstance(value, dict):
+            for leaf, scalar in value.items():
+                if not isinstance(scalar, (dict, list)):
+                    flat.setdefault(leaf, scalar)
+    flat.update({k: v for k, v in raw.items()
+                 if not isinstance(v, (dict, list))})
+    return flat
+
 def main() -> int:
     args = _parse_args()
     workflow_root = Path(__file__).parent.parent.parent
@@ -179,7 +196,7 @@ def _read_framing_2_costs(run_dir: Path) -> list[float]:
     costs: list[float] = []
     for metrics_path in sorted(f2.glob("run_*/metrics.json")):
         try:
-            data = json.loads(metrics_path.read_text())
+            data = _flat_metrics(json.loads(metrics_path.read_text()))
             costs.append(float(data.get("estimated_cost_usd", 0.0)))
         except (OSError, json.JSONDecodeError, ValueError):
             continue

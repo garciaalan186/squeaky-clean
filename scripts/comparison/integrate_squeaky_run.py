@@ -15,6 +15,23 @@ from scripts.comparison.coverage_collector import collect
 from scripts.comparison.decomposition_metrics import measure as measure_decomposition
 
 
+def _flat_metrics(raw: dict) -> dict:
+    """Flatten schema-v2 nested VO payloads to v1 leaf names (v1 passthrough).
+
+    Leaf names were unique flat fields in schema v1, so promoting nested
+    scalars restores the historical keys; top-level scalars win and
+    cache_by_tier's dict-of-dicts is naturally skipped.
+    """
+    flat: dict = {}
+    for value in raw.values():
+        if isinstance(value, dict):
+            for leaf, scalar in value.items():
+                if not isinstance(scalar, (dict, list)):
+                    flat.setdefault(leaf, scalar)
+    flat.update({k: v for k, v in raw.items()
+                 if not isinstance(v, (dict, list))})
+    return flat
+
 def integrate(
     squeaky_eval_report: Path,
     target_dir: Path,
@@ -28,7 +45,7 @@ def integrate(
     target_dir.mkdir(parents=True, exist_ok=True)
     _copy_project(src_project, target_dir)
     report = json.loads(squeaky_eval_report.read_text())
-    metrics = report.get("metrics", {})
+    metrics = _flat_metrics(report.get("metrics", {}))
     decomp = measure_decomposition(target_dir)
     neutral_cov = _run_neutral(target_dir, neutral_tests_dir)
     return BaselineComparisonMetrics(

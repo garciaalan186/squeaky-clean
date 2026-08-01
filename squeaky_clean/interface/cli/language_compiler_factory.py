@@ -1,13 +1,10 @@
-"""language_compiler_factory: pick a ProjectCompiler adapter for a language."""
+"""language_compiler_factory: compiler view over the LanguageAdapterRegistry (R6.7)."""
 
 from __future__ import annotations
 
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
-from squeaky_clean.infrastructure.compilation.java_compiler import JavaCompiler
-from squeaky_clean.infrastructure.compilation.typescript_compiler import (
-    TypeScriptCompiler,
-)
+from squeaky_clean.interface.cli.language_adapter_registry import REGISTRY
 
 
 class LanguageCompilerFactory:
@@ -21,8 +18,7 @@ class LanguageCompilerFactory:
 
     def for_language(self, lang: TargetLanguage) -> ProjectCompiler | None:
         """Return the compiler for ``lang``, or None when there is none."""
-        if lang is TargetLanguage.TYPESCRIPT:
-            return TypeScriptCompiler()
-        if lang is TargetLanguage.JAVA:
-            return JavaCompiler()
-        return None
+        entry = REGISTRY.get(lang)
+        if entry is None or entry.compiler is None:
+            return None
+        return entry.compiler()

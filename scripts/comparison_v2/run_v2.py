@@ -39,6 +39,23 @@ TEMPLATES_DIR = WORKFLOW_ROOT / "scripts" / "comparison" / "prompt_templates"
 DEFAULT_OPUS_MODEL = "claude-opus-4-7"
 
 
+def _flat_metrics(raw: dict) -> dict:
+    """Flatten schema-v2 nested VO payloads to v1 leaf names (v1 passthrough).
+
+    Leaf names were unique flat fields in schema v1, so promoting nested
+    scalars restores the historical keys; top-level scalars win and
+    cache_by_tier's dict-of-dicts is naturally skipped.
+    """
+    flat: dict = {}
+    for value in raw.values():
+        if isinstance(value, dict):
+            for leaf, scalar in value.items():
+                if not isinstance(scalar, (dict, list)):
+                    flat.setdefault(leaf, scalar)
+    flat.update({k: v for k, v in raw.items()
+                 if not isinstance(v, (dict, list))})
+    return flat
+
 def main() -> int:
     args = _parse_args()
     problem_slug = args.problem_slug
@@ -254,7 +271,8 @@ def _run_squeaky_cell(run_dir: Path, problem_id: str, problem_slug: str,
         sq_metrics: dict = {}
         if report_path.exists():
             try:
-                sq_metrics = json.loads(report_path.read_text()).get("metrics", {})
+                sq_metrics = _flat_metrics(
+                    json.loads(report_path.read_text()).get("metrics", {}))
             except (OSError, json.JSONDecodeError):
                 pass
         metrics = {

@@ -8,6 +8,7 @@ from squeaky_clean.application.shared.gateways.budget_exit_writer import BudgetE
 from squeaky_clean.application.shared.gateways.cost_gate import BudgetExceededError, CostGate
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
@@ -27,9 +28,10 @@ class BudgetExitHandler:
         cap = (self._gate.budget().max_cost_usd
                if self._gate is not None else None)
         self._writer.write(output_dir, cap, spent, stage=str(exc))
-        metrics = EvalMetrics.empty()
-        metrics.budget_exceeded = True
-        metrics.estimated_cost_usd = spent
+        metrics = EvalMetrics(
+            budget_exceeded=True,
+            cost=CostBreakdown(estimated_cost_usd=spent),
+        )
         empty_run = TestRunResult(
             passed=0, failed=0, errors=0, duration_ms=0,
             raw_output="aborted: budget exceeded",

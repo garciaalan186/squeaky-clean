@@ -7,6 +7,8 @@ from pathlib import Path
 from squeaky_clean.application.evaluation.eval.run.eval_result_dto import EvalResult
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.interface.cli.cli_args import CLIArgs
 from squeaky_clean.interface.cli.dependency_builder import DependencyBuilder
@@ -34,8 +36,11 @@ def _result(run_dir: Path, tests_pass: float, cost: float) -> EvalResult:
     return EvalResult(
         problem_id="P0",
         metrics=EvalMetrics(
-            tests_pass=tests_pass, functional_tests_pass=tests_pass,
-            estimated_cost_usd=cost, total_wall_clock_ms=1000,
+            test_outcome=TestOutcome(
+                tests_pass=tests_pass, functional_tests_pass=tests_pass,
+            ),
+            cost=CostBreakdown(estimated_cost_usd=cost),
+            total_wall_clock_ms=1000,
         ),
         report_path=report,
     )
