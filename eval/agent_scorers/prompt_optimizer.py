@@ -38,7 +38,6 @@ class PromptOptimizer:
     ) -> None:
         self._gateway: LLMGateway = gateway
         self._model: str = model
-        self._scorer: ICPScorer = ICPScorer()
 
     def evaluate(
         self,
@@ -56,9 +55,7 @@ class PromptOptimizer:
                 user_prompt=fx.user_prompt,
             )
             response = self._gateway.complete(request)
-            score = self._scorer.score(
-                fx.name, response.content, fx.expected_class,
-            )
+            score = ICPScorer(fx.expected_class).score(fx.name, response.content)
             scores.append(score.structural_pass)
             if score.structural_pass == 1.0:
                 passed += 1
