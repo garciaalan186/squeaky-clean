@@ -70,7 +70,7 @@ operate on the language-agnostic `ClassCatalog`/`ArchitectureSpec`), so only the
 | Java | regex (package-keyed FQNs) | medium — imports resolve to real edges via `package` |
 | JavaScript / TypeScript | regex (path-keyed FQNs) | medium — relative imports rarely resolve, so a sparser graph |
 
-Go and Rust are not yet supported for recovery and raise a clear error. The
+Any other language raises a clear error. The
 regex extractors are approximate by design (method-arg rendering is rough,
 multiple-classes-per-file uses proximity slicing); they produce a solid
 *reviewable* artifact, not a perfect parse. A tree-sitter/AST backend per

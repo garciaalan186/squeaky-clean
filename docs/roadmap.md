@@ -1,6 +1,6 @@
 # Roadmap
 
-Public, milestone-level. Last updated 2026-04-29.
+Public, milestone-level. Last updated 2026-07-30.
 
 ## Shipped
 
@@ -9,9 +9,9 @@ Public, milestone-level. Last updated 2026-04-29.
 | **A** Measurement Foundation | Per-agent unit evals, replicate runs, regression detection, deterministic mode, cache visibility. |
 | **B** Spec Architecture Cleanup | Shared specs + per-language profiles, prompt caching with `cache_control`, structured outputs. |
 | **C** Multi-Module Architecture | Multi-MODULE Squib with cross-module DAG validation, per-module worktrees, layered output paths. |
-| **D** Convergent ICP Optimization | DSPy POC closed with INCONCLUSIVE verdict on Haiku 4.5; hand-written emitter specs remain authoritative. |
+| **D** Convergent ICP Optimization | Automated prompt-optimization POC closed with INCONCLUSIVE verdict on Haiku 4.5; hand-written emitter specs remain authoritative. |
 | **E** Reliability, Cost, Security | Graceful agent failure, retry policy, cost budget, rate limiting, secret scan, SAST, reproducibility manifest. |
-| **F** Language & Domain Coverage | Go and Rust profiles, sample-domain library (P5 OAuth2), user-supplied ProblemSpec, custom-pattern hook, richer ProblemSpec schema. |
+| **F** Language & Domain Coverage | Per-language emitter profiles, sample-domain library (P5 OAuth2), user-supplied ProblemSpec, custom-pattern hook, richer ProblemSpec schema. |
 | **G** Productionization | CI workflow, Dockerfile, JSON logger, latency/cost percentiles, resumable runs, history dashboard, versioned spec library. |
 | **H** Generalized Infrastructure Layer | 60 Tier C emitters (15 categories × 4 languages) with TechSpec catalog (~130 bundled snapshots), MCDA-driven choice selection, MCP + web-fetch resolver chain with anti-poisoning. |
 | **K** Cross-language end-to-end gaps | Polymorphic class-parser, dependency installer, HTTP-conventions validator, per-module criterion filtering, JS/TS Tier C parity, registry-driven dispatch. Open-source launch blockers closed. |
@@ -19,6 +19,7 @@ Public, milestone-level. Last updated 2026-04-29.
 ## In progress
 
 - **Architectural Complexity Score (ACS)** — composite metric for normalizing cost/velocity across heterogeneous problems. Implemented; calibrating across the canonical problem set.
+- **Measurement trust.** Golden baselines are calibrated at N ≥ 3 replicates and stamped with the model routing they were measured under, so a model bump reads as `not comparable` rather than as a tool regression; every sweep gates against them at 2σ. Unmeasured metrics report `n/a`, never `0.00`. The `--micro-evals` pattern × language matrix compile-checks every emitter in Python, Java and TypeScript between unit tests and full benchmark runs, and a $0 end-to-end replay gate runs P0 through the whole pipeline in CI on every push — `--replay-only` serves the LLM calls from a committed cache bundle, so prompt drift reads as a cache miss and a harness regression reads as a changed score, with no API key involved. All twelve canonical problems P0–P11 are calibrated at N = 3, and several are recorded wide rather than clean: P10's baseline is unstable (1.00 / 0.00 / 0.00 across three seeds), P7's is the weakest in the suite (0.33 ± 0.17), and P5 (0.57 ± 0.38), P11 (0.78 ± 0.38) and P3 (0.73 ± 0.31) all carry broad spreads — published as the measured distributions a future change has to beat. See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md).
 - **Milestones L / M / N — Agentic Architecture Recovery.** The brownfield-in, Clean-Architecture-out inverse pipeline has landed: a faithful five-phase flow (Recover → Analyze → Triage → Refactor → Regenerate), a generic framework-coupling detector (L), a weighted architectural trade-off MCDA (M), and the four-phase violation pipeline (N) with categorized `violations.json`, opt-out triage, and the 1→N Entity+Repository+Adapter transform. Four-language ingest (Python AST; Java/JS/TS regex). Remaining: agentic business-vs-persistence member classification (turns the split skeleton into a faithful refactor), transforms for the non-coupling categories, and tree-sitter/AST backends for higher non-Python fidelity. See [`architecture_recovery.md`](architecture_recovery.md).
 
 ## Planned (post-launch)
@@ -29,7 +30,7 @@ Public, milestone-level. Last updated 2026-04-29.
 - **Hosted dashboard service.** A multi-user `meta-evaluation-results/` analysis service. Currently the dashboard is per-user static HTML.
 - **Versioned spec library at v1.0.** The spec library is currently `0.2.0`. Tag a stable v1.0 once the catalog stabilizes after community feedback.
 - **Reduce architect HTTP-type drift.** The validator catches it with retry; long-term we want the architect to never need a retry on this class of constraint.
-- **Per-language Tier C maturity.** Today Java/Go/Rust/JS/TS tests_pass=0.00 in our event-pipeline benchmark because per-language test runners report zero on toolchain-availability fallback. Closing this requires CI-environment toolchain pinning + occasionally tightening the language-specific code-emit rules.
+- **Per-language Tier C maturity.** Today Java/JS/TS tests_pass=0.00 in our event-pipeline benchmark because per-language test runners report zero on toolchain-availability fallback. Closing this requires CI-environment toolchain pinning + occasionally tightening the language-specific code-emit rules.
 - **Compute-efficiency ablation.** Measure the same architecture produced one-shot on a large model vs. Squeaky Clean's compact fan-out, to quantify the token (and proportional energy) reduction — the evidence that would promote the "leaner compute" goal from directional to measured.
 
 ## Open RFCs
@@ -52,7 +53,7 @@ The 12 open design questions in `docs/infrastructure_layer_design.md` §10 are t
 
 The framework follows semver. v0.x is pre-launch; v1.0 ships when:
 
-1. All six languages have `tests_pass > 0` on the canonical event-pipeline benchmark.
+1. All four languages have `tests_pass > 0` on the canonical event-pipeline benchmark.
 2. Spec library is tagged + frozen.
 3. CI green from a fresh clone with zero env-specific assumptions.
 4. ≥3 external users have shipped real apps generated by the framework.

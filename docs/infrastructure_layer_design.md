@@ -88,7 +88,7 @@ The three-tier model in Section 2 is the proposed resolution: keep what's slow-c
                             ▼
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Tier B (Bridge) — TechSpecComposer + InfrastructureChoiceArchitect          │
-│  Lives in: squeaky_clean/application/use_cases/                                        │
+│  Lives in: squeaky_clean/application/generation/techspec/                    │
 │  Consumes: ClassSpec, ProblemSpec.infrastructure_choices, TechSpec catalog   │
 │  Produces: Instantiated ICP prompt (transient; not persisted)                │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -222,8 +222,8 @@ Tier B agents are **Manager-tier** model selections (mid-parameter). They are no
 | Surface | Today | After this design |
 |---|---|---|
 | `pattern_name.py` enum | `Repository`, `Gateway`, `Adapter`, etc. | unchanged; Tier C agents map *from* these patterns by category |
-| `MapPatternToEmitter` (`squeaky_clean/application/use_cases/map_pattern_to_emitter.py`) | dispatches by pattern | extended to consider *layer* + *category* when the assigned pattern is one of `Repository`/`Gateway`/`Adapter` AND the module's `LAYER` is `Infrastructure` |
-| Emitter file tree | `emitters/<lang>/{ddd_clean,behavioral,structural,...}/` | adds `emitters/<lang>/infrastructure/` directory containing the Tier C specs |
+| `MapPatternToEmitter` (`squeaky_clean/application/generation/emission/map_pattern_to_emitter.py`) | dispatches by pattern | extended to consider *layer* + *category* when the assigned pattern is one of `Repository`/`Gateway`/`Adapter` AND the module's `LAYER` is `Infrastructure` |
+| Emitter file tree | `emitters/<lang>/{ddd_clean,structural,creational,...}/` | adds `emitters/<lang>/infrastructure/` directory containing the Tier C specs |
 | `ProblemSpec` DTO | unchanged from F5 schema (domain_conventions, query_semantics, etc.) | adds `infrastructure_choices: tuple[InfrastructureChoice, ...]` |
 | `RunEval` use case | runs RequirementCompiler → OracleCompiler → emitters → integrate | inserts Tier B steps between architect and emitters when infrastructure modules are present |
 | Per-run cost | dominated by emitters + OracleCompiler | adds modest overhead from TechSpecComposer (one Manager call per infrastructure emitter); see Section 8 |
@@ -366,10 +366,18 @@ Resolver.resolve(category, technology, version) →
   2. eval/tech_specs/.cache/<cat>/<tech>/<version>.json ← cached prior fetch (TTL-bounded)
   3. trusted MCP server (if configured)              ← optional secondary
   4. live web fetch via WebFetch with strict allowlist
-  5. fail loudly with TechSpecUnresolvableError
+  5. stale-tolerant cache entry inside the TTL × 1.5 grace window
+  6. fail loudly with TechSpecResolutionError
 ```
 
-**Rule:** never silently fall back to outdated knowledge. If 1, 2, 3, and 4 all fail, the run aborts with a clear error message.
+**Rule:** never silently fall back to outdated knowledge, and never discard the reason a source failed. If every source misses, the run aborts with a clear error message. `TechSpecResolutionError` subclasses `TechSpecUnresolvableError`, so an existing `except TechSpecUnresolvableError` still catches it, and carries a `reasons` tuple holding one entry per source the resolver tried and why that source failed. Its message names the triple and the fix:
+
+```
+no TechSpec for (<category>, <technology>, <version>); add a bundled
+snapshot at eval/tech_specs/<category>/<technology>/<version>.json
+```
+
+Every failed source additionally emits a structured JSON run-log event carrying its reason (Section 4.8). A file that simply isn't there, an absent allowlist entry and a clean cache miss are not failures — they mean "source not applicable" and contribute no reason of their own.
 
 ### 4.2 Bundled snapshots — the primary source
 
@@ -419,7 +427,7 @@ Successful fetches are written to `eval/tech_specs/.cache/<cat>/<tech>/<version>
 }
 ```
 
-Default TTL: 30 days. Configurable via `--techspec-cache-ttl-days`. Expiration triggers re-fetch on next access; the previous spec is retained until the new one passes validation (so a transient web outage doesn't break a run if a stale cached spec is "recent enough" — defined as TTL × 1.5).
+Default TTL: 30 days. Configurable via `--techspec-cache-ttl-days`. Expiration triggers re-fetch on next access; the previous spec is retained until the new one passes validation (so a transient web outage doesn't break a run if a stale cached spec is "recent enough" — defined as TTL × 1.5). Serving a grace-window entry is recorded as a `techspec_stale_cache_used` event, so an outage that a run survived on stale documentation is visible after the fact rather than indistinguishable from a fresh resolution. A cache entry that is unreadable, is not a JSON object, carries a mismatched `schema_version`, or has bad timestamps is rejected with a `techspec_cache_rejected` event naming the path and the reason.
 
 Cache invalidation triggers:
 - TTL expiry
@@ -451,21 +459,30 @@ techspec_candidate
 final_techspec
 ```
 
-A failure at any stage discards the fetched payload and either falls through to the next resolver source or aborts the run if exhausted.
+A failure at any stage discards the fetched payload and either falls through to the next resolver source or aborts the run if exhausted — carrying the reason with it either way.
+
+The outcome of a resolution attempt is an explicit union in the domain (`squeaky_clean/domain/value_objects/`): the success variant is `TechSpec` itself, alongside `TechSpecFetchFailed(reason)` and `TechSpecPoisoned(reason)`. The split is deliberate — a document the sanitizer rejects is a security signal that must never be retried around, whereas a fetch failure legitimately may be. Inside the resolver chain `None` survives only where it means "source not applicable / clean cache miss"; it never means "an error happened".
 
 ### 4.8 Failure mode summary
 
 | Scenario | Behavior |
 |---|---|
 | Bundled snapshot exists | use it; no network |
+| Bundled snapshot exists but is unreadable, is not a JSON object, fails schema validation, or is rejected by the builder | log `techspec_snapshot_rejected` with the path and the reason, fall through |
 | Bundled missing, cache hit + valid | use cached |
-| Bundled missing, cache hit + expired | fetch; on success update cache; on failure use stale-tolerant cached if within TTL × 1.5 |
+| Bundled missing, cache entry unreadable / not a JSON object / mismatched `schema_version` / bad timestamps | log `techspec_cache_rejected`, fall through |
+| Bundled missing, cache hit + expired | fetch; on success update cache; on failure use stale-tolerant cached if within TTL × 1.5, logging `techspec_stale_cache_used` |
 | Bundled missing, cache miss, MCP configured + responsive | use MCP response if valid |
 | All above miss, web fetch succeeds + validates | use fetched; cache it |
 | All above miss, web fetch returns but fails sanitizer | log security event, fall through |
-| All above miss, no network | raise `TechSpecUnresolvableError` with category/tech/version + suggested action |
+| Any source tried and failed | log `techspec_source_failed` with the source (`fresh-cache`, `mcp`, `web`, `stale-cache`) and the reason |
+| All above miss, no network | log `techspec_unresolvable` with every reason, then raise `TechSpecResolutionError` with category/tech/version + suggested action |
 
-The fail-loud guarantee: a generated adapter never imports an SDK whose contract the framework hasn't validated.
+`techspec_fs_miss` records that the bundled source produced nothing at all. A file that simply isn't there, an absent allowlist entry and a clean cache miss contribute no rejection of their own — only genuine failures do.
+
+The stage that drives resolution logs `tech_spec_resolution_failed` with all reasons and then fails the run, so resolution never degrades into generating against unvalidated documentation.
+
+The fail-loud guarantee: a generated adapter never imports an SDK whose contract the framework hasn't validated, and no source ever fails without saying why.
 
 ---
 
@@ -544,7 +561,7 @@ InstantiatedICPPrompt {
 **Process.**
 
 1. Load Tier C body as `system_prompt`.
-2. Build the ClassSpec / SIBLING_INTERFACES portion using the existing `SiblingInterfaceFormatter` (`squeaky_clean/application/use_cases/sibling_interface_formatter.py`) — no changes needed.
+2. Build the ClassSpec / SIBLING_INTERFACES portion using the existing `SiblingInterfaceFormatter` (`squeaky_clean/application/generation/emission/sibling_interface_formatter.py`) — no changes needed.
 3. Render the TECH_SPEC block from the TechSpec JSON, mechanically.
 4. **Validation** (pure-function pass before LLM):
    - Every method in `ClassSpec.methods` whose name implies an SDK operation (heuristic: matches one of the generic verbs `save|put|get|delete|find|publish|consume|set|expire|invoke`) must have a corresponding entry in `TechSpec.primary_operations`.
@@ -560,13 +577,13 @@ InstantiatedICPPrompt {
 
 ### 5.3 Bridge agents are NOT pattern emitters
 
-A common mistake would be to model these as additional `*Emitter.md` files alongside `EntityEmitter.md` etc. They aren't emitters — they're orchestration steps that *produce* emitter prompts. They live under `squeaky_clean/application/use_cases/` and are invoked by the pipeline, not loaded by `LoadAgentSpec`. Concretely:
+A common mistake would be to model these as additional `*Emitter.md` files alongside `EntityEmitter.md` etc. They aren't emitters — they're orchestration steps that *produce* emitter prompts. They live under `squeaky_clean/application/generation/techspec/` and are invoked by the pipeline, not loaded by `LoadAgentSpec`. Concretely:
 
-- `squeaky_clean/application/use_cases/infrastructure_choice_architect.py`
-- `squeaky_clean/application/use_cases/techspec_composer.py`
-- `squeaky_clean/application/use_cases/techspec_resolver.py`
+- `squeaky_clean/application/generation/techspec/infrastructure_choice_architect.py`
+- `squeaky_clean/application/generation/techspec/techspec_composer.py`
+- `squeaky_clean/application/generation/techspec/techspec_resolver.py`
 
-Each has a corresponding deps DTO and follows the existing use-case conventions (≤80 lines, ≤5 public methods).
+Each has a corresponding deps DTO and follows the existing pipeline-step conventions (≤80 lines, ≤5 public methods).
 
 ### 5.4 The runtime flow, end-to-end
 
@@ -901,7 +918,7 @@ This is a 10–20 line addition to the Interface layer's wiring template and is 
 
 ### 7.6 Boundary with framework's own infrastructure
 
-Reiterating Section 1.2: this design does not regenerate the framework's own `squeaky_clean/infrastructure/` adapters. Those stay hand-written. The framework's TechSpec catalog *does* contain entries for the framework's own dependencies (`anthropic-sdk==0.40`, `dspy-ai==3.2`, etc.) but only for *user* generation purposes — if a user's ProblemSpec asks for "an LLM-calling service", they get the same adapter the framework eats internally.
+Reiterating Section 1.2: this design does not regenerate the framework's own `squeaky_clean/infrastructure/` adapters. Those stay hand-written. The framework's TechSpec catalog *does* contain entries for the framework's own dependencies (`anthropic-sdk==0.40`, etc.) but only for *user* generation purposes — if a user's ProblemSpec asks for "an LLM-calling service", they get the same adapter the framework eats internally.
 
 ---
 
@@ -977,7 +994,7 @@ A new CLI flag at `squeaky_clean/interface/cli/cli_args_parser.py`:
 
 ### 8.5 Telemetry
 
-Per-run additions to `EvalMetrics`:
+Per-run additions to `EvalMetrics`, carried on its `notation` group and serialized under `notation` in the run report:
 
 | Field | Purpose |
 |---|---|
@@ -1002,8 +1019,8 @@ A new milestone family. Slot under **Milestone H** (after current G).
 ### H1 — Resolver + first bundled snapshot + first Tier C agent
 
 **Deliverables**:
-- `squeaky_clean/application/use_cases/techspec_resolver.py` (resolver itself, paths 1+2 only — bundled and cache, no MCP, no web)
-- `squeaky_clean/application/use_cases/techspec_validator.py` + `squeaky_clean/domain/interfaces/techspec_validator.py` (port + adapter)
+- `squeaky_clean/application/generation/techspec/techspec_resolver.py` (resolver itself, paths 1+2 only — bundled and cache, no MCP, no web)
+- `squeaky_clean/application/generation/techspec/techspec_validator.py` + `squeaky_clean/domain/interfaces/techspec_validator.py` (port + adapter)
 - `eval/tech_specs/blob_storage/local_disk/stdlib.json` (one bundled snapshot)
 - `squeaky_clean/interface/agent_specs/emitters/python/infrastructure/BlobStorageAdapterEmitter.md` (one Tier C agent)
 - `MapPatternToEmitter` extension to dispatch Repository/Gateway/Adapter assigned to Infrastructure-layer modules to the new Tier C path
@@ -1021,7 +1038,7 @@ A new milestone family. Slot under **Milestone H** (after current G).
 ### H2 — Composer + second technology in the same category
 
 **Deliverables**:
-- `squeaky_clean/application/use_cases/techspec_composer.py` with the Manager-fallback branch
+- `squeaky_clean/application/generation/techspec/techspec_composer.py` with the Manager-fallback branch
 - Sibling-class decomposition logic for Tier C agents whose method count > 3
 - `eval/tech_specs/blob_storage/s3/boto3==1.34.json` (second snapshot)
 - ProblemSpec validation for `infrastructure_choices` field
@@ -1037,7 +1054,7 @@ A new milestone family. Slot under **Milestone H** (after current G).
 ### H3 — InfrastructureChoiceArchitect + MCDA registry + two more categories
 
 **Deliverables**:
-- `squeaky_clean/application/use_cases/infrastructure_choice_architect.py` + `mcda_scorer.py` (deterministic math) + `mcda_registry.py` (loads scores from `eval/mcda_scores/`)
+- `squeaky_clean/application/generation/techspec/infrastructure_choice_architect.py` + `squeaky_clean/application/shared/mcda/mcda_scorer.py` (deterministic math) + `mcda_registry.py` (loads scores from `eval/mcda_scores/`)
 - `eval/mcda_scores/blob_storage.json`, `kv_cache.json`, `rest_client.json`
 - New Tier C agents: `KvCacheEmitter.md`, `RestClientEmitter.md`
 - Bundled snapshots: `kv_cache/redis/redis-py==5.0.json`, `rest_client/httpx/httpx==0.27.json`
@@ -1059,7 +1076,7 @@ A new milestone family. Slot under **Milestone H** (after current G).
 - HTML→TechSpec extractor for the top-3 documentation site formats (AWS docs, ReadTheDocs/Sphinx, GitHub Pages)
 - Anti-poisoning sanitizer
 - `--techspec-cache-ttl-days` flag
-- Fail-loud `TechSpecUnresolvableError` with actionable message
+- Fail-loud `TechSpecResolutionError` with actionable message + a per-source reason for every source tried
 
 **Exit criteria**:
 - A run requesting an unbundled-but-allowlisted version (e.g. `boto3==1.36`) succeeds via web fetch, validates, and caches.
@@ -1116,7 +1133,7 @@ The following questions remain open. Each is followed by the document author's r
 
 ### Q6. Should TechSpecs be language-agnostic with per-language renderers?
 
-**Recommendation: no, keep them language-specific.** The same SDK has different idiomatic APIs per language (boto3 vs aws-sdk-go-v2). Trying to express a single canonical TechSpec and render to language is a worse fit than maintaining `boto3@python` and `aws-sdk-go-v2@go` as separate TechSpecs sharing a category. The registry tracks 4 × 13 = ~52 (language × category) keys; that's manageable.
+**Recommendation: no, keep them language-specific.** The same SDK has different idiomatic APIs per language (boto3 vs `@aws-sdk/client-s3`). Trying to express a single canonical TechSpec and render to language is a worse fit than maintaining `boto3@python` and `@aws-sdk/client-s3@typescript` as separate TechSpecs sharing a category. The registry tracks 4 × 13 = ~52 (language × category) keys; that's manageable.
 
 ### Q7. Where does TechSpec source-of-truth live during the registry's early days, before MCDA scoring stabilizes?
 
@@ -1152,22 +1169,25 @@ squeaky-clean/
 │   └── infrastructure_layer_design.md                       (THIS FILE)
 ├── squeaky_clean/
 │   ├── application/
-│   │   ├── dtos/
-│   │   │   ├── infrastructure_choice.py                     (H2)
-│   │   │   ├── tech_spec.py                                 (H1)
-│   │   │   ├── mcda_score_table.py                          (H3)
-│   │   │   └── instantiated_icp_prompt.py                   (H2)
-│   │   └── use_cases/
-│   │       ├── infrastructure_choice_architect.py           (H3)
-│   │       ├── mcda_scorer.py                               (H3)
-│   │       ├── mcda_registry.py                             (H3)
-│   │       ├── techspec_composer.py                         (H2)
-│   │       ├── techspec_resolver.py                         (H1)
-│   │       ├── techspec_web_fetcher.py                      (H4)
-│   │       ├── techspec_html_extractor.py                   (H4)
-│   │       ├── techspec_sanitizer.py                        (H4)
-│   │       ├── techspec_validator.py                        (H1)
-│   │       └── select_infrastructure_choices.py             (H1)
+│   │   ├── generation/
+│   │   │   ├── emission/
+│   │   │   │   └── instantiated_icp_prompt.py               (H2)
+│   │   │   └── techspec/
+│   │   │       ├── infrastructure_choice.py                 (H2)
+│   │   │       ├── tech_spec.py                             (H1)
+│   │   │       ├── infrastructure_choice_architect.py       (H3)
+│   │   │       ├── techspec_composer.py                     (H2)
+│   │   │       ├── techspec_resolver.py                     (H1)
+│   │   │       ├── techspec_web_fetcher.py                  (H4)
+│   │   │       ├── techspec_html_extractor.py               (H4)
+│   │   │       ├── techspec_sanitizer.py                    (H4)
+│   │   │       ├── techspec_validator.py                    (H1)
+│   │   │       └── select_infrastructure_choices.py         (H1)
+│   │   └── shared/
+│   │       └── mcda/
+│   │           ├── mcda_score_table.py                      (H3)
+│   │           ├── mcda_scorer.py                           (H3)
+│   │           └── mcda_registry.py                         (H3)
 │   ├── domain/
 │   │   ├── interfaces/
 │   │   │   ├── techspec_validator.py                        (H1; ABC)
@@ -1216,17 +1236,17 @@ squeaky-clean/
 
 | New component | Touches existing |
 |---|---|
-| `MapPatternToEmitter` extension | `squeaky_clean/application/use_cases/map_pattern_to_emitter.py` |
-| `InfrastructureChoice` DTO | `squeaky_clean/application/dtos/problem_spec.py` (F5 schema) |
-| MCDA respects budget | `squeaky_clean/application/use_cases/budgeted_gateway.py` (E3) |
+| `MapPatternToEmitter` extension | `squeaky_clean/application/generation/emission/map_pattern_to_emitter.py` |
+| `InfrastructureChoice` DTO | `squeaky_clean/application/shared/problem/problem_spec.py` (F5 schema) |
+| MCDA respects budget | `squeaky_clean/application/shared/gateways/budgeted_gateway.py` (E3) |
 | Tier C emitters deterministic | `TemperaturePolicy.ICP` (A4) |
-| Generated adapter paths | `squeaky_clean/application/use_cases/assign_patterns_paths.py` (C5) |
+| Generated adapter paths | `squeaky_clean/application/generation/emission/assign_patterns_paths.py` (C5) |
 | Validator wiring | `squeaky_clean/domain/rules/dependency_rule.py` (C5) |
 | Per-agent eval | `eval/per_agent/` (D1) |
-| EvalMetrics extensions | `squeaky_clean/application/dtos/eval_metrics.py` |
-| SUMMARY.md infrastructure section | `squeaky_clean/application/use_cases/run_eval_report_writer.py` |
-| Conventions registry pattern | `squeaky_clean/application/use_cases/convention_to_invariant.py` (F5) |
-| CostBudget integration | `squeaky_clean/application/dtos/cost_budget.py` (E2/E3) |
+| EvalMetrics extensions | `squeaky_clean/application/evaluation/eval/metrics/model/eval_metrics.py` |
+| SUMMARY.md infrastructure section | `squeaky_clean/application/evaluation/eval/run/run_eval_report_writer.py` |
+| Conventions registry pattern | `squeaky_clean/application/generation/notation/convention_to_invariant.py` (F5) |
+| CostBudget integration | `squeaky_clean/application/shared/gateways/cost_budget.py` (E2/E3) |
 
 This design depends on, and respects, every milestone landed before it. Nothing here invalidates A4, C5, D1, E2/E3, F5, or B2a.
 

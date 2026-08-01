@@ -24,6 +24,8 @@ A walkthrough + best practices for authoring a `ProblemSpec` JSON.
 
 Six required fields: `id`, `description`, `acceptance_criteria`, `required_patterns`, `target_language`, plus `tier` + `slug` for the eval-harness-friendly file path.
 
+`required_patterns` is checked against the 34-name pattern catalog as the spec is loaded, so a typo or an invented name fails immediately with `ValueError: unknown pattern: '<name>'` rather than being accepted and quietly ignored. Domain-specific patterns outside the catalog are supplied through the custom-pattern registry (see [`extending.md`](extending.md)) instead of being listed here; a name the framework doesn't recognize appearing in a generated architecture still routes to the `SimpleClass` escape hatch rather than aborting the run.
+
 ## Two halves: behavior and structure
 
 The JSON above is flat, and stays that way — flat fields are the construction surface. In code, a `ProblemSpec` exposes two read-only views over them:
@@ -106,6 +108,14 @@ The framework's contract registry persists the producer's declaration on disk. T
 
 Sensitivity tags ground the ThreatAnalyzer's concern generation in declared sensitivity rather than name-guessing. Fields tagged `credential` cannot be exposed via getters; `session_token` fields are stored opaquely.
 
+### 7. Attach `golden_metrics` once the spec is calibrated
+
+`golden_metrics: GoldenMetrics | None` is the optional calibrated baseline a spec's runs are judged against. Leave it `None` — the default — and the problem is uncalibrated: the regression gate reports `no golden (uncalibrated)` and never gates.
+
+`GoldenMetrics` is a frozen value object carrying `replicates`; the mean and stddev of `tests_pass`, `functional_pass`, `security_pass` and `cost_usd`; `model_routing`, a tuple of `"<tier>=<model>"` entries for architect / manager / icp / fixer recording what the calibration ran under; and `calibrated_run`, the run directory name it came from. Wall-clock and cache figures are not calibrated and do not gate.
+
+Calibrate at N ≥ 3 (`--replicates 3`) and take the means and σ from the resulting `replicate_summary.json`. A replicate that fails is recorded in that file's `failures` array and excluded from the statistics rather than aborting the calibration, so the surviving replicates still yield a summary — check the count before treating the means as an N = 3 baseline. The routing stamp is what keeps a model bump from reading as a tool regression: when the current routing differs from the calibration routing, the gate reports `not comparable (routing changed since calibration)` instead of failing the run. See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md) for the gate's verdicts and the published baselines.
+
 ## Anti-patterns
 
 | Don't | Do |
@@ -121,10 +131,10 @@ Sensitivity tags ground the ThreatAnalyzer's concern generation in declared sens
 
 If a generated run looks wrong:
 
-1. Read `eval_report.json` for `tests_pass`, `architecture_violations`, `cross_module_dependency_violations`, `http_convention_violations`. Most violations are caught + retried automatically; persistent violations are logged + cause graceful exit.
+1. Read `eval_report.json` for `test_outcome.tests_pass`, `architecture_violations`, `notation.cross_module_dependency_violations`, `notation.http_convention_violations`. The report carries `"schema_version": 2` and groups its metrics into seven nested objects — `test_outcome`, `cost`, `velocity`, `structure`, `reliability`, `notation`, `security_scan` — with `architecture_violations`, `total_wall_clock_ms`, the parallelism and cache fields, `replicate_id`, `runs` and `budget_exceeded` at the top level. Most violations are caught + retried automatically; persistent violations are logged + cause graceful exit. A metric reported as `null` (or `n/a` in Markdown) was not measured — it is not a zero score.
 2. Read `architecture.squib` to see what the architect produced. If a class belongs to the wrong module, your `required_bounded_contexts` may be too coarse; split.
 3. Use `--deterministic` to lock down stochastic variation and isolate spec-induced issues.
-4. Use `--replicates 5` to surface mean ± stddev of `tests_pass` if you suspect stochastic drift.
+4. Use `--replicates 5` to surface mean ± stddev of `tests_pass` if you suspect stochastic drift; read `replicate_summary.md` in the first replicate's run directory. A single run is exploratory — concluding that a change helped or hurt takes N ≥ 3.
 
 ## Worked example: Twitter clone
 
@@ -144,4 +154,4 @@ Cost: ~$0.40. ACS ≈ 16. Yields a working Flask app with port/adapter disciplin
 - [`squib.md`](squib.md) — Squib grammar reference
 - [`extending.md`](extending.md) — custom-pattern hooks
 - `examples/` — three runnable sample ProblemSpecs
-- `eval/problems/` — the built-in benchmark specs (`P0`–`P9`), selectable by id with `--problem` / `--problems`. `p6_stock_monitor` (Observer), `p7_order_lifecycle` (State), `p8_text_editor` (Command + Memento) and `p9_drawing_canvas` (Composite + Visitor) are compact specs whose criteria pin one structural pattern each — useful templates when the behaviour you're specifying is pattern-shaped.
+- `eval/problems/` — the built-in benchmark specs (`P0`–`P11`), selectable by id with `--problem` / `--problems`. `p6_stock_monitor` (Observer), `p7_order_lifecycle` (State), `p8_text_editor` (Command + Memento), `p9_drawing_canvas` (Composite + Visitor), `p10_report_builder` (Builder + AbstractFactory + Prototype) and `p11_notification_middleware` (ChainOfResponsibility + Decorator + Adapter + Facade) are compact specs whose criteria pin one pattern family each — useful templates when the behaviour you're specifying is pattern-shaped.

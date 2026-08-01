@@ -68,11 +68,13 @@ output_dir/
 | Twitter Clone | 9 | ~22 | $0.40 | ~30,000 |
 | Distributed event pipeline (per service) | 4 | ~10 | $0.30 | ~15,000 |
 
-See [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md) for the Architectural Complexity Score (ACS) that normalizes these across problem complexity — `$/ACS-unit` is a fairer cross-problem efficiency measure than raw `$/run`.
+Single-sample orientation figures. The calibrated baselines — N = 3 replicates, mean ± σ, stamped with the model routing they were measured under — are published in [`BENCHMARK_METHODOLOGY.md`](../BENCHMARK_METHODOLOGY.md), which also defines the Architectural Complexity Score (ACS) that normalizes cost across problem complexity: `$/ACS-unit` is a fairer cross-problem efficiency measure than raw `$/run`.
 
 ## Differentiators
 
 - **Deterministic runs.** Same `ProblemSpec` + `--deterministic` produces byte-identical architecture.squib across two runs. Proven; reproduced in CI.
+- **A full end-to-end eval for $0.** `--replay-only` serves every LLM call from the content-addressed response cache — the whole pipeline still runs, only the model responses come off disk, and no API key is involved. CI replays P0 from a committed cache bundle on every push: a drifted prompt fails the run loudly with a `ReplayCacheMissError` naming the prompt, and a harness regression shows up as a changed score.
+- **Measured, not asserted.** A metric that wasn't measured is reported as `n/a`, never as `0.00` — so a reader can tell "insecure" from "security tests not enabled". Single runs are labelled exploratory; fix, regression and baseline claims require N ≥ 3 replicates. Every sweep judges itself against routing-stamped golden baselines and prints a per-problem verdict.
 - **Cross-language architecture.** The same `ProblemSpec` switching `target_language` to `java` produces the same architectural shape as a Spring Boot project — same layering and port/adapter split, idiomatic SDK calls. Execution parity (a green test suite) is verified today for Python; other languages are in progress (see the roadmap).
 - **Cross-service contract fidelity.** When two services produce/consume the same Kafka topic, Squeaky Clean's Contract Registry enforces field-shape agreement across language boundaries — the consumer's `ConsumedEvent` carries the producer's contract field names verbatim, with case-tolerance for languages whose conventions would otherwise rename `received_at` → `receivedAt`.
 - **Architectural discipline preserved.** Domain layer never imports infrastructure. Concrete adapters never live in the application layer. Generated code passes the framework's own dependency rule.
