@@ -4,6 +4,7 @@ from squeaky_clean.application.generation.notation.notation_brace_scanner import
     NotationBraceScanner,
 )
 from squeaky_clean.domain.entities.notation_parse_error import NotationParseError
+from squeaky_clean.domain.value_objects.notation.notation_schema import SQUIB_SCHEMA
 
 
 class NotationSectionExtractor:
@@ -26,7 +27,7 @@ class NotationSectionExtractor:
             raise NotationParseError("empty §Notation input")
         sections: dict[str, str] = {}
         idx = 0
-        singletons = {"MODULE", "LAYER"}
+        singletons = SQUIB_SCHEMA.singleton_sections()
         while idx < len(cleaned):
             if cleaned[idx].isspace():
                 idx += 1
