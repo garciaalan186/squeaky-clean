@@ -33,6 +33,13 @@ class NotationNoveltyReporter:
         )
         self._parser = ParseArchitectureNotation()
 
+    def persist(self, output_dir: Path, notation: str) -> int:
+        """Write architecture.notation + novelty artifacts; return count."""
+        path = output_dir / "architecture.notation"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(notation)
+        return self.report(output_dir, notation)
+
     def report(self, output_dir: Path, notation: str) -> int:
         """Classify ``notation``; write artifacts; return the novelty count."""
         try:
