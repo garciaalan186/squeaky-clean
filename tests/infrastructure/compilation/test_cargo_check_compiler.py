@@ -48,3 +48,28 @@ def test_missing_toolchain_raises(
     monkeypatch.setattr(shutil, "which", lambda _cmd: None)
     with pytest.raises(RuntimeError, match="cargo toolchain"):
         CargoCheckCompiler().compile(tmp_path)
+
+
+def test_ansi_colored_output_is_parsed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """CI cargo colorizes even through a pipe — anchors must still match."""
+    import subprocess as sp
+
+    colored = (
+        "\x1b[1m\x1b[91merror[E0425]\x1b[0m\x1b[1m: cannot find type\x1b[0m\n"
+        "  \x1b[1m\x1b[94m--> src/broken.rs:1:24\x1b[0m\n"
+        "\x1b[1m\x1b[91merror\x1b[0m: could not compile `microeval`\n"
+    )
+
+    def fake_run(*_args: object, **_kwargs: object) -> sp.CompletedProcess[str]:
+        return sp.CompletedProcess(args=["cargo"], returncode=101, stdout="",
+                                   stderr=colored)
+
+    (tmp_path / "src").mkdir()
+    monkeypatch.setattr(sp, "run", fake_run)
+    monkeypatch.setattr(shutil, "which", lambda _cmd: "/usr/bin/cargo")
+    result = CargoCheckCompiler().compile(tmp_path)
+    assert not result.ok
+    assert result.error_count == 2
+    assert result.offending_stems == ("broken",)
