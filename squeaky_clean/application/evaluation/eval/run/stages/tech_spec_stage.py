@@ -12,9 +12,17 @@ from squeaky_clean.application.generation.architecture.orchestrate_architecture 
 from squeaky_clean.application.generation.techspec.derive_required_categories import (
     derive_required_categories,
 )
+from squeaky_clean.application.generation.techspec.infrastructure_choice import (
+    InfrastructureChoice,
+)
 from squeaky_clean.application.generation.techspec.select_infrastructure_choices import (
     select_infrastructure_choices,
 )
+from squeaky_clean.domain.interfaces.tech_spec_resolver import (
+    TechSpecResolutionError,
+    TechSpecResolver,
+)
+from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class TechSpecStage:
@@ -44,10 +52,7 @@ class TechSpecStage:
         if not choices:
             return ctx
         derived_count = max(0, len(choices) - explicit_count)
-        specs = tuple(
-            resolver.resolve(c.category, c.technology, c.version_pin)
-            for c in choices
-        )
+        specs = self._resolve_all(resolver, choices)
         self._orchestrator.register_tech_specs(specs)
         return replace(ctx,
             tech_specs={s.category: s for s in specs},
@@ -57,3 +62,19 @@ class TechSpecStage:
                 mcda_runs=derived_count,
             ),
         )
+
+    def _resolve_all(
+        self, resolver: TechSpecResolver, choices: tuple[InfrastructureChoice, ...],
+    ) -> tuple[TechSpec, ...]:
+        """Resolve every choice; failure logs reasons, then fails the run (R6.8)."""
+        try:
+            return tuple(
+                resolver.resolve(c.category, c.technology, c.version_pin)
+                for c in choices
+            )
+        except TechSpecResolutionError as exc:
+            self._deps.run_logger.event(
+                "tech_spec_resolution_failed",
+                error=str(exc), reasons=list(exc.reasons),
+            )
+            raise

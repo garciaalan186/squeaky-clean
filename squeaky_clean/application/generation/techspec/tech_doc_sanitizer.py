@@ -43,10 +43,13 @@ def sanitize(content: str) -> str:
 
 
 def _check_json_field_sizes(content: str) -> None:
+    parsed: object = None
     try:
         parsed = json.loads(content)
     except (json.JSONDecodeError, ValueError):
-        return
+        # Not JSON — plain-text/HTML payloads have no JSON fields to cap.
+        # This is a not-applicable path, not a swallowed error (R6.8).
+        parsed = None
     if not isinstance(parsed, dict):
         return
     parsed_dict = cast(dict[str, object], parsed)

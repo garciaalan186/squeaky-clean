@@ -2,37 +2,30 @@
 
 import hashlib
 import json
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import cast
 
-_CURRENT_SCHEMA_VERSION: str = "v1"
-
-
-@dataclass(frozen=True)
-class CacheEntry:
-    """One cache record loaded from disk: spec + freshness metadata."""
-
-    spec: dict[str, object]
-    fetched_at: datetime
-    expires_at: datetime
-    content_hash: str
-
-    def is_fresh(self, now: datetime) -> bool:
-        """True iff now < expires_at."""
-        return now < self.expires_at
-
-    def is_stale_tolerant(self, now: datetime, ttl_days: int) -> bool:
-        """True iff now < expires_at + 0.5 * TTL (1.5x grace window)."""
-        return now < self.expires_at + timedelta(days=ttl_days // 2 + 1)
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
+from squeaky_clean.infrastructure.techspec.techspec_cache_entry import (
+    CacheEntry,
+    parse_cache_entry,
+)
 
 
 class TechSpecCacheMetadata:
-    """Reads + writes cache files with TTL/hash/source-url metadata."""
+    """Reads + writes cache files with TTL/hash/source-url metadata.
 
-    def __init__(self, ttl_days: int = 30) -> None:
+    ``read`` returns None for both a clean miss (no file) and a rejected
+    entry — but a rejection is never silent: every invalid entry emits a
+    ``techspec_cache_rejected`` event with the reason (R6.8).
+    """
+
+    def __init__(
+        self, ttl_days: int = 30, *, run_logger: RunLogger | None = None,
+    ) -> None:
         self.ttl_days: int = int(ttl_days)
+        self._log: RunLogger = run_logger or NullRunLogger()
 
     def write(
         self, path: Path, spec: dict[str, object],
@@ -51,27 +44,34 @@ class TechSpecCacheMetadata:
         path.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
     def read(self, path: Path) -> CacheEntry | None:
-        """Return parsed CacheEntry or None on any read failure."""
+        """Return parsed CacheEntry, or None on miss (rejections are logged)."""
         if not path.is_file():
             return None
+        data = self._load(path)
+        if data is None:
+            return None
+        return parse_cache_entry(
+            data, lambda reason: self._reject(path, reason),
+        )
+
+    def _load(self, path: Path) -> dict[str, object] | None:
+        reason: str | None = None
+        loaded: object = None
         try:
-            data = cast(dict[str, object], json.loads(path.read_text()))
-        except (OSError, json.JSONDecodeError):
+            loaded = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            reason = f"unreadable: {exc}"
+        if reason is None and not isinstance(loaded, dict):
+            reason = "not a JSON object"
+        if reason is not None:
+            self._reject(path, reason)
             return None
-        spec = data.get("spec")
-        if not isinstance(spec, dict):
-            return None
-        spec_dict = cast(dict[str, object], spec)
-        if spec_dict.get("schema_version") != _CURRENT_SCHEMA_VERSION:
-            return None
-        try:
-            fetched = datetime.fromisoformat(str(data["fetched_at"]))
-            expires = datetime.fromisoformat(str(data["expires_at"]))
-        except (KeyError, ValueError, TypeError):
-            return None
-        return CacheEntry(
-            spec=spec_dict, fetched_at=fetched, expires_at=expires,
-            content_hash=str(data.get("content_hash") or ""),
+        return cast(dict[str, object], loaded)
+
+    def _reject(self, path: Path, reason: str) -> None:
+        """Log one invalid-entry event; the entry is then treated as a miss."""
+        self._log.event(
+            "techspec_cache_rejected", path=str(path), reason=reason,
         )
 
     @staticmethod

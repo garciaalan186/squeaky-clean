@@ -15,6 +15,9 @@ from squeaky_clean.application.generation.integration.manifests.cargo_toml_gener
 from squeaky_clean.application.generation.integration.manifests.go_mod_generator import (
     generate_go_mod,
 )
+from squeaky_clean.application.generation.integration.manifests.manifest_write_error import (  # noqa: E501
+    ManifestWriteError,
+)
 from squeaky_clean.application.generation.integration.manifests.package_json_generator import (  # noqa: E501
     generate as generate_package_json,
 )
@@ -50,7 +53,7 @@ class ManifestEmitter:
                 path = gen()
                 if path is not None:
                     self._logger.event(f"{name}_emitted", path=str(path))
-            except OSError as exc:
+            except (OSError, ManifestWriteError) as exc:
                 self._logger.event(f"{name}_emit_failed", error=str(exc))
         self._emit_python_or_npm(ctx)
 
@@ -70,7 +73,6 @@ class ManifestEmitter:
                 path = generate_package_json(
                     arch, ctx.tech_specs, ctx.output_dir, ctx.problem,
                     fs=self._fs)
-                if path is not None:
-                    self._logger.event("package_json_emitted", path=str(path))
-        except OSError as exc:
+                self._logger.event("package_json_emitted", path=str(path))
+        except (OSError, ManifestWriteError) as exc:
             self._logger.event("manifest_emit_failed", error=str(exc))

@@ -32,7 +32,12 @@ def generate_go_mod(
     problem: ProblemSpec,
     *, fs: ProjectFileSystem,
 ) -> Path | None:
-    """Emit ``<output_dir>/go.mod`` and return the path (or None when no Go)."""
+    """Emit ``<output_dir>/go.mod`` and return the path.
+
+    None means ONLY "not applicable" (no Go TechSpecs). Write errors are
+    never swallowed here: ``fs.write`` OSErrors propagate to the
+    ManifestEmitter, which logs them as a failure event (R6.8).
+    """
     del architecture  # currently unused; kept for interface symmetry
     go_specs = [s for s in tech_specs.values() if s.language == "go"]
     if not go_specs:

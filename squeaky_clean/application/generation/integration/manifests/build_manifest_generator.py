@@ -36,13 +36,16 @@ class BuildManifestGenerator:
         output_dir: Path,
         problem: ProblemSpec,
     ) -> Path | None:
-        """Emit ``<output_dir>/pom.xml`` and return the path (or None if no Java)."""
+        """Emit ``<output_dir>/pom.xml``; None ONLY when not applicable (no Java).
+
+        Write errors are never swallowed here: ``fs.write`` OSErrors
+        propagate to ManifestEmitter, which logs the failure event (R6.8).
+        """
         java_specs = [s for s in tech_specs.values() if s.language == "java"]
         if not java_specs:
             return None
         spring = any(is_spring_technology(s.technology) for s in java_specs)
-        # Skip stdlib TechSpecs (JDK built-ins like java.nio.file). They
-        # are already on the classpath and have no Maven coordinates.
+        # Skip stdlib TechSpecs (JDK built-ins): no Maven coordinates.
         external = [
             s for s in java_specs
             if str(s.install.get("manager", "")) != "stdlib"
@@ -53,11 +56,9 @@ class BuildManifestGenerator:
             ))
             for s in external
         ]
-        # A Spring app's wiring bootstraps via @SpringBootApplication and its
-        # adapters parse JSON with Jackson. A web app gets both transitively
-        # from spring-boot-starter-web, but a pure consumer/worker has no web
-        # starter — add the base starter + Jackson explicitly (parent-managed
-        # versions; a no-op when web already pulls them in).
+        # Spring apps need the base starter + Jackson explicitly: a web app
+        # gets both transitively from spring-boot-starter-web, but a pure
+        # consumer/worker has no web starter (parent-managed; no-op if web).
         if spring:
             deps.append(render_managed_dependency(
                 "org.springframework.boot", "spring-boot-starter"))

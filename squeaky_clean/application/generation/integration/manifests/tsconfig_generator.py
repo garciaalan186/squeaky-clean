@@ -5,6 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from squeaky_clean.application.generation.integration.manifests.manifest_write_error import (
+    ManifestWriteError,
+)
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
@@ -22,10 +25,9 @@ def generate(
 ) -> Path | None:
     """Emit ``<output_dir>/tsconfig.json`` for TypeScript runs.
 
-    Always emits when ``problem.target_language`` is TypeScript or any
-    TechSpec declares ``language == 'typescript'``. Best-effort on
-    OSError. Returns the written path or ``None`` on failure / when
-    not applicable.
+    Emits when ``problem.target_language`` is TypeScript or any TechSpec
+    declares ``language == 'typescript'``. None means ONLY "not a
+    TypeScript run"; write failures raise ``ManifestWriteError`` (R6.8).
     """
     is_ts = (str(getattr(problem.target_language, "value", "")).lower()
              == "typescript") or _has_typescript(tech_specs)
@@ -49,6 +51,6 @@ def generate(
     path = output_dir / "tsconfig.json"
     try:
         fs.write(path, json.dumps(body, indent=2) + "\n")
-    except OSError:
-        return None
+    except OSError as exc:
+        raise ManifestWriteError(f"tsconfig.json write failed: {exc}") from exc
     return path

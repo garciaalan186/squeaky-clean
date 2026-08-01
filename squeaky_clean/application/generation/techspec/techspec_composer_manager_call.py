@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.domain.interfaces.llm_gateway import LLMGateway
@@ -11,6 +12,7 @@ from squeaky_clean.domain.interfaces.model_routing_policy import ModelRoutingPol
 from squeaky_clean.domain.value_objects.model_tier import ModelTier
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
+_LOG = logging.getLogger(__name__)
 _SYSTEM_PROMPT = "You repair TechSpec JSON or flag un_implementable."
 
 
@@ -50,16 +52,25 @@ class TechSpecComposerManagerCall:
         )
 
     def _parse(self, raw: str) -> dict[str, object] | None:
+        """Parse the Manager reply; None = un_implementable / unusable reply.
+
+        None is a meaningful outcome (the caller marks the class
+        un-implementable) — but an unparseable reply is logged, never
+        silently swallowed (R6.8; no RunLogger reachable in this chain).
+        """
         text = (raw or "").strip()
         if not text or '"un_implementable": true' in text:
             return None
         start, end = text.find("{"), text.rfind("}")
         if start < 0 or end <= start:
+            _LOG.warning("manager correction had no JSON object: %.120r", text)
             return None
+        parsed: object = None
         try:
             parsed = json.loads(text[start:end + 1])
-        except json.JSONDecodeError:
-            return None
+        except json.JSONDecodeError as exc:
+            _LOG.warning("manager correction unparseable: %s", exc)
+            parsed = None
         if not isinstance(parsed, dict) or parsed.get("un_implementable") is True:
             return None
         return parsed.get("tech_spec") if "tech_spec" in parsed else parsed

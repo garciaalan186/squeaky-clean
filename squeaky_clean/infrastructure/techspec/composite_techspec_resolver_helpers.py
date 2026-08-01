@@ -9,6 +9,8 @@ from squeaky_clean.application.generation.techspec.tech_spec_html_extractor impo
 )
 from squeaky_clean.domain.interfaces.tech_spec_validator import TechSpecValidator
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
+from squeaky_clean.domain.value_objects.tech_spec_fetch_failed import TechSpecFetchFailed
+from squeaky_clean.domain.value_objects.tech_spec_resolution import TechSpecResolution
 from squeaky_clean.infrastructure.techspec.tech_spec_builder import TechSpecBuilder
 
 AllowlistRegistry = dict[tuple[str, str], tuple[str, ...]]
@@ -26,8 +28,12 @@ class FetchAttempt:
 def build_from_payload(
     payload: str, attempt: FetchAttempt, is_html: bool,
     extractor: TechSpecHTMLExtractor, validator: TechSpecValidator,
-) -> TechSpec | None:
-    """Convert raw payload to validated TechSpec or return None on failure."""
+) -> TechSpecResolution:
+    """Convert raw payload to a validated TechSpec, or a reasoned failure.
+
+    Never returns None: an unusable payload comes back as
+    ``TechSpecFetchFailed(reason)`` so the resolver can log it (R6.8).
+    """
     if is_html:
         draft = extractor.extract(
             payload, attempt.category, attempt.technology, attempt.version,
@@ -35,10 +41,11 @@ def build_from_payload(
     else:
         parsed = json.loads(payload)
         if not isinstance(parsed, dict):
-            return None
+            return TechSpecFetchFailed("payload is not a JSON object")
         draft = cast(dict[str, object], parsed)
-    if validator.validate(draft):
-        return None
+    violations = validator.validate(draft)
+    if violations:
+        return TechSpecFetchFailed(f"schema violations: {violations}")
     return TechSpecBuilder().build(draft)
 
 

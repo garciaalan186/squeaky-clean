@@ -34,7 +34,12 @@ def generate_cargo_toml(
     problem: ProblemSpec,
     *, fs: ProjectFileSystem,
 ) -> Path | None:
-    """Emit ``<output_dir>/Cargo.toml`` and return the path (or None when no Rust)."""
+    """Emit ``<output_dir>/Cargo.toml`` and return the path.
+
+    None means ONLY "not applicable" (no Rust TechSpecs). Write errors are
+    never swallowed here: ``fs.write`` OSErrors propagate to the
+    ManifestEmitter, which logs them as a failure event (R6.8).
+    """
     del architecture  # currently unused; kept for interface symmetry
     rust_specs = [s for s in tech_specs.values() if s.language == "rust"]
     if not rust_specs:

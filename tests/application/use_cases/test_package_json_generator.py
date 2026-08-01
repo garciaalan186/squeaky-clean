@@ -3,12 +3,18 @@
 import json
 from pathlib import Path
 
+import pytest
+
+from squeaky_clean.application.generation.integration.manifests.manifest_write_error import (
+    ManifestWriteError,
+)
 from squeaky_clean.application.generation.integration.manifests.package_json_generator import (
     generate,
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_graph import ArchitectureGraph
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
@@ -101,3 +107,20 @@ def test_ts_target_language_pins_typescript_without_tech_specs(
     body = json.loads(out.read_text())
     assert body["devDependencies"]["typescript"] == "^5.4.0"
     assert "@types/node" in body["devDependencies"]
+
+
+class _FailingFs(ProjectFileSystem):
+    def read(self, path: Path) -> str:
+        raise OSError("read-only")
+
+    def write(self, path: Path, content: str) -> None:
+        raise OSError("disk full")
+
+    def list_files(self, root: Path) -> list[Path]:
+        return []
+
+
+def test_write_failure_raises_manifest_write_error(tmp_path: Path) -> None:
+    """R6.8: OSError is translated into ManifestWriteError, never a None."""
+    with pytest.raises(ManifestWriteError, match="disk full"):
+        generate(_arch(), {}, tmp_path, _problem("svc"), fs=_FailingFs())
