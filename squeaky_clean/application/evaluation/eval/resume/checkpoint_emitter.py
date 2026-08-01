@@ -16,6 +16,7 @@ from squeaky_clean.application.generation.testgen.test_architecture import TestA
 from squeaky_clean.application.generation.testgen.test_architecture_serializer import (
     TestArchitectureSerializer,
 )
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
 
 class CheckpointEmitter:
@@ -72,7 +73,6 @@ class CheckpointEmitter:
 
     def _safe_write(self, path: Path, payload: str) -> None:
         try:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(payload)
+            atomic_write_text(path, payload)
         except OSError:
             pass

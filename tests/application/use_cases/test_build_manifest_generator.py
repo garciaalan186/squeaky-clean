@@ -11,6 +11,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 
 def _arch() -> ArchitectureSpec:
@@ -45,7 +46,7 @@ def _spec(category: str, technology: str, package: str,
 def test_returns_none_when_no_java_tech_specs(tmp_path: Path) -> None:
     py_spec = _spec("rest_server_handler", "fastapi", "fastapi==0.110",
                     language="python")
-    result = BuildManifestGenerator().generate(
+    result = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"rest_server_handler": py_spec}, tmp_path, _problem(),
     )
     assert result is None
@@ -55,7 +56,7 @@ def test_returns_none_when_no_java_tech_specs(tmp_path: Path) -> None:
 def test_writes_pom_for_spring_boot_with_parent(tmp_path: Path) -> None:
     rest = _spec("rest_server_handler", "spring_boot",
                  "org.springframework.boot:spring-boot-starter-web:3.2.0")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"rest_server_handler": rest}, tmp_path, _problem("svc"),
     )
     assert path == tmp_path / "pom.xml"
@@ -71,7 +72,7 @@ def test_writes_pom_for_spring_boot_with_parent(tmp_path: Path) -> None:
 def test_writes_pom_with_kafka_dependency(tmp_path: Path) -> None:
     kp = _spec("message_queue_producer", "spring_kafka",
                "spring-kafka==3.1")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"mq": kp}, tmp_path, _problem(),
     )
     assert path is not None
@@ -83,7 +84,7 @@ def test_writes_pom_with_kafka_dependency(tmp_path: Path) -> None:
 
 def test_writes_pom_without_parent_for_non_spring(tmp_path: Path) -> None:
     other = _spec("blob_storage", "local_disk", "junit:junit:4.13")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"blob": other}, tmp_path, _problem(),
     )
     assert path is not None
@@ -96,7 +97,7 @@ def test_writes_pom_without_parent_for_non_spring(tmp_path: Path) -> None:
 def test_j1_writes_spring_data_jdbc_dependency(tmp_path: Path) -> None:
     db = _spec("relational_db", "spring_data_jdbc",
                "spring-boot-starter-data-jdbc==2.7")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"db": db}, tmp_path, _problem(),
     )
     assert path is not None
@@ -109,7 +110,7 @@ def test_j1_writes_spring_data_jdbc_dependency(tmp_path: Path) -> None:
 
 def test_j1_writes_lettuce_redis_dependency(tmp_path: Path) -> None:
     cache = _spec("kv_cache", "lettuce", "lettuce-core==6.3")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"cache": cache}, tmp_path, _problem(),
     )
     assert path is not None
@@ -121,7 +122,7 @@ def test_j1_writes_lettuce_redis_dependency(tmp_path: Path) -> None:
 
 def test_j1_writes_grpc_netty_dependency(tmp_path: Path) -> None:
     rpc = _spec("grpc_client", "grpc_java", "grpc-netty-shaded==1.62")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"rpc": rpc}, tmp_path, _problem(),
     )
     assert path is not None
@@ -133,7 +134,7 @@ def test_j1_writes_grpc_netty_dependency(tmp_path: Path) -> None:
 
 def test_j1_writes_kafka_streams_dependency(tmp_path: Path) -> None:
     stream = _spec("stream_processor", "kafka_streams", "kafka-streams==3.6")
-    path = BuildManifestGenerator().generate(
+    path = BuildManifestGenerator(LocalFileSystem()).generate(
         _arch(), {"stream": stream}, tmp_path, _problem(),
     )
     assert path is not None

@@ -20,6 +20,10 @@ from squeaky_clean.domain.rules.component_dependency_rule import ComponentDepend
 from squeaky_clean.domain.rules.package_cohesion_rule import PackageCohesionRule
 from squeaky_clean.domain.rules.python_granularity_rule import PythonGranularityRule
 from squeaky_clean.domain.value_objects.violation import Violation
+from tests.self_conformance.di_conformance_rules import (
+    fs_port_bypass_keys,
+    impure_construction_keys,
+)
 
 _PACKAGE = "squeaky_clean"
 # R6.3 tranche 5: ban f-string-driven reflection (setattr/getattr with a
@@ -142,6 +146,9 @@ def scan_violation_keys() -> set[str]:
             keys.add(_key(v, root))
         for v in _layer_violations(path, root):
             keys.add(_key(v, root))
+        rel = str(path.relative_to(root.parent))
+        keys |= fs_port_bypass_keys(path, rel)
+        keys |= impure_construction_keys(path, rel)
     for v in PackageCohesionRule().check_tree(root):
         keys.add(_key(v, root))
     for v in ComponentDependencyRule().check_tree(root):

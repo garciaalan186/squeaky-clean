@@ -12,6 +12,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 
 def _arch() -> ArchitectureSpec:
@@ -44,7 +45,7 @@ def _spec(category: str, package: str,
 
 
 def test_emits_empty_package_json_when_no_js_specs(tmp_path: Path) -> None:
-    out = generate(_arch(), {}, tmp_path, _problem("svc"))
+    out = generate(_arch(), {}, tmp_path, _problem("svc"), fs=LocalFileSystem())
     assert out == tmp_path / "package.json"
     body = json.loads(out.read_text())
     assert body["name"] == "svc"
@@ -55,7 +56,7 @@ def test_emits_empty_package_json_when_no_js_specs(tmp_path: Path) -> None:
 
 def test_emits_one_dep_for_js_spec(tmp_path: Path) -> None:
     spec = _spec("kv_cache", "redis@4.6.0")
-    out = generate(_arch(), {"cache": spec}, tmp_path, _problem("app"))
+    out = generate(_arch(), {"cache": spec}, tmp_path, _problem("app"), fs=LocalFileSystem())
     assert out is not None
     body = json.loads(out.read_text())
     assert body["dependencies"] == {"redis": "4.6.0"}
@@ -65,7 +66,7 @@ def test_emits_one_dep_for_js_spec(tmp_path: Path) -> None:
 
 def test_emits_ts_dev_deps_for_typescript_spec(tmp_path: Path) -> None:
     spec = _spec("kv_cache", "ioredis@^5.3.0", language="typescript")
-    out = generate(_arch(), {"cache": spec}, tmp_path, _problem("ts_app"))
+    out = generate(_arch(), {"cache": spec}, tmp_path, _problem("ts_app"), fs=LocalFileSystem())
     assert out is not None
     body = json.loads(out.read_text())
     assert "typescript" in body["devDependencies"]
@@ -78,7 +79,7 @@ def test_emits_ts_dev_deps_for_typescript_spec(tmp_path: Path) -> None:
 def test_aggregates_unique_deps_across_specs(tmp_path: Path) -> None:
     a = _spec("kv_cache", "ioredis@^5.3.0")
     b = _spec("rest_client", "axios@^1.6.0")
-    out = generate(_arch(), {"a": a, "b": b}, tmp_path, _problem("agg"))
+    out = generate(_arch(), {"a": a, "b": b}, tmp_path, _problem("agg"), fs=LocalFileSystem())
     assert out is not None
     body = json.loads(out.read_text())
     assert body["dependencies"] == {"ioredis": "^5.3.0", "axios": "^1.6.0"}
@@ -95,7 +96,7 @@ def test_ts_target_language_pins_typescript_without_tech_specs(
         expected_module_count=(0, 1), expected_class_count=(0, 1),
         required_patterns=[], target_language=TargetLanguage.TYPESCRIPT,
     )
-    out = generate(_arch(), {}, tmp_path, problem)
+    out = generate(_arch(), {}, tmp_path, problem, fs=LocalFileSystem())
     assert out is not None
     body = json.loads(out.read_text())
     assert body["devDependencies"]["typescript"] == "^5.4.0"

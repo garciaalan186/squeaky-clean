@@ -36,10 +36,10 @@ class DesignArchitecture:
     """Use case: produce a validated ArchitectureSpec from a ProblemSpec."""
 
     def __init__(
-        self, deps: LLMCallDeps, loader: LoadAgentSpec | None = None,
+        self, deps: LLMCallDeps, loader: LoadAgentSpec,
     ) -> None:
         self._deps: LLMCallDeps = deps
-        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader
         self._parser: ParseArchitectureNotation = ParseArchitectureNotation()
         self._formatter: ProblemSpecFormatter = ProblemSpecFormatter()
 

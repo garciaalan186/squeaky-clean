@@ -28,10 +28,10 @@ class VerifyLayer:
     """
 
     def __init__(
-        self, deps: LLMCallDeps, loader: LoadAgentSpec | None = None,
+        self, deps: LLMCallDeps, loader: LoadAgentSpec,
     ) -> None:
         self._deps: LLMCallDeps = deps
-        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader
         self._writer: SquibModuleWriter = SquibModuleWriter()
 
     def verify(self, module: ModuleSpec) -> tuple[str, ...]:

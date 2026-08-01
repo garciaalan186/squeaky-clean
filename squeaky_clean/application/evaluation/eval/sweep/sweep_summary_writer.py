@@ -6,13 +6,13 @@ from dataclasses import asdict
 from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer import (
     CacheSummaryRenderer,
 )
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
 from squeaky_clean.application.evaluation.eval.metrics.unmeasured_nulls import (
     null_unmeasured,
 )
 from squeaky_clean.application.evaluation.eval.sweep.sweep_result import SweepResult
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
 
 
 class SweepSummaryWriter:

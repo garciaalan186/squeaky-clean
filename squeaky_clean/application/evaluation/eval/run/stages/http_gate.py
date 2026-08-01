@@ -10,6 +10,7 @@ from squeaky_clean.application.generation.validation.http_conventions_error impo
 from squeaky_clean.application.generation.validation.validate_http_conventions import (
     validate_http_conventions,
 )
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 
 
@@ -29,14 +30,15 @@ class HttpGate:
             return arch, 0, 0
         for v in violations:
             self._logger.event("http_convention_violation", message=v)
-        ctx.output_dir.mkdir(parents=True, exist_ok=True)
-        (ctx.output_dir / "HTTP_CONVENTION_VIOLATIONS.txt").write_text(
+        atomic_write_text(
+            ctx.output_dir / "HTTP_CONVENTION_VIOLATIONS.txt",
             "\n".join(violations) + "\n")
         retry_arch = self._deps.design_architecture.execute(
             ctx.problem, prior_violations=violations)
         retry_violations = validate_http_conventions(retry_arch, ctx.problem)
         if retry_violations:
-            (ctx.output_dir / "HTTP_CONVENTION_VIOLATIONS.txt").write_text(
+            atomic_write_text(
+                ctx.output_dir / "HTTP_CONVENTION_VIOLATIONS.txt",
                 "\n".join(retry_violations) + "\n")
             raise HttpConventionsError(retry_violations)
         return retry_arch, 0, 1

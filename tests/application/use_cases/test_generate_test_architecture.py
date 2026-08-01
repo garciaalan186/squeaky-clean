@@ -1,6 +1,7 @@
 """Tests for GenerateTestArchitecture use case."""
 
 from eval.problems.p0_calculator import P0
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.testgen.generate_test_architecture import (
     GenerateTestArchitecture,
 )
@@ -88,7 +89,7 @@ def _deps(gateway: LLMGateway) -> GenerateTestArchitectureDeps:
 
 def test_execute_returns_parsed_test_architecture() -> None:
     gateway = _StubGateway(_CANNED)
-    uc = GenerateTestArchitecture(_deps(gateway))
+    uc = GenerateTestArchitecture(_deps(gateway), LoadAgentSpec())
     ctx = TestArchitectureContext(module=_p0_module(), problem=P0)
     ta = uc.execute(ctx)
     assert len(ta.gherkin_scenarios) >= 1
@@ -120,13 +121,13 @@ def _ctx() -> TestArchitectureContext:
 
 def test_execute_requests_raised_max_tokens() -> None:
     gateway = _SeqGateway([_resp(_CANNED)])
-    GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    GenerateTestArchitecture(_deps(gateway), LoadAgentSpec()).execute(_ctx())
     assert gateway.requests[0].max_tokens == 8192
 
 
 def test_execute_retries_on_truncation_then_succeeds() -> None:
     gateway = _SeqGateway([_resp("", truncated=True), _resp(_CANNED)])
-    ta = GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    ta = GenerateTestArchitecture(_deps(gateway), LoadAgentSpec()).execute(_ctx())
     assert len(ta.test_skeletons) >= 1
     assert len(gateway.requests) == 2
     assert "RETRY" in (gateway.requests[1].user_prompt)
@@ -134,7 +135,7 @@ def test_execute_retries_on_truncation_then_succeeds() -> None:
 
 def test_execute_retries_on_parse_error_then_succeeds() -> None:
     gateway = _SeqGateway([_resp("garbage, no sections"), _resp(_CANNED)])
-    ta = GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+    ta = GenerateTestArchitecture(_deps(gateway), LoadAgentSpec()).execute(_ctx())
     assert len(ta.gherkin_scenarios) >= 1
     assert len(gateway.requests) == 2
 
@@ -147,7 +148,7 @@ def test_execute_raises_after_exhausting_retries() -> None:
     )
     gateway = _SeqGateway([_resp("still broken")])
     with pytest.raises(GenerateTestArchitectureError):
-        GenerateTestArchitecture(_deps(gateway)).execute(_ctx())
+        GenerateTestArchitecture(_deps(gateway), LoadAgentSpec()).execute(_ctx())
     assert len(gateway.requests) == 3  # initial + 2 retries
 
 
@@ -168,6 +169,6 @@ def test_execute_records_token_usage() -> None:
         toolkit=toolkit, recorder=recorder,
     )
     ctx = TestArchitectureContext(module=_p0_module(), problem=P0)
-    GenerateTestArchitecture(deps).execute(ctx)
+    GenerateTestArchitecture(deps, LoadAgentSpec()).execute(ctx)
     assert recorder.stats("test_architect")[:2] == (1, 1)
     assert recorder.stats()[:2] == (1, 1)

@@ -25,6 +25,7 @@ from squeaky_clean.application.generation.validation.validate_contract_fidelity 
 from squeaky_clean.application.generation.validation.validate_cross_module_dependencies import (  # noqa: E501
     validate_cross_module_dependencies,
 )
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
 
 class ArchitectureGateStage:
@@ -68,6 +69,6 @@ class ArchitectureGateStage:
             return
         for v in violations:
             self._logger.event(event, message=v)
-        ctx.output_dir.mkdir(parents=True, exist_ok=True)
-        (ctx.output_dir / artifact).write_text("\n".join(violations) + "\n")
+        atomic_write_text(
+            ctx.output_dir / artifact, "\n".join(violations) + "\n")
         raise error(list(violations))

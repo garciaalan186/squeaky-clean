@@ -4,7 +4,9 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.reliability_stats import ReliabilityStats
+from squeaky_clean.application.evaluation.eval.metrics.model.reliability_stats import (
+    ReliabilityStats,
+)
 
 
 def test_defaults_are_zero() -> None:

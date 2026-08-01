@@ -5,11 +5,11 @@ from pathlib import Path
 
 import pytest
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.run.eval_report_bundle import EvalReportBundle
 from squeaky_clean.application.evaluation.eval.sweep.sweep_result import SweepResult
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 

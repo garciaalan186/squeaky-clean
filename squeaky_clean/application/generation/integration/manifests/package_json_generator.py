@@ -7,6 +7,7 @@ from pathlib import Path
 
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
@@ -39,13 +40,13 @@ def generate(
     tech_specs: dict[str, TechSpec],
     output_dir: Path,
     problem: ProblemSpec,
+    *, fs: ProjectFileSystem,
 ) -> Path | None:
     """Emit ``<output_dir>/package.json`` from JS/TS TechSpecs.
 
     Always emits when ``problem.target_language`` is JS/TS — produces
     an empty ``dependencies`` object if no JS/TS TechSpecs exist (so
-    NpmDependencyInstaller has something to operate on). Best-effort
-    on OSError.
+    NpmDependencyInstaller has something to run). Best-effort on OSError.
     """
     del architecture
     npm_specs = [s for s in tech_specs.values() if _is_npm_spec(s)]
@@ -73,8 +74,7 @@ def generate(
             "dependencies": deps, "devDependencies": dev_deps}
     path = output_dir / "package.json"
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(body, indent=2) + "\n")
+        fs.write(path, json.dumps(body, indent=2) + "\n")
     except OSError:
         return None
     return path

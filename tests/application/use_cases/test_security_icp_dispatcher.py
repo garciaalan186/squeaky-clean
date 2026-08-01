@@ -1,5 +1,6 @@
 """Tests for SecurityICPDispatcher."""
 
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.security.security_concern import SecurityConcern
 from squeaky_clean.application.generation.security.security_dispatch_context import (
     SecurityDispatchContext,
@@ -55,7 +56,7 @@ class _CountingGateway(LLMGateway):
 
 def test_dispatch_calls_llm_per_concern() -> None:
     gw = _CountingGateway()
-    dispatcher = SecurityICPDispatcher(gw, ModelRouter())
+    dispatcher = SecurityICPDispatcher(gw, ModelRouter(), loader=LoadAgentSpec())
     concerns = (
         SecurityConcern("input_validation", "Calculator", "d1", "t1"),
         SecurityConcern("boundary", "Calculator", "d2", "t2"),
@@ -77,7 +78,7 @@ def test_dispatch_calls_llm_per_concern() -> None:
 
 def test_dispatch_empty_concerns_returns_empty() -> None:
     gw = _CountingGateway()
-    dispatcher = SecurityICPDispatcher(gw, ModelRouter())
+    dispatcher = SecurityICPDispatcher(gw, ModelRouter(), loader=LoadAgentSpec())
     ctx = SecurityDispatchContext(
         review=SecurityReview(concerns=()),
         module=_MOD, toolkit=_PY,

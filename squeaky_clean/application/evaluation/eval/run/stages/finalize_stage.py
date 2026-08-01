@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.report.percentile_summary_renderer import (
     PercentileSummaryRenderer,
 )
@@ -10,7 +13,7 @@ from squeaky_clean.application.evaluation.eval.run.stages.acs_enrichment import 
 from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
 from squeaky_clean.application.generation.security.security_scan_stage import SecurityScanStage
 from squeaky_clean.application.generation.validation.contract_registry import ContractRegistry
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 
 
 class FinalizeStage:
@@ -30,15 +33,15 @@ class FinalizeStage:
         self, ctx: PipelineContext, metrics: EvalMetrics,
     ) -> EvalMetrics:
         """Return ``metrics`` enriched with scan + ACS results (frozen)."""
-        metrics = self._security.apply(
-            ctx.output_dir, metrics, self._deps.run_config.enable_sast,
-        )
+        metrics = replace(metrics, security_scan=self._security.apply(
+            ctx.output_dir, self._deps.run_config.enable_sast))
         metrics = AcsEnrichment().enrich(ctx, metrics)
         section = PercentileSummaryRenderer().render(
             self._deps.llm_usage_recorder)
         if section:
             try:
-                (ctx.output_dir / "LATENCY_PERCENTILES.md").write_text(section)
+                atomic_write_text(
+                    ctx.output_dir / "LATENCY_PERCENTILES.md", section)
             except OSError as exc:
                 self._logger.event("percentiles_write_failed", error=str(exc))
         self._register_produced(ctx)

@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.velocity_stats import VelocityStats
+from squeaky_clean.application.evaluation.eval.metrics.model.velocity_stats import VelocityStats
 
 
 def test_defaults_are_zero() -> None:

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 
 
 @dataclass(frozen=True)

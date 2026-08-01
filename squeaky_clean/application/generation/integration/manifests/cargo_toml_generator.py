@@ -6,6 +6,7 @@ from pathlib import Path
 
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 _TOKIO_LINE = 'tokio = { version = "1.36", features = ["full"] }'
@@ -31,6 +32,7 @@ def generate_cargo_toml(
     tech_specs: dict[str, TechSpec],
     output_dir: Path,
     problem: ProblemSpec,
+    *, fs: ProjectFileSystem,
 ) -> Path | None:
     """Emit ``<output_dir>/Cargo.toml`` and return the path (or None when no Rust)."""
     del architecture  # currently unused; kept for interface symmetry
@@ -47,8 +49,7 @@ def generate_cargo_toml(
         deps.append(parsed)
     body = _render_body(problem.slug, deps)
     path = output_dir / "Cargo.toml"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(body)
+    fs.write(path, body)
     return path
 
 

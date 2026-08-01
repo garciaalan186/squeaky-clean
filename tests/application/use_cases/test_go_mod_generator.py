@@ -11,6 +11,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 
 def _arch() -> ArchitectureSpec:
@@ -46,7 +47,7 @@ def test_returns_none_when_no_go_tech_specs(tmp_path: Path) -> None:
     py = _spec("rest_server_handler", "fastapi",
                "fastapi==0.110", language="python")
     out = generate_go_mod(_arch(), {"rest_server_handler": py},
-                         tmp_path, _problem())
+                         tmp_path, _problem(), fs=LocalFileSystem())
     assert out is None
     assert not (tmp_path / "go.mod").exists()
 
@@ -55,7 +56,7 @@ def test_writes_go_mod_with_aws_s3_dependency(tmp_path: Path) -> None:
     spec = _spec("blob_storage", "aws_s3_go",
                  "github.com/aws/aws-sdk-go-v2/service/s3@v1.66.0")
     out = generate_go_mod(_arch(), {"blob_storage": spec},
-                         tmp_path, _problem("svc"))
+                         tmp_path, _problem("svc"), fs=LocalFileSystem())
     assert out == tmp_path / "go.mod"
     body = out.read_text()
     assert "module com.example/svc" in body
@@ -67,7 +68,7 @@ def test_writes_go_mod_with_aws_s3_dependency(tmp_path: Path) -> None:
 def test_writes_go_mod_with_redis_dependency(tmp_path: Path) -> None:
     spec = _spec("kv_cache", "go_redis",
                  "github.com/redis/go-redis/v9@v9.5.0")
-    out = generate_go_mod(_arch(), {"kv_cache": spec}, tmp_path, _problem())
+    out = generate_go_mod(_arch(), {"kv_cache": spec}, tmp_path, _problem(), fs=LocalFileSystem())
     assert out is not None
     body = out.read_text()
     assert "github.com/redis/go-redis/v9 v9.5.0" in body
@@ -76,7 +77,7 @@ def test_writes_go_mod_with_redis_dependency(tmp_path: Path) -> None:
 def test_skips_stdlib_packages(tmp_path: Path) -> None:
     spec = _spec("blob_storage", "local_disk", "stdlib")
     out = generate_go_mod(_arch(), {"blob_storage": spec},
-                         tmp_path, _problem())
+                         tmp_path, _problem(), fs=LocalFileSystem())
     assert out is not None
     body = out.read_text()
     assert "module com.example/" in body
@@ -89,7 +90,7 @@ def test_dedupes_duplicate_packages(tmp_path: Path) -> None:
     b = _spec("message_queue_consumer", "sarama",
               "github.com/IBM/sarama@v1.42.1")
     out = generate_go_mod(_arch(), {"p": a, "c": b},
-                         tmp_path, _problem())
+                         tmp_path, _problem(), fs=LocalFileSystem())
     assert out is not None
     body = out.read_text()
     assert body.count("github.com/IBM/sarama") == 1

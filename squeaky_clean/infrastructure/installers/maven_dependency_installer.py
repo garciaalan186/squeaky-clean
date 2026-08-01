@@ -8,8 +8,8 @@ import time
 from pathlib import Path
 
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.value_objects.install_result import InstallResult
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 
 _TIMEOUT_SECONDS: int = 300
 _MAX_OUTPUT: int = 4000
@@ -34,8 +34,8 @@ def _resolve_java_home() -> str | None:
 class MavenDependencyInstaller(DependencyInstaller):
     """Runs ``mvn -q dependency:resolve`` against a generated project."""
 
-    def __init__(self) -> None:
-        self._logger: JSONLogger = JSONLogger()
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._logger: RunLogger = logger or NullRunLogger()
 
     def install(self, project_dir: Path) -> InstallResult:
         """Resolve declared Maven deps; best-effort on mvn absent/timeout."""

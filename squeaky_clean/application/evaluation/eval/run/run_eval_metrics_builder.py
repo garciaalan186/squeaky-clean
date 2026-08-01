@@ -6,15 +6,17 @@ from squeaky_clean.application.evaluation.eval.metrics.cache_savings_calculator 
     CacheSavingsCalculator,
 )
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.notation_stats import NotationStats
+from squeaky_clean.application.evaluation.eval.metrics.model.reliability_stats import (
+    ReliabilityStats,
+)
+from squeaky_clean.application.evaluation.eval.metrics.model.structure_stats import StructureStats
+from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
+from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
+from squeaky_clean.application.evaluation.eval.metrics.model.velocity_stats import VelocityStats
 from squeaky_clean.application.evaluation.eval.run.run_eval_token_mapper import RunEvalTokenMapper
 from squeaky_clean.application.evaluation.eval.run.run_eval_velocity import RunEvalVelocity
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.notation_stats import NotationStats
-from squeaky_clean.domain.value_objects.metrics.reliability_stats import ReliabilityStats
-from squeaky_clean.domain.value_objects.metrics.structure_stats import StructureStats
-from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
-from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
-from squeaky_clean.domain.value_objects.metrics.velocity_stats import VelocityStats
 
 _PARALLELISM_LIMIT: int = 4
 

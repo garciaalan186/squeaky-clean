@@ -3,11 +3,11 @@
 from dataclasses import asdict
 from typing import cast
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
 from squeaky_clean.application.evaluation.eval.metrics.unmeasured_nulls import (
     null_unmeasured,
 )
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 
 
 def _outcome(payload: dict[str, object]) -> dict[str, object]:

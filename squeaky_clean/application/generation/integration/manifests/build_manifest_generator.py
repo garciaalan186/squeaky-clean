@@ -19,11 +19,15 @@ from squeaky_clean.application.generation.integration.manifests.build_manifest_t
 )
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 
 
 class BuildManifestGenerator:
-    """Pure-function-style use case that writes ``pom.xml`` for Java projects."""
+    """Writes ``pom.xml`` for Java projects via the ProjectFileSystem port."""
+
+    def __init__(self, fs: ProjectFileSystem) -> None:
+        self._fs: ProjectFileSystem = fs
 
     def generate(
         self,
@@ -62,8 +66,7 @@ class BuildManifestGenerator:
         deps.append(render_test_dependency())
         body = self._render(problem.slug, spring, deps)
         path = output_dir / "pom.xml"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(body)
+        self._fs.write(path, body)
         return path
 
     @staticmethod

@@ -27,13 +27,13 @@ class ImplementClass:
 
     def __init__(
         self, gateway: LLMGateway, router: ModelRoutingPolicy,
-        run_config: RunConfig | None = None,
-        composer: TechSpecComposer | None = None,
+        run_config: RunConfig | None = None, composer: TechSpecComposer | None = None,
         parser: ParseImplementedClass | None = None,
+        *, loader: LoadAgentSpec,
     ) -> None:
         rc = run_config or RunConfig()
         self._deps = IcpExecutionDeps(gateway=gateway, router=router, run_config=rc)
-        self._loader = LoadAgentSpec()
+        self._loader = loader
         self._parser = parser or ParseImplementedClass()
         self._retry = ICPRetryHandler(gateway, rc.retry_policy, self._parser)
         self.composer: TechSpecComposer | None = composer

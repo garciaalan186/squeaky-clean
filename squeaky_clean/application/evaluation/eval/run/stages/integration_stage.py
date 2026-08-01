@@ -17,6 +17,7 @@ from squeaky_clean.application.shared.language.rewrite_entity_construction impor
 from squeaky_clean.application.shared.language.rewrite_java_field_access import (
     RewriteJavaFieldAccess,
 )
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 
 
 class IntegrationStage:
@@ -25,8 +26,6 @@ class IntegrationStage:
     def __init__(self, deps: RunEvalDependencies) -> None:
         self._deps = deps
         self._logger = deps.run_logger
-        self._wiring = WiringGenerator()
-        self._manifests = ManifestEmitter(deps.run_logger)
 
     def run(self, ctx: PipelineContext) -> PipelineContext:
         arch, impl = ctx.arch, ctx.impl
@@ -38,15 +37,16 @@ class IntegrationStage:
             security_test_architecture=ctx.sec_arch))
         ctx.emitter.integrated()
         cfg = self._deps.run_config
-        if cfg.infrastructure_mode == "auto" and cfg.emit_wiring:
-            try:
-                path = self._wiring.generate(
-                    arch, ctx.tech_specs, ctx.output_dir)
-                self._logger.event("wiring_emitted", path=str(path))
-            except OSError as exc:
-                self._logger.event("wiring_emit_failed", error=str(exc))
         if cfg.infrastructure_mode == "auto":
-            self._manifests.emit(ctx)
+            fs = self._fs()
+            if cfg.emit_wiring:
+                try:
+                    path = WiringGenerator(fs).generate(
+                        arch, ctx.tech_specs, ctx.output_dir)
+                    self._logger.event("wiring_emitted", path=str(path))
+                except OSError as exc:
+                    self._logger.event("wiring_emit_failed", error=str(exc))
+            ManifestEmitter(self._logger, fs).emit(ctx)
         self._emit_invariant_tests(ctx)
         toolkit = self._deps.toolkit
         if toolkit is not None:
@@ -55,6 +55,13 @@ class IntegrationStage:
             EmitJavaEntitySerialization().emit(arch, ctx.output_dir, toolkit)
         return ctx
 
+    def _fs(self) -> ProjectFileSystem:
+        """The injected user-artifact writer (R6.4a: no raw Path writes)."""
+        fs = self._deps.file_system
+        if fs is None:
+            raise ValueError("IntegrationStage requires deps.file_system")
+        return fs
+
     def _emit_invariant_tests(self, ctx: PipelineContext) -> None:
         """Deterministically write construction-raises invariant tests."""
         toolkit = self._deps.toolkit
@@ -62,8 +69,7 @@ class IntegrationStage:
             return
         arch = ctx.arch
         assert arch is not None
+        fs = self._fs()
         emitted = EmitInvariantTests().emit(arch, ctx.problem, toolkit)
         for rel, body in emitted.items():
-            path = ctx.output_dir / rel
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(body)
+            fs.write(ctx.output_dir / rel, body)

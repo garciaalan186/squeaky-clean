@@ -4,11 +4,11 @@ import dataclasses
 from pathlib import Path
 
 from eval.problems.p0_calculator import P0
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.resume.checkpoint_emitter import CheckpointEmitter
 from squeaky_clean.application.evaluation.eval.run.stages.counter_fold import CounterFold
 from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
 from squeaky_clean.application.evaluation.eval.run.stages.stage_counters import StageCounters
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.infrastructure.observability.lifecycle_timestamp_log import (
     LifecycleTimestampLog,
 )

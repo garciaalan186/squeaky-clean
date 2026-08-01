@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.notation_stats import NotationStats
+from squeaky_clean.application.evaluation.eval.metrics.model.notation_stats import NotationStats
 
 
 def test_defaults_are_zero() -> None:

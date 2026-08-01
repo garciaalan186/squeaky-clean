@@ -1,5 +1,6 @@
 """GenerateSecurityTests: dispatch parallel Security ICPs for each concern."""
 
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.security.security_dispatch_context import (
     SecurityDispatchContext,
 )
@@ -17,12 +18,14 @@ from squeaky_clean.application.shared.gateways.recording_gateway import Recordin
 class GenerateSecurityTests:
     """Use case: produce a TestArchitecture of security tests via parallel ICPs."""
 
-    def __init__(self, deps: GenerateTestArchitectureDeps) -> None:
+    def __init__(
+        self, deps: GenerateTestArchitectureDeps, loader: LoadAgentSpec,
+    ) -> None:
         self._deps: GenerateTestArchitectureDeps = deps
         recording_gw = RecordingGateway(deps.gateway, deps.recorder)
         self._dispatcher: SecurityICPDispatcher = SecurityICPDispatcher(
             gateway=recording_gw, router=deps.router,
-            run_config=deps.run_config,
+            run_config=deps.run_config, loader=loader,
         )
 
     def execute(self, context: SecurityTestContext) -> TestArchitecture:

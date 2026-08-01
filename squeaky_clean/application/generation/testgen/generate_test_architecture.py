@@ -42,10 +42,10 @@ class GenerateTestArchitecture:
 
     def __init__(
         self, deps: GenerateTestArchitectureDeps,
-        loader: LoadAgentSpec | None = None,
+        loader: LoadAgentSpec,
     ) -> None:
         self._deps: GenerateTestArchitectureDeps = deps
-        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader
         self._parser: ParseTestArchitecture = ParseTestArchitecture()
         self._formatter: TestArchitectureContextFormatter = (
             TestArchitectureContextFormatter()

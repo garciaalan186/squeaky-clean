@@ -6,6 +6,8 @@ import html
 import re
 from pathlib import Path
 
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
+
 _HEADER = """<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
@@ -36,7 +38,7 @@ class DashboardGenerator:
                 continue
             sections.append(self._render_section(run_dir.name, summary.read_text()))
         body = _HEADER + "\n".join(sections) + _FOOTER
-        output.write_text(body)
+        atomic_write_text(output, body)
         return output
 
     def _render_section(self, run_name: str, summary_md: str) -> str:

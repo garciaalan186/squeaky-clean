@@ -10,6 +10,7 @@ from squeaky_clean.application.generation.recovery.refactor.refactor_run_summary
     RefactorRunSummary,
 )
 from squeaky_clean.application.generation.recovery.squib.squib_review_gate import SquibReviewGate
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 
 
 class RefactorEmitter:
@@ -21,8 +22,8 @@ class RefactorEmitter:
     Recover -> Analyze -> Triage -> Refactor loop on disk.
     """
 
-    def __init__(self) -> None:
-        self._gate: SquibReviewGate = SquibReviewGate()
+    def __init__(self, fs: ProjectFileSystem) -> None:
+        self._gate: SquibReviewGate = SquibReviewGate(fs)
         self._plans: RefactorPlanDeserializer = RefactorPlanDeserializer()
         self._phase: RefactorPhase = RefactorPhase()
 

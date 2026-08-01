@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
+from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
 
 
 def test_defaults_are_zero_with_ok_status() -> None:

@@ -20,10 +20,10 @@ class ReviewSecurity:
     """Use case: produce a SecurityReview from a ModuleSpec + ProblemSpec via LLM."""
 
     def __init__(
-        self, deps: LLMCallDeps, loader: LoadAgentSpec | None = None,
+        self, deps: LLMCallDeps, loader: LoadAgentSpec,
     ) -> None:
         self._deps: LLMCallDeps = deps
-        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
+        self._loader: LoadAgentSpec = loader
         self._parser: ParseSecurityReview = ParseSecurityReview()
         self._formatter: SecurityReviewFormatter = SecurityReviewFormatter()
 

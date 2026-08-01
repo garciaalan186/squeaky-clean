@@ -7,8 +7,8 @@ import time
 from pathlib import Path
 
 from squeaky_clean.domain.interfaces.dependency_installer import DependencyInstaller
+from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 from squeaky_clean.domain.value_objects.install_result import InstallResult
-from squeaky_clean.infrastructure.observability.json_logger import JSONLogger
 
 _TIMEOUT_SECONDS: int = 300
 _MAX_OUTPUT: int = 4000
@@ -17,8 +17,8 @@ _MAX_OUTPUT: int = 4000
 class NpmDependencyInstaller(DependencyInstaller):
     """Runs ``npm install --no-audit --no-fund --silent`` for a package.json."""
 
-    def __init__(self) -> None:
-        self._logger: JSONLogger = JSONLogger()
+    def __init__(self, logger: RunLogger | None = None) -> None:
+        self._logger: RunLogger = logger or NullRunLogger()
 
     def install(self, project_dir: Path) -> InstallResult:
         """Install npm deps; best-effort on npm absent / timeout."""

@@ -63,3 +63,18 @@ def test_module_spec_validate_accepts_four_methods() -> None:
         methods=("a(): int", "b(): int", "c(): int", "d(): int"),
     )
     assert _module(cls).validate() == []
+
+
+def test_unknown_dep_violations_accepts_external_names() -> None:
+    spec = _module(_cls("A", depends=("Exported",)))
+    assert spec.unknown_dep_violations(frozenset()) == [
+        "A depends on unknown class Exported",
+    ]
+    assert spec.unknown_dep_violations({"Exported"}) == []
+
+
+def test_field_syntax_violations_delegates_to_classes() -> None:
+    spec = _module(_cls("Broken", fields=("no_colon",)))
+    assert spec.field_syntax_violations() == [
+        "Broken field 'no_colon' missing 'name: Type'",
+    ]

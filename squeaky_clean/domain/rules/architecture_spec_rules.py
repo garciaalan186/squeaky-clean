@@ -31,28 +31,26 @@ def collect_violations(spec: ArchitectureSpec) -> list[str]:
             if dep not in names:
                 out.append(f"module {src!r} depends on unknown module {dep!r}")
     out.extend(f"cycle: {c}" for c in spec.graph.cycle_violations())
+    # Cross-module leniency: a bare dep resolves if some module both
+    # exports AND declares it (strict per-edge checks are R6.6c's
+    # cross_module_dependency_rules, surfaced separately).
+    external = all_exports & all_classes
     for module in spec.modules:
-        out.extend(_validate_module(module, all_classes, all_exports))
+        out.extend(_validate_module(module, external))
     return out
 
 
-def _validate_module(
-    module: ModuleSpec, all_classes: set[str], all_exports: set[str],
-) -> list[str]:
+def _validate_module(module: ModuleSpec, external: set[str]) -> list[str]:
     out: list[str] = []
     if not module.name:
         out.append("module name is empty")
     if not module.classes:
         out.append(f"module {module.name!r} declares zero classes")
-    local = {c.name for c in module.classes}
+    # Unknown-dep and field-syntax invariants live ONCE on the entities
+    # (ModuleSpec/ClassSpec, R6.6c); this rule module only orchestrates.
+    out.extend(module.unknown_dep_violations(external))
+    out.extend(module.field_syntax_violations())
     for cls in module.classes:
-        for dep in cls.depends:
-            bare = dep.split("::", 1)[1] if "::" in dep else dep
-            if not (bare in local or (bare in all_exports and bare in all_classes)):
-                out.append(f"{cls.name} depends on unknown class {dep}")
-        for entry in cls.fields:
-            if ":" not in entry:
-                out.append(f"{cls.name} field {entry!r} missing 'name: Type'")
         out.extend(_validate_class_shape(cls))
     return out
 

@@ -19,8 +19,8 @@ class ComposeAgentSpec:
     Unknown placeholders are left literal so agents can introspect them.
     """
 
-    def __init__(self, loader: LoadAgentSpec | None = None) -> None:
-        self._loader: LoadAgentSpec = loader or LoadAgentSpec()
+    def __init__(self, loader: LoadAgentSpec) -> None:
+        self._loader: LoadAgentSpec = loader
 
     def compose(self, spec_name: str, toolkit: LanguageToolkit) -> str:
         """Return the spec's text with language placeholders substituted."""

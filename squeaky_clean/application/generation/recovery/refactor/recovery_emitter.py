@@ -30,6 +30,7 @@ from squeaky_clean.application.generation.recovery.scoring.violation_report_seri
     ViolationReportSerializer,
 )
 from squeaky_clean.application.generation.recovery.squib.squib_review_gate import SquibReviewGate
+from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 
@@ -44,12 +45,13 @@ class RecoveryEmitter:
     regeneration and no refactoring run — those are downstream phases.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, fs: ProjectFileSystem) -> None:
+        self._fs: ProjectFileSystem = fs
         self._extractors: ClassCatalogExtractorFactory = ClassCatalogExtractorFactory()
         self._layers: LayerAssigner = LayerAssigner()
         self._patterns: PatternClassifier = PatternClassifier()
         self._decomposer: ModuleDecomposer = ModuleDecomposer()
-        self._gate: SquibReviewGate = SquibReviewGate()
+        self._gate: SquibReviewGate = SquibReviewGate(fs)
         self._analysis: ViolationAnalysis = ViolationAnalysis()
         self._serializer: ViolationReportSerializer = ViolationReportSerializer()
         self._renderer: ViolationReportRenderer = ViolationReportRenderer()
@@ -69,8 +71,9 @@ class RecoveryEmitter:
         self._gate.emit(spec, out_path)
         report = self._analysis.analyze(RecoveryArtifact(catalog, layers, spec))
         vpath = out_path.with_name(out_path.name + ".violations.json")
-        vpath.write_text(self._serializer.serialize(report))
-        out_path.with_name(out_path.name + ".violations.md").write_text(
+        self._fs.write(vpath, self._serializer.serialize(report))
+        self._fs.write(
+            out_path.with_name(out_path.name + ".violations.md"),
             self._renderer.render(report),
         )
         outcome = self._decider.decide(self._weighting.from_ranking(ranking))

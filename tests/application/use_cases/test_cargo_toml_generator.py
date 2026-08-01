@@ -11,6 +11,7 @@ from squeaky_clean.domain.entities.architecture_spec import ArchitectureSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 
 def _arch() -> ArchitectureSpec:
@@ -46,7 +47,7 @@ def test_returns_none_when_no_rust_tech_specs(tmp_path: Path) -> None:
     py = _spec("rest_server_handler", "fastapi",
                "fastapi==0.110", language="python", manager="pip")
     out = generate_cargo_toml(_arch(), {"rest_server_handler": py},
-                              tmp_path, _problem())
+                              tmp_path, _problem(), fs=LocalFileSystem())
     assert out is None
     assert not (tmp_path / "Cargo.toml").exists()
 
@@ -54,7 +55,7 @@ def test_returns_none_when_no_rust_tech_specs(tmp_path: Path) -> None:
 def test_writes_cargo_toml_with_aws_s3_dependency(tmp_path: Path) -> None:
     spec = _spec("blob_storage", "aws_s3_rust", "aws-sdk-s3==1.40")
     out = generate_cargo_toml(_arch(), {"blob_storage": spec},
-                              tmp_path, _problem("svc"))
+                              tmp_path, _problem("svc"), fs=LocalFileSystem())
     assert out == tmp_path / "Cargo.toml"
     body = out.read_text()
     assert 'name = "svc"' in body
@@ -66,7 +67,7 @@ def test_writes_cargo_toml_with_aws_s3_dependency(tmp_path: Path) -> None:
 def test_writes_cargo_toml_with_redis_dependency(tmp_path: Path) -> None:
     spec = _spec("kv_cache", "redis_rust", "redis==0.25")
     out = generate_cargo_toml(_arch(), {"kv_cache": spec},
-                              tmp_path, _problem())
+                              tmp_path, _problem(), fs=LocalFileSystem())
     assert out is not None
     body = out.read_text()
     assert 'redis = "0.25"' in body
@@ -76,7 +77,7 @@ def test_writes_cargo_toml_with_redis_dependency(tmp_path: Path) -> None:
 def test_skips_stdlib_packages(tmp_path: Path) -> None:
     spec = _spec("blob_storage", "local_disk", "stdlib", manager="stdlib")
     out = generate_cargo_toml(_arch(), {"blob_storage": spec},
-                              tmp_path, _problem())
+                              tmp_path, _problem(), fs=LocalFileSystem())
     assert out is not None
     body = out.read_text()
     assert "tokio = " in body  # always present
@@ -88,7 +89,7 @@ def test_dedupes_duplicate_packages(tmp_path: Path) -> None:
     a = _spec("message_queue_producer", "rdkafka", "rdkafka==0.36")
     b = _spec("message_queue_consumer", "rdkafka", "rdkafka==0.36")
     out = generate_cargo_toml(_arch(), {"p": a, "c": b},
-                              tmp_path, _problem())
+                              tmp_path, _problem(), fs=LocalFileSystem())
     assert out is not None
     body = out.read_text()
     assert body.count("rdkafka =") == 1

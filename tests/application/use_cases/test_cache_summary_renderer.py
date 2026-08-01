@@ -3,8 +3,8 @@
 from squeaky_clean.application.evaluation.eval.metrics.cache_summary_renderer import (
     CacheSummaryRenderer,
 )
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
 
 
 def test_renders_zero_activity_message() -> None:

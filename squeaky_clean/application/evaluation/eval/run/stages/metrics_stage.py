@@ -5,6 +5,7 @@ from __future__ import annotations
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs_assembler import (
     MetricsInputsAssembler,
 )
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.run.pipeline_outputs import PipelineOutputs
 from squeaky_clean.application.evaluation.eval.run.run_eval_dependencies import RunEvalDependencies
 from squeaky_clean.application.evaluation.eval.run.run_eval_metrics_builder import (
@@ -12,7 +13,6 @@ from squeaky_clean.application.evaluation.eval.run.run_eval_metrics_builder impo
 )
 from squeaky_clean.application.evaluation.eval.run.stages.counter_fold import CounterFold
 from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 
 
 class MetricsStage:

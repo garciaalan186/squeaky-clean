@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.run.stages.stage_context import PipelineContext
 from squeaky_clean.application.generation.emission.spec_conformance_checker import (
     SpecConformanceChecker,
@@ -12,7 +13,6 @@ from squeaky_clean.application.generation.testgen.check_test_obligations import 
 from squeaky_clean.application.generation.testgen.project_test_obligations import (
     ProjectTestObligations,
 )
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 
 

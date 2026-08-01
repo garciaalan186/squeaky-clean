@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
+from squeaky_clean.application.evaluation.eval.metrics.model.test_outcome import TestOutcome
 from squeaky_clean.application.evaluation.eval.report.regression_gate import (
     RegressionGate,
 )
@@ -14,8 +16,6 @@ from squeaky_clean.application.generation.validation.validation_report import (
 )
 from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
-from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 

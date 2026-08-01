@@ -1,8 +1,8 @@
 """Tests for SweepFailureBundle crash-to-report conversion."""
 
+from squeaky_clean.application.evaluation.eval.metrics.model.eval_metrics import EvalMetrics
 from squeaky_clean.application.evaluation.eval.sweep.sweep_failure_bundle import SweepFailureBundle
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 

@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
+from squeaky_clean.application.evaluation.eval.metrics.model.tier_cache_stats import TierCacheStats
 
 
 def test_defaults_are_empty() -> None:

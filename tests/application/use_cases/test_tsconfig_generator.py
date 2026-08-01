@@ -8,6 +8,7 @@ from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.tech_spec import TechSpec
 from squeaky_clean.domain.value_objects.tech_spec_operation import TechSpecOperation
+from squeaky_clean.infrastructure.filesystem.local_file_system import LocalFileSystem
 
 
 def _problem(lang: TargetLanguage = TargetLanguage.TYPESCRIPT) -> ProblemSpec:
@@ -35,7 +36,7 @@ def _ts_spec() -> TechSpec:
 
 
 def test_tsconfig_emitted_for_typescript_problem(tmp_path: Path) -> None:
-    out = generate({}, tmp_path, _problem(TargetLanguage.TYPESCRIPT))
+    out = generate({}, tmp_path, _problem(TargetLanguage.TYPESCRIPT), fs=LocalFileSystem())
     assert out == tmp_path / "tsconfig.json"
     body = json.loads(out.read_text())
     assert body["compilerOptions"]["strict"] is True
@@ -44,13 +45,13 @@ def test_tsconfig_emitted_for_typescript_problem(tmp_path: Path) -> None:
 
 
 def test_tsconfig_skipped_for_non_typescript(tmp_path: Path) -> None:
-    out = generate({}, tmp_path, _problem(TargetLanguage.PYTHON))
+    out = generate({}, tmp_path, _problem(TargetLanguage.PYTHON), fs=LocalFileSystem())
     assert out is None
 
 
 def test_tsconfig_emitted_when_any_techspec_typescript(tmp_path: Path) -> None:
     out = generate({"x": _ts_spec()}, tmp_path,
-                   _problem(TargetLanguage.PYTHON))
+                   _problem(TargetLanguage.PYTHON), fs=LocalFileSystem())
     assert out is not None
     body = json.loads(out.read_text())
     assert body["compilerOptions"]["strict"] is True

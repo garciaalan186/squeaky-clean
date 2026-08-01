@@ -2,6 +2,7 @@
 
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.gateways.cost_budget import CostBudget
 from squeaky_clean.application.shared.gateways.retry_policy import RetryPolicy
@@ -64,7 +65,7 @@ def _rc(retries: int) -> RunConfig:
 
 def test_retry_succeeds_on_second_attempt() -> None:
     gw = _SequencedGateway([_BAD, _GOOD])
-    uc = ImplementClass(gw, ModelRouter(), _rc(retries=1))
+    uc = ImplementClass(gw, ModelRouter(), _rc(retries=1), loader=LoadAgentSpec())
     result = uc.execute(_assignment())
     assert result.class_name == "Operand"
     assert result.retries == 1
@@ -73,7 +74,7 @@ def test_retry_succeeds_on_second_attempt() -> None:
 
 def test_no_retry_when_first_call_succeeds() -> None:
     gw = _SequencedGateway([_GOOD])
-    uc = ImplementClass(gw, ModelRouter(), _rc(retries=2))
+    uc = ImplementClass(gw, ModelRouter(), _rc(retries=2), loader=LoadAgentSpec())
     result = uc.execute(_assignment())
     assert result.retries == 0
     assert gw.calls == 1

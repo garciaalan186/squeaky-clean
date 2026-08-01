@@ -1,9 +1,11 @@
-"""toolchain_probe: record the toolchain versions a run executed under."""
+"""ToolchainProbeAdapter: subprocess-backed ToolchainInfo port implementation."""
 
 from __future__ import annotations
 
 import re
 import subprocess
+
+from squeaky_clean.domain.interfaces.provenance.toolchain_info import ToolchainInfo
 
 _TIMEOUT_SECONDS = 5
 _ANSI = re.compile(r"\x1b\[[0-9;]*m")
@@ -20,12 +22,12 @@ _TOOLS: dict[str, list[str]] = {
 }
 
 
-def probe() -> dict[str, str]:
-    """First version line per tool; "absent" when not on PATH."""
-    out: dict[str, str] = {}
-    for name, argv in _TOOLS.items():
-        out[name] = _first_line(argv)
-    return out
+class ToolchainProbeAdapter(ToolchainInfo):
+    """Probes local toolchain versions (moved from toolchain_probe, R6.4c)."""
+
+    def versions(self) -> dict[str, str]:
+        """First version line per tool; ``"absent"`` when not on PATH."""
+        return {name: _first_line(argv) for name, argv in _TOOLS.items()}
 
 
 def _first_line(argv: list[str]) -> str:

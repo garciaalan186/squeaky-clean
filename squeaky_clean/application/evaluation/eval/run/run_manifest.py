@@ -5,18 +5,31 @@ from __future__ import annotations
 import hashlib
 import json
 import platform
-import subprocess
 from collections.abc import Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 
-from squeaky_clean.application.evaluation.eval.run.toolchain_probe import probe
 from squeaky_clean.application.generation.emission.spec_version_stamp import SpecVersionStamp
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
+from squeaky_clean.domain.interfaces.provenance.git_info import GitInfo
+from squeaky_clean.domain.interfaces.provenance.toolchain_info import ToolchainInfo
 
 
 class RunManifest:
-    """Captures model IDs, spec hashes, framework SHA, replicate seeds."""
+    """Captures model IDs, spec hashes, framework SHA, replicate seeds.
+
+    Provenance probes (git SHA, toolchain versions) arrive via the
+    ``GitInfo`` / ``ToolchainInfo`` ports (R6.4c) — the composition root
+    injects the subprocess adapters; unwired they degrade to unknown/{}.
+    """
+
+    def __init__(
+        self,
+        git_info: GitInfo | None = None,
+        toolchain_info: ToolchainInfo | None = None,
+    ) -> None:
+        self._git: GitInfo | None = git_info
+        self._toolchains: ToolchainInfo | None = toolchain_info
 
     def write(
         self,
@@ -32,8 +45,8 @@ class RunManifest:
             "python_version": platform.python_version(),
             "models": dict(models),
             "replicate_id": replicate_id,
-            "framework_sha": self._git_sha(),
-            "toolchains": probe(),
+            "framework_sha": self._git.head_sha() if self._git else "unknown",
+            "toolchains": self._toolchains.versions() if self._toolchains else {},
             "spec_library_version": self._stamp(spec_dirs),
             "spec_hashes": self._hash_spec_dirs(spec_dirs),
         }
@@ -49,16 +62,6 @@ class RunManifest:
             if "unversioned" not in stamp:
                 return stamp
         return "0.0.0+unversioned"
-
-    def _git_sha(self) -> str:
-        try:
-            out = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                capture_output=True, text=True, timeout=5, check=False,
-            )
-            return out.stdout.strip() if out.returncode == 0 else "unknown"
-        except (OSError, subprocess.TimeoutExpired):
-            return "unknown"
 
     def _hash_spec_dirs(self, dirs: Sequence[Path]) -> dict[str, str]:
         out: dict[str, str] = {}

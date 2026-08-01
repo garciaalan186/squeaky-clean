@@ -2,6 +2,7 @@
 
 from squeaky_clean.application.generation.emission.class_assignment import ClassAssignment
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
@@ -74,7 +75,7 @@ def _assignment() -> ClassAssignment:
 
 def test_execute_returns_implemented_class() -> None:
     gateway = _StubGateway(_CANNED_CODE)
-    uc = ImplementClass(gateway, ModelRouter())
+    uc = ImplementClass(gateway, ModelRouter(), loader=LoadAgentSpec())
     result = uc.execute(_assignment())
     assert result.class_name == "Operand"
     assert result.file_path == "/tmp/p0/src/operand.py"
@@ -85,7 +86,7 @@ def test_execute_returns_implemented_class() -> None:
 
 def test_execute_uses_icp_tier_model() -> None:
     gateway = _StubGateway(_CANNED_CODE)
-    uc = ImplementClass(gateway, ModelRouter())
+    uc = ImplementClass(gateway, ModelRouter(), loader=LoadAgentSpec())
     uc.execute(_assignment())
     assert gateway.last_request is not None
     assert gateway.last_request.model == "claude-haiku-4-5-20251001"

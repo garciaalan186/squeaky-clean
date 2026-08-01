@@ -1,6 +1,7 @@
 """B1: shared TestArchitect.md composes correctly for every supported language."""
 
 from squeaky_clean.application.generation.emission.compose_agent_spec import ComposeAgentSpec
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
 )
@@ -9,7 +10,7 @@ from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 
 def _compose_shared(lang: TargetLanguage) -> str:
     toolkit = LanguageToolkitFactory().for_language(lang)
-    return ComposeAgentSpec().compose("_shared/OracleCompiler", toolkit)
+    return ComposeAgentSpec(LoadAgentSpec()).compose("_shared/OracleCompiler", toolkit)
 
 
 def test_python_composition_has_no_unfilled_placeholders() -> None:

@@ -56,6 +56,7 @@ from squeaky_clean.domain.interfaces.integration_bootstrap import IntegrationBoo
 from squeaky_clean.domain.interfaces.project_compiler import ProjectCompiler
 from squeaky_clean.domain.interfaces.project_file_system import ProjectFileSystem
 from squeaky_clean.domain.interfaces.rule import Rule
+from squeaky_clean.domain.interfaces.run_logger import RunLogger
 from squeaky_clean.domain.interfaces.test_runner import TestRunner
 from squeaky_clean.domain.rules.go_granularity_rule import GoGranularityRule
 from squeaky_clean.domain.rules.java_granularity_rule import JavaGranularityRule
@@ -93,25 +94,26 @@ from squeaky_clean.infrastructure.testing.typescript_test_runner import TypeScri
 class LanguageAdapterEntry:
     """Per-language factories for every runtime adapter.
 
-    ``runner_factory`` takes an exclude glob (None = run everything), so a
+    ``runner_factory`` takes an exclude glob (None = run everything) plus
+    the composition root's RunLogger (None = silent, R6.4b), so a
     single field serves the plain runner, the functional runner (paired with
     ``functional_exclude``) and LanguageTestRunnerFactory's arbitrary-glob
     lookups — the mapping is never restated. ``compiler`` is None for
     languages without a meaningful ahead-of-time compile/typecheck step.
     """
 
-    runner_factory: Callable[[str | None], TestRunner]
+    runner_factory: Callable[[str | None, RunLogger | None], TestRunner]
     functional_exclude: str
     granularity_rule: Callable[[], Rule]
     bootstrap: Callable[[ProjectFileSystem], IntegrationBootstrap]
     parser: Callable[[], ImplementedClassParser]
-    installer: Callable[[], DependencyInstaller]
+    installer: Callable[[RunLogger | None], DependencyInstaller]
     compiler: Callable[[], ProjectCompiler] | None = None
 
 
 REGISTRY: dict[TargetLanguage, LanguageAdapterEntry] = {
     TargetLanguage.PYTHON: LanguageAdapterEntry(
-        runner_factory=lambda glob: PytestRunner(exclude_glob=glob),
+        runner_factory=lambda glob, log: PytestRunner(exclude_glob=glob),
         functional_exclude="*security*",
         granularity_rule=PythonGranularityRule,
         bootstrap=PythonIntegrationBootstrap,
@@ -119,7 +121,7 @@ REGISTRY: dict[TargetLanguage, LanguageAdapterEntry] = {
         installer=PipDependencyInstaller,
     ),
     TargetLanguage.JAVASCRIPT: LanguageAdapterEntry(
-        runner_factory=lambda glob: NodeTestRunner(exclude_glob=glob),
+        runner_factory=lambda glob, log: NodeTestRunner(exclude_glob=glob),
         functional_exclude="*security*",
         granularity_rule=JavaScriptGranularityRule,
         bootstrap=JavaScriptIntegrationBootstrap,
@@ -127,7 +129,7 @@ REGISTRY: dict[TargetLanguage, LanguageAdapterEntry] = {
         installer=NpmDependencyInstaller,
     ),
     TargetLanguage.TYPESCRIPT: LanguageAdapterEntry(
-        runner_factory=lambda glob: TypeScriptTestRunner(exclude_glob=glob),
+        runner_factory=lambda glob, log: TypeScriptTestRunner(exclude_glob=glob),
         functional_exclude="*security*",
         granularity_rule=TypeScriptGranularityRule,
         bootstrap=TypeScriptIntegrationBootstrap,
@@ -136,7 +138,7 @@ REGISTRY: dict[TargetLanguage, LanguageAdapterEntry] = {
         compiler=TypeScriptCompiler,
     ),
     TargetLanguage.JAVA: LanguageAdapterEntry(
-        runner_factory=lambda glob: MavenTestRunner(exclude_glob=glob),
+        runner_factory=lambda glob, log: MavenTestRunner(exclude_glob=glob, logger=log),
         functional_exclude="*SecurityTest*",
         granularity_rule=JavaGranularityRule,
         bootstrap=JavaIntegrationBootstrap,
@@ -145,7 +147,7 @@ REGISTRY: dict[TargetLanguage, LanguageAdapterEntry] = {
         compiler=JavaCompiler,
     ),
     TargetLanguage.GO: LanguageAdapterEntry(
-        runner_factory=lambda glob: GoTestRunner(exclude_glob=glob),
+        runner_factory=lambda glob, log: GoTestRunner(exclude_glob=glob, logger=log),
         functional_exclude="*security*",
         granularity_rule=GoGranularityRule,
         bootstrap=GoIntegrationBootstrap,
@@ -153,7 +155,7 @@ REGISTRY: dict[TargetLanguage, LanguageAdapterEntry] = {
         installer=GoDependencyInstaller,
     ),
     TargetLanguage.RUST: LanguageAdapterEntry(
-        runner_factory=lambda glob: CargoTestRunner(exclude_glob=glob),
+        runner_factory=lambda glob, log: CargoTestRunner(exclude_glob=glob, logger=log),
         functional_exclude="*security*",
         granularity_rule=RustGranularityRule,
         bootstrap=RustIntegrationBootstrap,

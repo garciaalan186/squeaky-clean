@@ -8,6 +8,7 @@ import pytest
 
 from squeaky_clean.application.generation.emission.assign_patterns import AssignPatterns
 from squeaky_clean.application.generation.emission.implement_class import ImplementClass
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.emission.orchestrate_module import OrchestrateModule
 from squeaky_clean.application.shared.language.language_toolkit_factory import (
     LanguageToolkitFactory,
@@ -64,7 +65,7 @@ def test_orchestrate_module_live(tmp_path: Path) -> None:
         ModelTier.ICP: "claude-haiku-4-5-20251001",
     })
     gateway = ClaudeCLIGateway()
-    ic = ImplementClass(gateway, router)
+    ic = ImplementClass(gateway, router, loader=LoadAgentSpec())
     toolkit = LanguageToolkitFactory().for_language(TargetLanguage.PYTHON)
     ap = AssignPatterns(toolkit, tmp_path)
     uc = OrchestrateModule(ic, ap)

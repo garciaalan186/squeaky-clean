@@ -1,7 +1,7 @@
 """RunEvalTokenMapper: build the CostBreakdown VO from MetricsInputs."""
 
 from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import MetricsInputs
-from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.application.evaluation.eval.metrics.model.cost_breakdown import CostBreakdown
 
 
 class RunEvalTokenMapper:

@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict
 from pathlib import Path
 
 from squeaky_clean.application.evaluation.eval.resume.run_checkpoint import RunCheckpoint
+from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.domain.interfaces.run_logger import NullRunLogger, RunLogger
 
 _CHECKPOINT_FILENAME = "CHECKPOINT.json"
@@ -27,12 +27,9 @@ class CheckpointWriter:
     def write(self, checkpoint: RunCheckpoint, run_dir: Path) -> None:
         """Serialize ``checkpoint`` as JSON to ``<run_dir>/CHECKPOINT.json``."""
         target = run_dir / _CHECKPOINT_FILENAME
-        tmp = target.with_suffix(".json.tmp")
         try:
-            run_dir.mkdir(parents=True, exist_ok=True)
             payload = json.dumps(asdict(checkpoint), indent=2, default=str)
-            tmp.write_text(payload)
-            os.replace(tmp, target)
+            atomic_write_text(target, payload)
         except OSError as exc:
             self._logger.event(
                 "checkpoint_write_failed",

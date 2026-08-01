@@ -1,5 +1,6 @@
 """Tests for VerifyLayer (R1.8 — the previously-dead LayerVerifier specs)."""
 
+from squeaky_clean.application.generation.emission.load_agent_spec import LoadAgentSpec
 from squeaky_clean.application.generation.validation.verify_layer import VerifyLayer
 from squeaky_clean.application.shared.config.run_config import RunConfig
 from squeaky_clean.application.shared.gateways.llm_call_deps import LLMCallDeps
@@ -42,14 +43,14 @@ def _deps(gateway: LLMGateway) -> LLMCallDeps:
 
 def test_ok_response_yields_no_violations() -> None:
     gw = _StubGateway("OK")
-    assert VerifyLayer(_deps(gw)).verify(_module()) == ()
+    assert VerifyLayer(_deps(gw), LoadAgentSpec()).verify(_module()) == ()
     # It loaded the real DomainVerifier spec and sent it as the system prompt.
     assert "DomainVerifier" in gw.calls[0].system_prompt or gw.calls[0].system_prompt
 
 
 def test_violation_lines_are_parsed() -> None:
     gw = _StubGateway("VIOLATION: Domain imports Application\nVIOLATION: too many args")
-    result = VerifyLayer(_deps(gw)).verify(_module())
+    result = VerifyLayer(_deps(gw), LoadAgentSpec()).verify(_module())
     assert result == ("Domain imports Application", "too many args")
 
 
@@ -60,5 +61,5 @@ def test_records_usage_under_manager_tier() -> None:
         gateway=gw, router=ModelRouter(), recorder=recorder,
         run_config=RunConfig(),
     )
-    VerifyLayer(deps).verify(_module())
+    VerifyLayer(deps, LoadAgentSpec()).verify(_module())
     assert recorder.stats("manager")[0] > 0  # input tokens recorded
