@@ -40,6 +40,16 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # R6.1d: pin go + rust so the GoBuildCompiler/CargoCheckCompiler
+      # adapter tests run for real in CI (they skip where absent locally).
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install (dev extras)
         run: pip install -e '.[dev]'
 

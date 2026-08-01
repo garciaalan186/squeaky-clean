@@ -28,6 +28,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    declare `public final class <Name>` with a `private final` field for every entry in `fields:` (verbatim names, in order), one constructor assigning them, and read-only getters as the ONLY accessors — no setters. **NO `record` SYNTAX** — a `record` declaration is a HARD FAILURE (target JDKs below 14 must compile it). If `methods:` declares accessor-only methods, implement them as instance methods on the class.
 {{/lang}}
+{{#lang:go}}
+   declare `type <Name> struct { ... }` with unexported (lowercase) fields for every entry in `fields:`, set only via a `new<Name>(...)` constructor; provide an exported getter method per field (`func (m <Name>) Field() Type { return m.field }`); declare NO method that assigns to a field after construction.
+{{/lang}}
+{{#lang:rust}}
+   declare `#[derive(Debug, Clone, PartialEq)]` `pub struct <Name> { ... }` with private fields for every entry in `fields:`; provide `pub fn new(...) -> Self` plus a `pub fn <field>(&self) -> &Type` (or by-value for `Copy` types) getter per field; NO method takes `&mut self`.
+{{/lang}}
 3. For the Originator: declare one plain concrete class; implement the `save()`-style method returning a NEW instance of the sibling Memento constructed from current state; implement the `restore(memento)`-style method to reassign internal state from the memento's fields/accessors, never mutating the memento itself.
 {{#lang:python}}
    Signatures: `save(self) -> <MementoName>:` and `restore(self, memento: <MementoName>) -> None:`.

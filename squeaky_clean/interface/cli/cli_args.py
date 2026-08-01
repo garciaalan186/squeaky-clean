@@ -38,6 +38,7 @@ class CLIArgs:
     rebuild_dashboard: bool = False
     micro_evals: bool = False
     micro_patterns: tuple[str, ...] = ()
+    micro_languages: tuple[str, ...] = ()
     replay_only: bool = False
     architect_mode: str = "patterned"
     resume_run_dir: str | None = None

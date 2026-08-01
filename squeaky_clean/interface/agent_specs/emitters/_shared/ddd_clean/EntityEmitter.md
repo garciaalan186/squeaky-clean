@@ -32,7 +32,9 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    **Constructor includes ALL fields.** The constructor MUST have a parameter for EVERY field listed in `fields:`, in the declared order. Do NOT auto-initialize any field with a default value — accept every field as a constructor argument and assign via `this.field = param`. Provide public getters for each field.
 {{/lang}}
+{{#lang:python,javascript,typescript,java}}
 4. Implement identity-based equality:
+{{/lang}}
 {{#lang:python}}
    override `__eq__` and `__hash__` to compare by `id` only.
 {{/lang}}
@@ -89,6 +91,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    at the START of the constructor with `throw new IllegalArgumentException("<message>")` on violation.
 {{/lang}}
+{{#lang:go}}
+   in `New<Name>(...)`, returning `<Name>{}, fmt.Errorf("<message>")` on violation.
+{{/lang}}
+{{#lang:rust}}
+   in `new(...) -> Result<Self, String>`, returning `Err("<message>".into())` on violation.
+{{/lang}}
    (ii) **Method-level invariants** describe a precondition for a specific method — e.g. `"only members may send messages"`. Validate inside the method body, NOT at construction.
 {{#lang:python}}
    **Always raise `ValueError`** with a message matching the invariant text, never `PermissionError` / `KeyError` / `AttributeError` / domain-specific exception subclasses. The framework's tests catch only `ValueError` and `ZeroDivisionError`; using any other exception causes spurious test failures.
@@ -133,7 +141,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:python}}
    If a `fields:` entry uses array syntax `Type[]`, translate it to `list[Type]` with `field(default_factory=list)` so the constructor defaults to an empty list when no value is passed. Tests expect to construct objects like `TodoRepository()` without passing empty collections.
 {{/lang}}
-{{#lang:javascript,typescript,java}}
+{{#lang:javascript,typescript,java,go,rust}}
    {{profile:collection_default_rule}}
 {{/lang}}
 10. **No boolean flag guards.** Do NOT validate boolean fields (`isPending`, `isCompleted`, `isActive`, `isRead`) in the constructor. Accept any boolean value — these are lifecycle state that methods toggle.

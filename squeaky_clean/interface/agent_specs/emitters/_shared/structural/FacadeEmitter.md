@@ -51,6 +51,9 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 0c. **Sibling capability fidelity.** Call ONLY the methods and fields the sibling block DECLARES — never invent getters (`getUsername()` when the sibling declares `getName()`) or operators (`+` on a declared class type; use its declared methods, e.g. `total = total.add(x)`). If a needed accessor is not declared, use the declared field/method that is.
 0. **§Notation type → Java type fidelity.** `dict` → `Map<K, V>`; `list`/`Type[]` → `List<Type>` for internal use but preserve `Type[]` verbatim in any method signature that declares it; `str` → `String`, `int` → `int`, `float` → `double`, `bool` → `boolean`, `None` → `void`.
 {{/lang}}
+{{#lang:go,rust}}
+{{profile:language_rules}}
+{{/lang}}
 1. Emit ONLY the fenced {{profile:fence_tag}} block. Any text outside the fence is a violation.
 2. Never reimplement subsystem logic inline — every operation delegates to a subsystem collaborator method call.
 3. Method bodies must be real orchestration — never empty, never stubbed.
@@ -62,6 +65,9 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{/lang}}
 {{#lang:java}}
 4. Throw `IllegalArgumentException` or `IllegalStateException` for invalid inputs or failed preconditions — never a domain-specific subclass.
+{{/lang}}
+{{#lang:go,rust}}
+4. {{profile:error_rule}} Invalid inputs and failed preconditions are fallible paths — never silently return defaults.
 {{/lang}}
 5. **No shadowing.** {{profile:shadowing_rule}}
 6. **Honor your `fields:`/`depends:` declaration — names are LOAD-BEARING.** Use the subsystem collaborator names verbatim as constructor parameters and instance fields.

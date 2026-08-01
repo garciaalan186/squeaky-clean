@@ -8,7 +8,7 @@ Add domain-specific patterns (event-sourcing aggregate, CQRS handler, saga, etc.
 
 ### 1. Author your custom emitter
 
-Write a Markdown spec at any path on your filesystem. Mirror the structure of `squeaky_clean/interface/agent_specs/emitters/python/ddd_clean/EntityEmitter.md` (Identity / Model Tier / Input Contract / Output Contract / Constraints / Pattern Knowledge / Failure Modes).
+Write a Markdown spec at any path on your filesystem. Mirror the structure of `squeaky_clean/interface/agent_specs/emitters/_shared/ddd_clean/EntityEmitter.md` (Identity / Model Tier / Input Contract / Output Contract / Constraints / Pattern Knowledge / Failure Modes).
 
 ```
 ~/my_specs/emitters/python/custom/EventSourcedAggregateEmitter.md

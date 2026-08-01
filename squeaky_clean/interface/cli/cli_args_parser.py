@@ -70,6 +70,10 @@ class CLIArgsParser:
                 pat.strip() for pat in str(ns.micro_patterns).split(",")
                 if pat.strip()
             ),
+            micro_languages=tuple(
+                lang.strip() for lang in str(ns.micro_languages).split(",")
+                if lang.strip()
+            ),
             replay_only=bool(ns.replay_only),
             architect_mode=str(ns.architect_mode),
             resume_run_dir=(
@@ -191,6 +195,11 @@ class CLIArgsParser:
             "--micro-patterns", dest="micro_patterns", default="",
             help="R6.1a: only run micro-eval fixtures whose stem starts "
                  "with one of these comma-separated prefixes",
+        )
+        parser.add_argument(
+            "--micro-languages", dest="micro_languages", default="",
+            help="R6.1d: only run micro-eval columns for these comma-"
+                 "separated language names (e.g. go,rust); default all",
         )
         parser.add_argument(
             "--rebuild-dashboard", dest="rebuild_dashboard",

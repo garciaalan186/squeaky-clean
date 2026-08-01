@@ -64,11 +64,16 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    **ALWAYS throw `new IllegalArgumentException(msg)` for ANY domain failure** — including divide-by-zero, invalid inputs, missing data, constraint violations. Do NOT use `ArithmeticException`, `NumberFormatException`, or any other exception type. The test suite expects exactly `IllegalArgumentException`.
 {{/lang}}
+{{#lang:go,rust}}
+   {{profile:error_rule}} This includes divide-by-zero, invalid inputs, missing data, and constraint violations.
+{{/lang}}
 4. **No shadowing.** {{profile:shadowing_rule}}
 {{#lang:python}}
    (E.g. never `Operand = int | float` when an `Operand` class exists — use the sibling class directly via its dotted-path import.)
 {{/lang}}
+{{#lang:python,javascript,typescript,java}}
 5. **Non-primitive params.** If a method parameter type is a sibling ValueObject (e.g. `a: Operand`), extract primitives via its accessor
+{{/lang}}
 {{#lang:python}}
    (`a.value`) or an equivalent field — do NOT call arithmetic operators directly on the instance unless the VO's spec shows a dunder method.
 {{/lang}}
@@ -97,7 +102,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:python}}
    If a `fields:` entry uses array syntax `Type[]`, translate it to `list[Type]` and default it to `[]` in the `__init__` signature (e.g. `def __init__(self, items: list[Type] | None = None)` then `self.items = items if items is not None else []`). Tests expect to construct objects like `TodoRepository()` without passing empty collections.
 {{/lang}}
-{{#lang:javascript,typescript,java}}
+{{#lang:javascript,typescript,java,go,rust}}
    {{profile:collection_default_rule}}
 {{/lang}}
 10. **Floor-at-zero semantics.** When implementing a discount or reduction method where the acceptance criteria say "floors at zero" or "clamps to zero", use {{profile:floor_expr}}. Do NOT raise an error when the discount exceeds the total.

@@ -64,6 +64,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    at the START of the constructor body (before field assignments) with `throw new IllegalArgumentException("<message matching the invariant text>")` on violation.
 {{/lang}}
+{{#lang:go}}
+   in the `New<Name>(...)` constructor, returning the zero value plus `fmt.Errorf("<message matching the invariant text>")` on violation.
+{{/lang}}
+{{#lang:rust}}
+   in `new(...) -> Result<Self, String>`, returning `Err("<message matching the invariant text>".into())` on violation.
+{{/lang}}
    Common invariants:
    - `"non-empty"` / `"not empty"` / `"not blank"` (string field) → reject empty AND whitespace-only strings
    - `"non-negative"` / `">= 0"` → reject values `< 0`
@@ -95,7 +101,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:python}}
    If a `fields:` entry uses array syntax `Type[]`, translate it to `tuple[Type, ...]` with `field(default_factory=tuple)` so the constructor defaults to an empty tuple when no value is passed. Tests expect to construct objects without passing empty collections.
 {{/lang}}
-{{#lang:javascript,typescript,java}}
+{{#lang:javascript,typescript,java,go,rust}}
    {{profile:collection_default_rule}}
 {{/lang}}
 {{profile:extra_constraints}}

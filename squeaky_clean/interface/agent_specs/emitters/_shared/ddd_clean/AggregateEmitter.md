@@ -62,7 +62,9 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:typescript}}
    Full type annotations on parameters and return values.
 {{/lang}}
+{{#lang:python,javascript,typescript,java}}
 6. Implement identity-based equality:
+{{/lang}}
 {{#lang:python}}
    override `__eq__` and `__hash__` to compare by `id` only.
 {{/lang}}
@@ -109,6 +111,12 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:java}}
    at the START of the constructor with `throw new IllegalArgumentException("<message>")` on violation.
 {{/lang}}
+{{#lang:go}}
+   in `New<Name>(...)`, returning `<Name>{}, fmt.Errorf("<message>")` on violation.
+{{/lang}}
+{{#lang:rust}}
+   in `new(...) -> Result<Self, String>`, returning `Err("<message>".into())` on violation.
+{{/lang}}
    (ii) **Method-level invariants** — a precondition for a specific method, including ones that guard the aggregate's consistency boundary (e.g. `"cannot add items after the order is placed"`). Validate inside the method body.
 {{#lang:python}}
    **Always raise `ValueError`**, never `PermissionError` / `KeyError` / domain-specific subclasses.
@@ -149,7 +157,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:typescript}}
    `Type[]` -> `constructor(items: Type[] = [])`, assigned to the private field.
 {{/lang}}
-{{#lang:java}}
+{{#lang:java,go,rust}}
    {{profile:collection_default_rule}}
 {{/lang}}
 {{profile:extra_constraints}}

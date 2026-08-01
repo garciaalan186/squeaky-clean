@@ -12,6 +12,7 @@ from squeaky_clean.application.evaluation.microeval.micro_eval_report_writer imp
 from squeaky_clean.application.evaluation.microeval.micro_eval_runner import (
     MicroEvalRunner,
 )
+from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.interface.cli.invocations.micro_eval_invocation import MicroEvalInvocation
 from squeaky_clean.interface.cli.micro_eval_implementers import build_implementers
 from squeaky_clean.interface.cli.micro_eval_scaffold import (
@@ -38,6 +39,15 @@ class MicroEvalCommand:
             return fixtures
         return [f for f in fixtures if f.stem.startswith(patterns)]
 
+    @staticmethod
+    def select_languages(
+        available: tuple[TargetLanguage, ...], wanted: tuple[str, ...],
+    ) -> tuple[TargetLanguage, ...]:
+        """R6.1d: keep matrix columns named in ``wanted`` (all if empty)."""
+        if not wanted:
+            return available
+        return tuple(lang for lang in available if lang.value in wanted)
+
     def run(self, invocation: MicroEvalInvocation) -> int:
         """Emit + compile every squib fixture in every language; report."""
         rc = RunConfigFactory().build(invocation.settings, replicate_id=0)
@@ -53,9 +63,10 @@ class MicroEvalCommand:
             sorted((_FRAMEWORK_ROOT / "eval" / "squib_fixtures").glob("*.squib")),
             invocation.patterns,
         )
+        columns = self.select_languages(LANGUAGES, invocation.languages)
         cells = tuple(
             runner.run_cell(fixture, language)
-            for fixture in fixtures for language in LANGUAGES
+            for fixture in fixtures for language in columns
         )
         md_path = MicroEvalReportWriter().write(run_dir, cells)
         passed = sum(1 for c in cells if c.passed)

@@ -16,7 +16,7 @@ An optional JUnit 5 test skeleton may additionally be provided for reference.
 Exactly one {{profile:language_name}} file body inside a single ```{{profile:fence_tag}} fenced block. NO prose, NO explanation, NO extra fences, NO markdown outside the fence. The file MUST:
 1. {{profile:file_preamble}}
 2. For the Implementor:
-{{#lang:python,javascript}}
+{{#lang:python,javascript,go,rust}}
    {{profile:abstract_idiom}}
 {{/lang}}
 {{#lang:python}}
@@ -45,7 +45,7 @@ Exactly one {{profile:language_name}} file body inside a single ```{{profile:fen
 {{#lang:python}}
    declare one plain class implementing the port named in `implements:` with real bodies for every primitive operation.
 {{/lang}}
-{{#lang:javascript}}
+{{#lang:javascript,go,rust}}
    {{profile:concrete_idiom}} Provide real bodies for every primitive operation.
 {{/lang}}
 {{#lang:typescript}}
