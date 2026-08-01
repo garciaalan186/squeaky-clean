@@ -73,24 +73,24 @@ def _primed_ctx(tmp_path: Path) -> PipelineContext:
 
 def test_counters_fold_into_their_metrics_fields(tmp_path: Path) -> None:
     metrics = MetricsStage(build_stub_deps()).build(_primed_ctx(tmp_path))
-    assert metrics.dependency_injection_violations == 1
-    assert metrics.architect_retries == 2
-    assert metrics.http_convention_violations == 4
-    assert metrics.notation_novelty == 5
-    assert metrics.test_criteria_filtered == 6
-    assert metrics.infrastructure_choices_explicit == 1
-    assert metrics.infrastructure_choices_derived == 2
-    assert metrics.mcda_runs == 2
-    assert metrics.dependency_install_failed is True
-    assert metrics.compile_errors == 3
+    assert metrics.notation.dependency_injection_violations == 1
+    assert metrics.reliability.architect_retries == 2
+    assert metrics.notation.http_convention_violations == 4
+    assert metrics.notation.notation_novelty == 5
+    assert metrics.notation.test_criteria_filtered == 6
+    assert metrics.notation.infrastructure_choices_explicit == 1
+    assert metrics.notation.infrastructure_choices_derived == 2
+    assert metrics.notation.mcda_runs == 2
+    assert metrics.notation.dependency_install_failed is True
+    assert metrics.reliability.compile_errors == 3
 
 
 def test_stage_results_drive_pass_rate_and_infra_icp_count(tmp_path: Path) -> None:
     metrics = MetricsStage(build_stub_deps()).build(_primed_ctx(tmp_path))
     assert metrics.tests_pass == pytest.approx(2 / 3)
     # Only the INFRASTRUCTURE-layer module impl counts toward the ICP tally.
-    assert metrics.infrastructure_icp_count == 1
-    assert metrics.spec_conformance_violations == 0
-    assert metrics.test_obligation_gaps >= 0
+    assert metrics.notation.infrastructure_icp_count == 1
+    assert metrics.notation.spec_conformance_violations == 0
+    assert metrics.notation.test_obligation_gaps >= 0
     # No lifecycle events recorded: the builder falls back to ICP durations.
     assert metrics.total_wall_clock_ms == _impl().total_duration_ms

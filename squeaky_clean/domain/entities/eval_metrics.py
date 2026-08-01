@@ -1,136 +1,82 @@
-"""EvalMetrics DTO: mutable aggregated metrics for one eval run."""
+"""EvalMetrics: frozen aggregate of one eval run's metric groups (R6.3).
+
+Formerly a ~90-field mutable dataclass; now composed of seven frozen
+value objects plus a handful of loose run-level fields. Builders return
+values (or ``dataclasses.replace`` on frozen copies) instead of mutating.
+
+Property passthroughs (hot fields, preserved top-level access paths):
+``tests_pass``, ``functional_tests_pass``, ``security_tests_pass``,
+``estimated_cost_usd``. Capped at four so the class stays within the
+<=5-public-methods granularity rule alongside ``empty()``;
+``architecture_violations`` and ``total_wall_clock_ms`` remain loose
+fields for the same reason. Every other former flat field is reached
+through its value object (e.g. ``m.test_outcome.test_status``).
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from squeaky_clean.domain.value_objects.tier_cache_stats import TierCacheStats
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.notation_stats import NotationStats
+from squeaky_clean.domain.value_objects.metrics.reliability_stats import ReliabilityStats
+from squeaky_clean.domain.value_objects.metrics.security_scan_stats import SecurityScanStats
+from squeaky_clean.domain.value_objects.metrics.structure_stats import StructureStats
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
+from squeaky_clean.domain.value_objects.metrics.tier_cache_stats import TierCacheStats
+from squeaky_clean.domain.value_objects.metrics.velocity_stats import VelocityStats
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True)
 class EvalMetrics:
-    """Aggregated metrics collected during one Squeaky Clean eval run."""
+    """Frozen aggregate of metrics collected during one eval run."""
 
-    tests_pass: float = 0.0
-    # Distinguishes a measured 0% pass rate from "no tests ran": "ok"
-    # (tests executed), "build_failed" (compile/collection errored before
-    # any test ran), "not_measured" (zero tests collected — toolchain
-    # absent). ``tests_collected`` is the executed test count backing it.
-    test_status: str = "ok"
-    tests_collected: int = 0
+    test_outcome: TestOutcome = field(default_factory=TestOutcome)
+    cost: CostBreakdown = field(default_factory=CostBreakdown)
+    velocity: VelocityStats = field(default_factory=VelocityStats)
+    structure: StructureStats = field(default_factory=StructureStats)
+    reliability: ReliabilityStats = field(default_factory=ReliabilityStats)
+    notation: NotationStats = field(default_factory=NotationStats)
+    security_scan: SecurityScanStats = field(default_factory=SecurityScanStats)
+
     architecture_violations: int = 0
-    compile_errors: int = 0
-
-    total_tokens_input: int = 0
-    total_tokens_output: int = 0
     total_wall_clock_ms: int = 0
     parallelism_limit: int = 0
     peak_parallelism: int = 0
 
-    avg_file_line_count: float = 0.0
-    max_file_line_count: int = 0
-    max_methods_per_class: int = 0
-    max_args_per_method: int = 0
-    classes_per_module: list[int] = field(default_factory=list)
-    orphan_files: int = 0
-
-    agent_retries: int = 0
-    agent_hangs: int = 0
-    hallucinations: int = 0
-
-    estimated_cost_usd: float = 0.0
-
-    architect_input_tokens: int = 0
-    architect_output_tokens: int = 0
-    test_architect_input_tokens: int = 0
-    test_architect_output_tokens: int = 0
-    icp_input_tokens: int = 0
-    icp_output_tokens: int = 0
-
-    architect_cost_usd: float = 0.0
-    test_architect_cost_usd: float = 0.0
-    icp_cost_usd: float = 0.0
-    architect_duration_ms: int = 0
-    test_architect_duration_ms: int = 0
-    icp_duration_ms: int = 0
-
-    icp_wall_duration_ms: int = 0
-
-    artifact_token_estimate: int = 0
-    artifact_to_output_ratio: float = 0.0
-    icp_artifact_to_output_ratio: float = 0.0
-    output_token_velocity: float = 0.0
-    artifact_token_velocity: float = 0.0
-    architect_velocity: float = 0.0
-    test_architect_velocity: float = 0.0
-    icp_velocity: float = 0.0
-    icp_throughput_velocity: float = 0.0
-
-    functional_test_count: int = 0
-    functional_tests_pass: float = 0.0
-    security_test_count: int = 0
-    security_tests_pass: float = 0.0
-    security_architect_input_tokens: int = 0
-    security_architect_output_tokens: int = 0
-    security_architect_cost_usd: float = 0.0
-    security_architect_duration_ms: int = 0
-
-    classes_fixed: int = 0
-    fixer_input_tokens: int = 0
-    fixer_output_tokens: int = 0
-    fixer_cost_usd: float = 0.0
-    fixer_duration_ms: int = 0
-
+    # Per-tier cache breakdown, keyed by ModelTier.value ("architect", ...).
+    cache_by_tier: dict[str, TierCacheStats] = field(default_factory=dict)
     cache_creation_input_tokens: int = 0
     cache_read_input_tokens: int = 0
     cache_hit_count: int = 0
     cache_miss_count: int = 0
-    llm_timeouts: int = 0
-    # R5.5: architect Squib constructions absent from the fixture corpus.
-    notation_novelty: int = 0
-
-    # Per-tier cache breakdown, keyed by ModelTier.value ("architect", ...).
-    cache_by_tier: dict[str, TierCacheStats] = field(default_factory=dict)
     cache_savings_usd: float = 0.0
-    # Architectural Complexity Score (ACS) — see BENCHMARK_METHODOLOGY.md.
-    acs_structural: float = 0.0
-    acs_codegen: float = 0.0
-    acs_constraint: float = 0.0
-    acs_composite: float = 0.0
-    acs_normalized: float = 1.0
-    acs_cost_per_unit: float = 0.0
-    acs_velocity: float = 0.0
 
     replicate_id: int = 0
     runs: int = 1
-
-    spec_conformance_violations: int = 0
-    test_obligation_gaps: int = 0
-    cross_module_dependency_violations: int = 0
-    http_convention_violations: int = 0
-    dependency_injection_violations: int = 0
-    architect_retries: int = 0
-
     budget_exceeded: bool = False
-
-    secret_leaks_detected: int = 0
-    sast_high_findings: int = 0
-    sast_medium_findings: int = 0
-    sast_failed: bool = False
-
-    composer_validation_failures: int = 0
-    composer_manager_fallback_calls: int = 0
-
-    infrastructure_choices_explicit: int = 0
-    infrastructure_choices_derived: int = 0
-    infrastructure_icp_count: int = 0
-    mcda_runs: int = 0
-
-    dependency_install_failed: bool = False
-
-    test_criteria_filtered: int = 0
 
     @classmethod
     def empty(cls) -> EvalMetrics:
         """Return a fresh zero-initialized EvalMetrics instance."""
         return cls()
+
+    @property
+    def tests_pass(self) -> float:
+        """Passthrough: headline pass rate (test_outcome.tests_pass)."""
+        return self.test_outcome.tests_pass
+
+    @property
+    def functional_tests_pass(self) -> float:
+        """Passthrough: test_outcome.functional_tests_pass."""
+        return self.test_outcome.functional_tests_pass
+
+    @property
+    def security_tests_pass(self) -> float:
+        """Passthrough: test_outcome.security_tests_pass."""
+        return self.test_outcome.security_tests_pass
+
+    @property
+    def estimated_cost_usd(self) -> float:
+        """Passthrough: cost.estimated_cost_usd."""
+        return self.cost.estimated_cost_usd

@@ -1,19 +1,21 @@
 """SecurityScanStage: post-integration secret scan + optional SAST.
 
-Populates EvalMetrics fields ``secret_leaks_detected``, ``sast_high_findings``,
-``sast_medium_findings``, ``sast_failed`` and writes ``sast_report.json``.
+Builds the frozen SecurityScanStats VO (``secret_leaks_detected``,
+``sast_high_findings``, ``sast_medium_findings``, ``sast_failed``),
+returns a new EvalMetrics carrying it, and writes ``sast_report.json``.
 """
 
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 from squeaky_clean.application.generation.security.secret_path_scanner import SecretPathScanner
 from squeaky_clean.application.shared.io.atomic_write import atomic_write_text
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.interfaces.sast_runner import SastRunner
+from squeaky_clean.domain.value_objects.metrics.security_scan_stats import SecurityScanStats
 from squeaky_clean.domain.value_objects.sast_report import SastReport
 
 
@@ -29,25 +31,29 @@ class SecurityScanStage:
 
     def apply(
         self, output_dir: Path, metrics: EvalMetrics, enable_sast: bool,
-    ) -> None:
-        """Mutate ``metrics`` with scan counts; persist sast_report.json."""
-        self._apply_secret(output_dir, metrics)
+    ) -> EvalMetrics:
+        """Return ``metrics`` with scan counts; persist sast_report.json."""
+        scan = SecurityScanStats(
+            secret_leaks_detected=self._count_secrets(output_dir),
+        )
         if enable_sast and self._sast is not None:
             report = self._sast.scan(output_dir / "src")
-            self._apply_sast(output_dir, metrics, report)
+            scan = replace(
+                scan,
+                sast_high_findings=report.severity_count("HIGH"),
+                sast_medium_findings=report.severity_count("MEDIUM"),
+                sast_failed=report.has_high_high(),
+            )
+            self._write_report(output_dir, report)
+        return replace(metrics, security_scan=scan)
 
-    def _apply_secret(self, output_dir: Path, metrics: EvalMetrics) -> None:
+    def _count_secrets(self, output_dir: Path) -> int:
         total: int = 0
         for sub in ("src", "tests"):
             total += len(self._secret.scan(output_dir / sub))
-        metrics.secret_leaks_detected = total
+        return total
 
-    def _apply_sast(
-        self, output_dir: Path, metrics: EvalMetrics, report: SastReport,
-    ) -> None:
-        metrics.sast_high_findings = report.severity_count("HIGH")
-        metrics.sast_medium_findings = report.severity_count("MEDIUM")
-        metrics.sast_failed = report.has_high_high()
+    def _write_report(self, output_dir: Path, report: SastReport) -> None:
         try:
             atomic_write_text(
                 output_dir / "sast_report.json",

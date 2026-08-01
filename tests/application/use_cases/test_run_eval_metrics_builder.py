@@ -60,12 +60,12 @@ def _inputs(tr: TestRunResult, fr: TestRunResult | None) -> MetricsInputs:
 def test_functional_and_security_slice_math() -> None:
     """Security slice = overall minus functional; both rates computed correctly."""
     m = RunEvalMetricsBuilder().build(_inputs(_tr(10, 2, 0), _tr(3, 1, 0)))
-    assert m.functional_test_count == 4
+    assert m.test_outcome.functional_test_count == 4
     assert m.functional_tests_pass == pytest.approx(0.75)
     # sec_total = 12 - 4 = 8; sec_passed = 10 - 3 = 7
     assert m.security_tests_pass == pytest.approx(7 / 8)
-    assert m.tests_collected == 4
-    assert m.test_status == "ok"
+    assert m.test_outcome.tests_collected == 4
+    assert m.test_outcome.test_status == "ok"
 
 
 def test_headline_tests_pass_is_functional_not_blended() -> None:
@@ -87,22 +87,22 @@ def test_fallback_when_functional_result_is_none() -> None:
     m = RunEvalMetricsBuilder().build(_inputs(_tr(3, 1, 0), None))
     assert m.tests_pass == pytest.approx(0.75)
     assert m.functional_tests_pass == pytest.approx(0.75)
-    assert m.functional_test_count == 4
-    assert m.tests_collected == 4
-    assert m.test_status == "ok"
+    assert m.test_outcome.functional_test_count == 4
+    assert m.test_outcome.tests_collected == 4
+    assert m.test_outcome.test_status == "ok"
 
 
 def test_status_build_failed_when_only_errors() -> None:
     """Errors with zero passes/failures classify as build_failed, not a real 0%."""
     m = RunEvalMetricsBuilder().build(_inputs(_tr(0, 0, 5), _tr(0, 0, 2)))
-    assert m.test_status == "build_failed"
+    assert m.test_outcome.test_status == "build_failed"
     assert m.tests_pass == 0.0
 
 
 def test_status_not_measured_when_nothing_collected() -> None:
     """Zero collected tests classify as not_measured (toolchain absent)."""
     m = RunEvalMetricsBuilder().build(_inputs(_tr(0, 0, 0), None))
-    assert m.test_status == "not_measured"
+    assert m.test_outcome.test_status == "not_measured"
     assert m.tests_pass == 0.0
 
 
@@ -111,12 +111,12 @@ def test_base_aggregates_costs_structure_and_wall_clock() -> None:
     inputs = _inputs(_tr(1, 0, 0), None)
     m = RunEvalMetricsBuilder().build(inputs)
     assert m.estimated_cost_usd == pytest.approx(0.5 + 0.25 + 0.05)
-    assert m.max_methods_per_class == 2
-    assert m.max_args_per_method == 2
-    assert m.classes_per_module == [1]
+    assert m.structure.max_methods_per_class == 2
+    assert m.structure.max_args_per_method == 2
+    assert m.structure.classes_per_module == (1,)
     assert m.peak_parallelism == 1
-    assert m.orphan_files == 2
-    assert m.artifact_token_estimate == 100  # 400 chars // 4
+    assert m.structure.orphan_files == 2
+    assert m.velocity.artifact_token_estimate == 100  # 400 chars // 4
     # wall_clock_ms=0 falls back to the implementation's total duration
     assert m.total_wall_clock_ms == 1234
     m2 = RunEvalMetricsBuilder().build(replace(inputs, wall_clock_ms=5000))

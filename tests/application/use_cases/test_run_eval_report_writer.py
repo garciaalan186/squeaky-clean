@@ -10,15 +10,18 @@ from squeaky_clean.application.evaluation.eval.run.run_eval_report_writer import
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.domain.value_objects.violation import Violation
 
 
 def _bundle() -> EvalReportBundle:
-    metrics = EvalMetrics.empty()
-    metrics.tests_pass = 0.5
-    metrics.estimated_cost_usd = 0.42
+    metrics = EvalMetrics(
+        test_outcome=TestOutcome(tests_pass=0.5),
+        cost=CostBreakdown(estimated_cost_usd=0.42),
+    )
     problem = ProblemSpec(
         id="P0", slug="calculator", description="four-op calculator", tier=0,
         target_language=TargetLanguage.PYTHON,
@@ -42,8 +45,9 @@ def test_write_serialises_bundle_to_json(tmp_path: Path) -> None:
     data = json.loads(path.read_text())
     assert data["problem_id"] == "P0"
     assert data["description"] == "four-op calculator"
-    assert data["metrics"]["tests_pass"] == 0.5
-    assert data["metrics"]["estimated_cost_usd"] == 0.42
+    assert data["schema_version"] == 2
+    assert data["metrics"]["test_outcome"]["tests_pass"] == 0.5
+    assert data["metrics"]["cost"]["estimated_cost_usd"] == 0.42
     assert data["tests"] == {"passed": 2, "failed": 1, "errors": 1,
                              "duration_ms": 77}
     assert data["violations"] == [{

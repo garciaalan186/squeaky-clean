@@ -64,6 +64,35 @@ def test_drops_non_numeric_fields(tmp_path: Path) -> None:
     assert "label" not in snaps[0].metrics
 
 
+def test_flattens_schema_v2_nested_payloads_to_v1_keys(tmp_path: Path) -> None:
+    """Schema v2 VO nesting must yield the same snapshot keys as v1 files."""
+    _make_run(tmp_path, "meta-evaluation_001_20260411-131227", {
+        "schema_version": 2,
+        "test_outcome": {"tests_pass": 0.9, "test_status": "ok"},
+        "cost": {"estimated_cost_usd": 0.3},
+        "security_scan": {"secret_leaks_detected": 1},
+        "cache_by_tier": {"icp": {"create_tokens": 5}},
+        "total_wall_clock_ms": 1200,
+    })
+    snaps = MetricsHistoryAggregator().aggregate(tmp_path)
+    m = snaps[0].metrics
+    assert m["tests_pass"] == 0.9
+    assert m["estimated_cost_usd"] == 0.3
+    assert m["secret_leaks_detected"] == 1
+    assert m["total_wall_clock_ms"] == 1200
+    # Per-tier cache leaves must NOT be promoted (they would collide).
+    assert "create_tokens" not in m
+
+
+def test_top_level_scalars_win_over_nested_leaves(tmp_path: Path) -> None:
+    _make_run(tmp_path, "meta-evaluation_001_20260411-131227", {
+        "total_wall_clock_ms": 7,
+        "cost": {"total_wall_clock_ms": 99},
+    })
+    snaps = MetricsHistoryAggregator().aggregate(tmp_path)
+    assert snaps[0].metrics["total_wall_clock_ms"] == 7
+
+
 def test_missing_root_returns_empty(tmp_path: Path) -> None:
     snaps = MetricsHistoryAggregator().aggregate(tmp_path / "nope")
     assert snaps == ()

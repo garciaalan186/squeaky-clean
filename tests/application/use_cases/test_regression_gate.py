@@ -15,6 +15,7 @@ from squeaky_clean.application.generation.validation.validation_report import (
 from squeaky_clean.application.shared.problem.golden_metrics import GoldenMetrics
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
@@ -44,9 +45,9 @@ def _result(tests_pass: float, golden: GoldenMetrics | None) -> SweepResult:
     )
     bundle = EvalReportBundle(
         problem=problem,
-        metrics=EvalMetrics(
+        metrics=EvalMetrics(test_outcome=TestOutcome(
             tests_pass=tests_pass, functional_tests_pass=tests_pass,
-        ),
+        )),
         test_run_result=TestRunResult(
             passed=1, failed=0, errors=0, duration_ms=1, raw_output="",
         ),

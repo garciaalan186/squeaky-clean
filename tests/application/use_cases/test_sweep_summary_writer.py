@@ -8,16 +8,21 @@ from squeaky_clean.application.evaluation.eval.sweep.sweep_summary_writer import
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.reliability_stats import ReliabilityStats
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 
 
 def _bundle(pid: str, pass_rate: float, cost: float, fixed: int) -> EvalReportBundle:
-    metrics = EvalMetrics.empty()
-    metrics.tests_pass = pass_rate
-    metrics.functional_tests_pass = pass_rate
-    metrics.estimated_cost_usd = cost
-    metrics.classes_fixed = fixed
+    metrics = EvalMetrics(
+        test_outcome=TestOutcome(
+            tests_pass=pass_rate, functional_tests_pass=pass_rate,
+        ),
+        cost=CostBreakdown(estimated_cost_usd=cost),
+        reliability=ReliabilityStats(classes_fixed=fixed),
+    )
     problem = ProblemSpec(
         id=pid, slug=pid.lower(), description="x", tier=0,
         target_language=TargetLanguage.PYTHON,

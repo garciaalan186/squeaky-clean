@@ -36,5 +36,5 @@ def test_pipeline_exits_gracefully_on_budget_breach(tmp_path: Path) -> None:
     assert "cap:" in body and "spent:" in body
     report = json.loads((ps_dir / "eval_report.json").read_text())
     assert report["metrics"]["budget_exceeded"] is True
-    assert report["metrics"]["estimated_cost_usd"] == 0.005
+    assert report["metrics"]["cost"]["estimated_cost_usd"] == 0.005
     assert result.metrics.budget_exceeded is True

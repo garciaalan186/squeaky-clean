@@ -14,6 +14,7 @@ class RunEvalReportWriter:
     def write(self, path: Path, bundle: EvalReportBundle) -> None:
         """Serialise ``bundle`` as JSON into ``path``, creating parent dirs."""
         payload: dict[str, object] = {
+            "schema_version": 2,
             "problem_id": bundle.problem.id,
             "description": bundle.problem.description,
             "metrics": asdict(bundle.metrics),

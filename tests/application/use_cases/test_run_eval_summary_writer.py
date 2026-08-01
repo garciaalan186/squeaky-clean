@@ -9,6 +9,8 @@ from squeaky_clean.application.evaluation.eval.run.run_eval_summary_writer impor
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
 from squeaky_clean.application.shared.problem.problem_spec import ProblemSpec
 from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
+from squeaky_clean.domain.value_objects.metrics.cost_breakdown import CostBreakdown
+from squeaky_clean.domain.value_objects.metrics.test_outcome import TestOutcome
 from squeaky_clean.domain.value_objects.target_language import TargetLanguage
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
 from squeaky_clean.domain.value_objects.violation import Violation
@@ -17,11 +19,11 @@ from squeaky_clean.domain.value_objects.violation import Violation
 def _bundle(
     status: str, tr: TestRunResult, validation: ValidationReport,
 ) -> EvalReportBundle:
-    metrics = EvalMetrics.empty()
-    metrics.tests_pass = 0.75
-    metrics.test_status = status
-    metrics.estimated_cost_usd = 0.1234
-    metrics.total_wall_clock_ms = 4200
+    metrics = EvalMetrics(
+        test_outcome=TestOutcome(tests_pass=0.75, test_status=status),
+        cost=CostBreakdown(estimated_cost_usd=0.1234),
+        total_wall_clock_ms=4200,
+    )
     problem = ProblemSpec(
         id="P0", slug="calculator", description="x", tier=0,
         target_language=TargetLanguage.PYTHON,

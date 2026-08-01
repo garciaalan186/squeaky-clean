@@ -83,6 +83,6 @@ def test_pipeline_proceeds_after_one_retry(tmp_path: Path) -> None:
     )
     pipeline = RunEvalPipeline(replace(deps))
     bundle = pipeline.run(_http_problem(), tmp_path)
-    assert bundle.metrics.architect_retries == 1
-    assert bundle.metrics.http_convention_violations == 0
+    assert bundle.metrics.reliability.architect_retries == 1
+    assert bundle.metrics.notation.http_convention_violations == 0
     assert state["n"] == 2

@@ -7,7 +7,6 @@ from squeaky_clean.application.evaluation.eval.metrics.metrics_inputs import Met
 from squeaky_clean.application.evaluation.eval.run.run_eval_token_mapper import RunEvalTokenMapper
 from squeaky_clean.application.generation.emission.module_implementation import ModuleImplementation
 from squeaky_clean.application.generation.validation.validation_report import ValidationReport
-from squeaky_clean.domain.entities.eval_metrics import EvalMetrics
 from squeaky_clean.domain.entities.module_spec import ModuleSpec
 from squeaky_clean.domain.value_objects.layer_type import LayerType
 from squeaky_clean.domain.value_objects.test_run_result import TestRunResult
@@ -42,25 +41,25 @@ def _inputs() -> MetricsInputs:
     )
 
 
-def test_apply_copies_per_tier_fields() -> None:
-    m = EvalMetrics.empty()
-    RunEvalTokenMapper().apply(m, _inputs())
-    assert (m.architect_input_tokens, m.architect_output_tokens) == (100, 10)
-    assert m.architect_cost_usd == pytest.approx(0.5)
-    assert m.architect_duration_ms == 1000
-    assert (m.test_architect_input_tokens, m.test_architect_output_tokens) == (200, 20)
-    assert (m.icp_input_tokens, m.icp_output_tokens) == (300, 30)
-    assert m.icp_wall_duration_ms == 1500
-    assert (m.security_architect_input_tokens,
-            m.security_architect_output_tokens) == (400, 40)
-    assert m.classes_fixed == 2
-    assert (m.fixer_input_tokens, m.fixer_output_tokens) == (500, 50)
-    assert m.fixer_cost_usd == pytest.approx(0.02)
+def test_map_copies_per_tier_fields() -> None:
+    c = RunEvalTokenMapper().map(_inputs())
+    assert (c.architect_input_tokens, c.architect_output_tokens) == (100, 10)
+    assert c.architect_cost_usd == pytest.approx(0.5)
+    assert c.architect_duration_ms == 1000
+    assert (c.test_architect_input_tokens, c.test_architect_output_tokens) == (200, 20)
+    assert (c.icp_input_tokens, c.icp_output_tokens) == (300, 30)
+    assert c.icp_wall_duration_ms == 1500
+    assert (c.security_architect_input_tokens,
+            c.security_architect_output_tokens) == (400, 40)
 
 
-def test_apply_totals_sum_all_five_tiers() -> None:
+def test_map_totals_sum_all_five_tiers() -> None:
     """Totals must include security architect and fixer, not just the big three."""
-    m = EvalMetrics.empty()
-    RunEvalTokenMapper().apply(m, _inputs())
-    assert m.total_tokens_input == 100 + 200 + 300 + 400 + 500
-    assert m.total_tokens_output == 10 + 20 + 30 + 40 + 50
+    c = RunEvalTokenMapper().map(_inputs())
+    assert c.total_tokens_input == 100 + 200 + 300 + 400 + 500
+    assert c.total_tokens_output == 10 + 20 + 30 + 40 + 50
+
+
+def test_map_estimated_cost_includes_fixer() -> None:
+    c = RunEvalTokenMapper().map(_inputs())
+    assert c.estimated_cost_usd == pytest.approx(0.5 + 0.25 + 0.05 + 0.03 + 0.02)

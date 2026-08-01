@@ -41,14 +41,34 @@ class MetricsHistoryAggregator:
             return None
         if not isinstance(raw, dict):
             return None
-        flat = {k: v for k, v in raw.items()
-                if isinstance(v, (int, float)) and not isinstance(v, bool)}
         return RunMetricsSnapshot(
             run_number=int(match.group(1)),
             timestamp=match.group(2),
-            metrics=flat,
+            metrics=self._flatten(raw),
             problem_id=self._problem_id(run_dir),
         )
+
+    def _flatten(self, raw: dict[str, object]) -> dict[str, float | int]:
+        """Flatten schema-v2 value-object payloads to their v1 leaf names.
+
+        Every leaf name was a unique flat field in schema v1, so promoting
+        nested scalars restores the exact historical key set — old and new
+        metrics.json files yield identical snapshot keys. ``cache_by_tier``
+        is skipped (its per-tier leaves collide); top-level scalars win.
+        """
+        flat: dict[str, float | int] = {}
+        for key, value in raw.items():
+            if key == "cache_by_tier" or not isinstance(value, dict):
+                continue
+            for leaf, scalar in value.items():
+                if isinstance(scalar, (int, float)) and not isinstance(
+                    scalar, bool,
+                ):
+                    flat[leaf] = scalar
+        for key, value in raw.items():
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                flat[key] = value
+        return flat
 
     def _problem_id(self, run_dir: Path) -> str:
         for child in sorted(run_dir.iterdir(), key=lambda p: p.name):
